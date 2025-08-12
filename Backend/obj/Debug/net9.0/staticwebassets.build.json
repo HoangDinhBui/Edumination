@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "1MBDqREEdB5XzYY9iXMGlzEzHanhFbJbF+dX+F4Ivgo=",
+  "Source": "Edumination.Api",
+  "BasePath": "_content/Edumination.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

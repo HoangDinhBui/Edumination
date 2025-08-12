@@ -1,0 +1,83 @@
+version: "3.9"
+
+name: edumination
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: edu_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: edumination
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+    ports:
+      - "3307:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max_connections=400
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer:latest
+    container_name: edu_adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  backend:
+    container_name: edu_backend
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      # Kết nối MySQL bên trong mạng compose
+      ConnectionStrings__DefaultConnection: "server=mysql;port=3306;database=edumination;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
+      # Nếu có CORS:
+      AllowedHosts: "*"
+    expose:
+      - "8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    container_name: edu_frontend
+    build:
+      context: ./Frontend
+    expose:
+      - "80"
+    depends_on:
+      - backend
+
+  gateway:
+    image: nginx:alpine
+    container_name: edu_gateway
+    ports:
+      - "8081:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+
+networks:
+  default:
+    name: edumination_net
