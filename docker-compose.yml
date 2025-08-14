@@ -8,7 +8,7 @@ services:
     container_name: edu_mysql
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: edumination
+      MYSQL_DATABASE: english_learning
       MYSQL_USER: appuser
       MYSQL_PASSWORD: apppass
     ports:
