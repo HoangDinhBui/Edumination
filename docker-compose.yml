@@ -45,11 +45,16 @@ services:
     container_name: edu_backend
     build:
       context: ./Backend
-      dockerfile: Dockerfile
+      dockerfile: src/Edumination.Api/Dockerfile
     environment:
       ASPNETCORE_URLS: http://0.0.0.0:8080
       # Kết nối MySQL bên trong mạng compose
-      ConnectionStrings__DefaultConnection: "server=mysql;port=3306;database=edumination;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
+      ConnectionStrings__DefaultConnection: "server=mysql;port=3306;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
+
+      Jwt__Key: "replace-with-a-long-random-secret-key"
+      Jwt__Issuer: "Edumination"
+      Jwt__Audience: "Edumination"
+
       # Nếu có CORS:
       AllowedHosts: "*"
     expose:
