@@ -44,8 +44,8 @@ services:
   backend:
     container_name: edu_backend
     build:
-      context: ./Backend
-      dockerfile: src/Edumination.Api/Dockerfile
+      context: ./Backend/src/Edumination.Api
+      dockerfile: Dockerfile
     environment:
       ASPNETCORE_URLS: http://0.0.0.0:8080
       # Kết nối MySQL bên trong mạng compose
