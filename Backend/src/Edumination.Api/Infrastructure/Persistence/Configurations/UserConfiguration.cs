@@ -11,10 +11,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         b.ToTable("users");
         b.HasKey(x => x.Id);
         b.Property(x => x.Email).HasColumnName("email").HasMaxLength(255).IsRequired();
-        b.Property(x => x.EmailVerified).HasColumnName("email_verified");
-        b.Property(x => x.PasswordHash).HasColumnName("password_hash");
+        b.Property(x => x.EmailVerified).HasColumnName("email_verified").HasDefaultValue(false);
+        b.Property(x => x.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
         b.Property(x => x.FullName).HasColumnName("full_name").HasMaxLength(255).IsRequired();
-        b.Property(x => x.IsActive).HasColumnName("is_active");
+        b.Property(x => x.AvatarUrl).HasColumnName("avatar_url").HasMaxLength(500);
+        b.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
         b.Property(x => x.CreatedAt).HasColumnName("created_at");
         b.Property(x => x.UpdatedAt).HasColumnName("updated_at");
     }

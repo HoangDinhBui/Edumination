@@ -125,3 +125,4 @@ D:\UTC2\Edumination\Backend\src\Edumination.Api\obj\Debug\net8.0\Edumination.Api
 D:\UTC2\Edumination\Backend\src\Edumination.Api\obj\Debug\net8.0\Edumination.Api.genruntimeconfig.cache
 D:\UTC2\Edumination\Backend\src\Edumination.Api\obj\Debug\net8.0\ref\Edumination.Api.dll
 D:\UTC2\Edumination\Backend\src\Edumination.Api\bin\Debug\net8.0\BCrypt.Net-Next.dll
+D:\UTC2\Edumination\Backend\src\Edumination.Api\bin\Debug\net8.0\EFCore.NamingConventions.dll

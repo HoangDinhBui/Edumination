@@ -1,3 +1,8 @@
 namespace Edumination.Api.Features.Auth.Requests;
 
-public record RegisterRequest(string Email, string Password, string FullName);
+public class RegisterRequest
+{
+    public string Email { get; set; } = default!;
+    public string Password { get; set; } = default!;
+    public string Full_Name { get; set; } = default!;
+}
