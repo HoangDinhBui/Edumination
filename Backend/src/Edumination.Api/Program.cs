@@ -19,6 +19,12 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 // Options
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
 
+builder.Services
+    .AddOptions<AppOptions>()
+    .Bind(builder.Configuration.GetSection("App"))
+    .Validate(o => !string.IsNullOrWhiteSpace(o.FrontendBaseUrl), "App:FrontendBaseUrl is required")
+    .ValidateOnStart();
+
 // MVC + FluentValidation
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -54,4 +60,9 @@ public class MockEmailSender : IEmailSender
         Console.WriteLine($"[MOCK EMAIL] To:{to} | Subject:{subject}\n{htmlBody}");
         return Task.CompletedTask;
     }
+}
+
+public sealed class AppOptions
+{
+    public string FrontendBaseUrl { get; set; } = "";
 }

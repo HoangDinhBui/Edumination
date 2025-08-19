@@ -22,7 +22,9 @@ public class AuthService(
     IPasswordHasher hasher,
     IEmailSender emailSender,
     IAuditLogger audit,
-    IOptions<AuthOptions> authOpt) : IAuthService
+    IOptions<AuthOptions> authOpt,
+    IOptionsSnapshot<AppOptions> appOptions
+    ) : IAuthService
 {
     public async Task<ApiResult<RegisterResponse>> RegisterAsync(RegisterRequest req, CancellationToken ct)
     {
@@ -64,7 +66,10 @@ public class AuthService(
         await db.SaveChangesAsync(ct);
 
         // 4) Gửi email (link verify)
-        var verifyUrl = $"https://your-frontend-domain/verify-email?token={Uri.EscapeDataString(rawToken)}";
+        var baseUrl = appOptions.Value.FrontendBaseUrl;
+        if (string.IsNullOrWhiteSpace(baseUrl)) throw new InvalidOperationException("Missing App:FrontendBaseUrl");
+
+        var verifyUrl = $"{baseUrl.TrimEnd('/')}/verify-email?token={Uri.EscapeDataString(rawToken)}";
         var html = $"""
             <h3>Verify your email</h3>
             <p>Hi {System.Net.WebUtility.HtmlEncode(user.FullName)},</p>

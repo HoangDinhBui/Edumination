@@ -48,6 +48,7 @@ services:
       dockerfile: Dockerfile
     environment:
       ASPNETCORE_URLS: http://0.0.0.0:8080
+      App__FrontendBaseUrl: "http://localhost:8081"
       # Kết nối MySQL bên trong mạng compose
       ConnectionStrings__DefaultConnection: "server=mysql;port=3306;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
 
