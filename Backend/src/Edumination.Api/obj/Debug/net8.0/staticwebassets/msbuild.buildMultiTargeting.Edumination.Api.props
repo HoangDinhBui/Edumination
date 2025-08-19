@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\Edumination.Api.props" />
-</Project>

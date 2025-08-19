@@ -1,4 +1,6 @@
+# ===============================
 # Logs
+# ===============================
 logs
 *.log
 npm-debug.log*
@@ -7,12 +9,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# ===============================
+# Node.js
+# ===============================
 node_modules
 dist
 dist-ssr
 *.local
 
+# ===============================
 # Editor directories and files
+# ===============================
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -23,6 +30,47 @@ dist-ssr
 *.sln
 *.sw?
 
-# MySQL runtime data (đừng commit)
+# ===============================
+# MySQL runtime data
+# ===============================
 db/data/
 
+# ===============================
+# .NET / C#
+# ===============================
+bin/
+obj/
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+*.nuget.props
+*.nuget.targets
+# Build artifacts
+*.dll
+*.exe
+*.cache
+*.pdb
+*.mdb
+*.xml
+*.metaproj
+*.metaproj.tmp
+*.vspscc
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.tlh
+*.tli
+*.tmp
+*.log
+*.sourcelink.json
+project.assets.json
+*.nuget.dgspec.json
+*.nuget.g.props
+*.nuget.g.targets
