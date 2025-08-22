@@ -8,6 +8,8 @@ using Edumination.Api.Infrastructure.Persistence;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using Edumination.Api.Features.Leaderboard.Interfaces;
+using Edumination.Api.Features.Leaderboard.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +35,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Email sender (mock dev)
 builder.Services.AddScoped<IEmailSender, MockEmailSender>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 
 var app = builder.Build();
 
