@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Edumination.Api.Domain.Entities;
-
+using Edumination.Api.Domain.Entities.Leaderboard;
 namespace Edumination.Api.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
@@ -14,6 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<TestSection> TestSections => Set<TestSection>();
     public DbSet<TestAttempt> TestAttempts => Set<TestAttempt>();
     public DbSet<SectionAttempt> SectionAttempts => Set<SectionAttempt>();
+    public DbSet<LeaderboardEntry> LeaderboardEntries => Set<LeaderboardEntry>();
+    public DbSet<UserEdu> UsersEdu => Set<UserEdu>();
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
@@ -62,5 +64,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasIndex(x => new { x.EntityKind, x.EntityId });
             e.HasIndex(x => x.UserId);
         });
+
+        b.Entity<LeaderboardEntry>(e =>
+        {
+            e.ToTable("leaderboard_entries");
+            e.HasKey(x => x.Id);
+        });
+
+        b.Entity<UserEdu>(e =>
+        {
+            e.ToView("v_users_edu").HasNoKey();
+
+        });
+        
+        b.Entity<Domain.Entities.Leaderboard.LeaderboardRow>(e =>
+        {
+            e.HasNoKey();
+            e.ToView(null); // query từ SQL raw, không map view/table cố định
+        });
+
     }
 }
