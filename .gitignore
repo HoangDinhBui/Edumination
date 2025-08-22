@@ -74,4 +74,5 @@ project.assets.json
 *.nuget.dgspec.json
 *.nuget.g.props
 *.nuget.g.targets
-application.json
+appsetting.json
+
