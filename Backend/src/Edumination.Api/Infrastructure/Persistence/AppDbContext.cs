@@ -76,12 +76,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.ToView("v_users_edu").HasNoKey();
 
         });
-        
-        b.Entity<Domain.Entities.Leaderboard.LeaderboardRow>(e =>
-        {
-            e.HasNoKey();
-            e.ToView(null); // query từ SQL raw, không map view/table cố định
-        });
 
     }
 }
