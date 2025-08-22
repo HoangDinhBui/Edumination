@@ -1,3 +1,6 @@
+using Education.Repositories;
+using Education.Repositories.Interfaces;
+using Education.Services;
 using Edumination.Api.Common.Services;
 using Edumination.Api.Features.Auth;
 using Edumination.Api.Features.Auth.Requests;
@@ -5,6 +8,8 @@ using Edumination.Api.Features.Auth.Services;
 using Edumination.Api.Infrastructure.External.Email;
 using Edumination.Api.Infrastructure.Options;
 using Edumination.Api.Infrastructure.Persistence;
+using Edumination.Api.Services;
+using Edumination.Services.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
@@ -34,10 +39,28 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
+// Authentication & Authorization
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = builder.Configuration["Auth:Authority"];
+        options.TokenValidationParameters = new()
+        {
+            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Auth:Issuer"],
+            ValidateLifetime = true
+        };
+    });
+builder.Services.AddAuthorization();
+
 // DI Services
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+builder.Services.AddScoped<IAssetService, AssetsService>();
+builder.Services.AddScoped<IStorageService, StorageService>();
 
 // Email sender (mock dev)
 builder.Services.AddScoped<IEmailSender, MockEmailSender>();

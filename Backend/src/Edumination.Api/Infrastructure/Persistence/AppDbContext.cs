@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Edumination.Api.Domain.Entities;
-using Edumination.Api.Domain.Entities.Leaderboard;
+
 namespace Edumination.Api.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
@@ -14,8 +14,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<TestSection> TestSections => Set<TestSection>();
     public DbSet<TestAttempt> TestAttempts => Set<TestAttempt>();
     public DbSet<SectionAttempt> SectionAttempts => Set<SectionAttempt>();
-    public DbSet<LeaderboardEntry> LeaderboardEntries => Set<LeaderboardEntry>();
-    public DbSet<UserEdu> UsersEdu => Set<UserEdu>();
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
