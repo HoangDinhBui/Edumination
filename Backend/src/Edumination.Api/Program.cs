@@ -48,6 +48,26 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Edumination v1"));
 }
 
+// Áp dụng mọi migration còn thiếu khi khởi động (bật/tắt bằng cấu hình)
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    try
+    {
+        db.Database.Migrate(); // hoặc await db.Database.MigrateAsync();
+        Console.WriteLine("[DB] Migrations applied successfully.");
+        // (tùy chọn) Seed dữ liệu:
+        // await SeedData.RunAsync(db);
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"[DB] Migration failed: {ex.Message}");
+        throw; // cho app fail fast nếu migrate lỗi
+    }
+}
+
 // app.UseHttpsRedirection();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
