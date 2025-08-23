@@ -20,8 +20,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // EF Core MySQL
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
+var serverVersion = new MySqlServerVersion(new Version(8, 0, 36));
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseMySql(cs, ServerVersion.AutoDetect(cs)).UseSnakeCaseNamingConvention());
+    opt.UseMySql(cs, serverVersion)
+       .UseSnakeCaseNamingConvention());
 
 // Options
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
@@ -65,6 +67,11 @@ builder.Services.AddScoped<IStorageService, StorageService>();
 // Email sender (mock dev)
 builder.Services.AddScoped<IEmailSender, MockEmailSender>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+
+// Options
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
 
 var app = builder.Build();
 

@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Edumination.Api.Common.Extensions;
 using Edumination.Api.Common.Results;
 using Edumination.Api.Common.Services;
@@ -9,88 +12,135 @@ using Edumination.Api.Infrastructure.Options;
 using Edumination.Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Edumination.Api.Features.Auth.Services;
 
 public interface IAuthService
 {
     Task<ApiResult<RegisterResponse>> RegisterAsync(RegisterRequest req, CancellationToken ct);
+    Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken ct);
 }
 
-public class AuthService(
-    AppDbContext db,
-    IPasswordHasher hasher,
-    IEmailSender emailSender,
-    IAuditLogger audit,
-    IOptions<AuthOptions> authOpt,
-    IOptionsSnapshot<AppOptions> appOptions
-    ) : IAuthService
+public class AuthService : IAuthService
 {
+    private readonly AppDbContext _db;
+    private readonly IPasswordHasher _hasher;
+    private readonly IEmailSender _email;
+    private readonly IAuditLogger _audit;
+    private readonly AuthOptions _authOpt;
+    private readonly AppOptions _appOpt;
+    private readonly JwtOptions _jwt;
+
+    public AuthService(
+        AppDbContext db,
+        IPasswordHasher hasher,
+        IEmailSender emailSender,
+        IAuditLogger audit,
+        IOptions<AuthOptions> authOpt,
+        IOptionsSnapshot<AppOptions> appOptions,
+        IOptions<JwtOptions> jwtOpt)
+    {
+        _db = db;
+        _hasher = hasher;
+        _email = emailSender;
+        _audit = audit;
+        _authOpt = authOpt.Value;
+        _appOpt = appOptions.Value;
+        _jwt = jwtOpt.Value; // ✅ gán trong constructor
+    }
+
     public async Task<ApiResult<RegisterResponse>> RegisterAsync(RegisterRequest req, CancellationToken ct)
     {
-        // 1) Check trùng email
         var emailNorm = req.Email.Trim().ToLowerInvariant();
-        var exists = await db.Users.AnyAsync(u => u.Email == emailNorm, ct);
-        if (exists)
+        if (await _db.Users.AnyAsync(u => u.Email == emailNorm, ct))
             return new ApiResult<RegisterResponse>(false, null, "Email already registered.");
 
-        // 2) Tạo user + role STUDENT
         var user = new User
         {
             Email = emailNorm,
             EmailVerified = false,
-            PasswordHash = hasher.Hash(req.Password),
+            PasswordHash = _hasher.Hash(req.Password),
             FullName = req.Full_Name.Trim(),
             IsActive = true
         };
-        db.Users.Add(user);
-        await db.SaveChangesAsync(ct);
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync(ct);
 
-        var studentRole = await db.Roles.FirstOrDefaultAsync(r => r.Code == "STUDENT", ct);
+        var studentRole = await _db.Roles.FirstOrDefaultAsync(r => r.Code == "STUDENT", ct);
         if (studentRole != null)
         {
-            db.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = studentRole.Id });
-            await db.SaveChangesAsync(ct);
+            _db.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = studentRole.Id });
+            await _db.SaveChangesAsync(ct);
         }
 
-        // 3) Tạo token xác minh email (raw) + lưu hash
         var rawToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray()) + Guid.NewGuid().ToString("N");
         var tokenHash = rawToken.Sha256Hex();
-        var ev = new EmailVerification
+        _db.EmailVerifications.Add(new EmailVerification
         {
             UserId = user.Id,
             TokenHash = tokenHash,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(authOpt.Value.VerifyEmailTokenMinutes)
-        };
-        db.EmailVerifications.Add(ev);
-        await db.SaveChangesAsync(ct);
+            ExpiresAt = DateTime.UtcNow.AddMinutes(_authOpt.VerifyEmailTokenMinutes)
+        });
+        await _db.SaveChangesAsync(ct);
 
-        // 4) Gửi email (link verify)
-        var baseUrl = appOptions.Value.FrontendBaseUrl;
-        if (string.IsNullOrWhiteSpace(baseUrl)) throw new InvalidOperationException("Missing App:FrontendBaseUrl");
+        if (string.IsNullOrWhiteSpace(_appOpt.FrontendBaseUrl))
+            throw new InvalidOperationException("Missing App:FrontendBaseUrl");
 
-        var verifyUrl = $"{baseUrl.TrimEnd('/')}/verify-email?token={Uri.EscapeDataString(rawToken)}";
+        var verifyUrl = $"{_appOpt.FrontendBaseUrl.TrimEnd('/')}/verify-email?token={Uri.EscapeDataString(rawToken)}";
         var html = $"""
             <h3>Verify your email</h3>
             <p>Hi {System.Net.WebUtility.HtmlEncode(user.FullName)},</p>
             <p>Please verify your email by clicking the link below:</p>
             <p><a href="{verifyUrl}">{verifyUrl}</a></p>
-            <p>This link will expire in {authOpt.Value.VerifyEmailTokenMinutes} minutes.</p>
+            <p>This link will expire in {_authOpt.VerifyEmailTokenMinutes} minutes.</p>
         """;
-        await emailSender.SendAsync(user.Email, "Verify your email", html, ct);
+        await _email.SendAsync(user.Email, "Verify your email", html, ct);
 
-        // 5) Audit
-        await audit.LogAsync(user.Id, "REGISTER", "USER", user.Id, new { user.Email }, ct);
+        await _audit.LogAsync(user.Id, "REGISTER", "USER", user.Id, new { user.Email }, ct);
 
-        // 6) Response (trả token chỉ cho DEV; production không nên trả)
-        var resp = new RegisterResponse
+        return new ApiResult<RegisterResponse>(true, new RegisterResponse
         {
             UserId = user.Id,
             Email = user.Email,
             EmailVerified = false,
             FullName = user.FullName,
-            VerifyEmailToken = rawToken
+            VerifyEmailToken = rawToken // DEV only
+        }, null);
+    }
+
+    public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken ct)
+    {
+        var user = await _db.Users.SingleOrDefaultAsync(x => x.Email == request.Email, ct);
+        if (user == null || !_hasher.Verify(request.Password, user.PasswordHash!))
+            throw new UnauthorizedAccessException("Invalid email or password");
+
+        if (string.IsNullOrWhiteSpace(_jwt.Key) || _jwt.Key.Length < 32)
+            throw new InvalidOperationException("JWT Key is missing or too short (>= 32 chars required).");
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim> {
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new("name", user.FullName)
         };
-        return new ApiResult<RegisterResponse>(true, resp, null);
+
+        var token = new JwtSecurityToken(
+            issuer: _jwt.Issuer,
+            audience: _jwt.Audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(2),
+            signingCredentials: creds
+        );
+
+        return new AuthResponse
+        {
+            Token = new JwtSecurityTokenHandler().WriteToken(token),
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName
+        };
     }
 }

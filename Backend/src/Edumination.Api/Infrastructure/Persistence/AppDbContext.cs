@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Edumination.Api.Domain.Entities;
+using Edumination.Api.Domain.Entities.Leaderboard;
+using Education.Domain.Entities;
 
 namespace Edumination.Api.Infrastructure.Persistence;
 
@@ -14,6 +16,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<TestSection> TestSections => Set<TestSection>();
     public DbSet<TestAttempt> TestAttempts => Set<TestAttempt>();
     public DbSet<SectionAttempt> SectionAttempts => Set<SectionAttempt>();
+    public DbSet<Asset> Assets => Set<Asset>();
+    public DbSet<LeaderboardEntry> LeaderboardEntries => Set<LeaderboardEntry>();
+    public DbSet<UserEdu> UsersEdu => Set<UserEdu>();
+
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
@@ -23,10 +29,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.ToTable("users");
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Email).IsUnique();
-            e.Property(x => x.Email).HasMaxLength(255).IsRequired();
-            e.Property(x => x.PasswordHash).HasMaxLength(255);
-            e.Property(x => x.FullName).HasMaxLength(255).IsRequired();
-            e.Property(x => x.IsActive).HasDefaultValue(true);
+
+            e.Property(x => x.Email).HasColumnName("email").HasMaxLength(255).IsRequired();
+            e.Property(x => x.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
+            e.Property(x => x.FullName).HasColumnName("full_name").HasMaxLength(255).IsRequired();
+            e.Property(x => x.AvatarUrl).HasColumnName("avatar_url").HasMaxLength(500);
+            e.Property(x => x.EmailVerified).HasColumnName("email_verified");   // <- quan trọng
+            e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
         });
 
         b.Entity<Role>(e =>
@@ -75,5 +86,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
 
         });
 
+        b.Entity<Asset>(e =>
+        {
+            e.ToTable("assets");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Kind).HasColumnName("kind");
+            e.Property(x => x.StorageUrl).HasColumnName("storage_url").HasMaxLength(1000).IsRequired();
+            e.Property(x => x.MediaType).HasColumnName("media_type").HasMaxLength(100);
+            e.Property(x => x.ByteSize).HasColumnName("byte_size");
+            e.Property(x => x.CreatedBy).HasColumnName("created_by");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.HasIndex(x => x.CreatedBy).HasDatabaseName("idx_assets_creator");
+        });
     }
 }
