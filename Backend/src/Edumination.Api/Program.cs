@@ -15,6 +15,10 @@ using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Edumination.Api.Features.Leaderboard.Interfaces;
 using Edumination.Api.Features.Leaderboard.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 
 // Options
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
 builder.Services
     .AddOptions<AppOptions>()
@@ -34,7 +39,7 @@ builder.Services
     .Validate(o => !string.IsNullOrWhiteSpace(o.FrontendBaseUrl), "App:FrontendBaseUrl is required")
     .ValidateOnStart();
 
-// MVC + FluentValidation
+// MVC + FluentValidation + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -42,16 +47,27 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
 // Authentication & Authorization
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
+var jwt = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwt.GetValue<string>("Key") ?? "";
+var jwtIssuer = jwt.GetValue<string>("Issuer");
+var jwtAudience = jwt.GetValue<string>("Audience");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        options.Authority = builder.Configuration["Auth:Authority"];
-        options.TokenValidationParameters = new()
+        options.RequireHttpsMetadata = false; // dev
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateAudience = false,
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Auth:Issuer"],
-            ValidateLifetime = true
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(2),
+            RoleClaimType = ClaimTypes.Role
         };
     });
 builder.Services.AddAuthorization();
@@ -102,9 +118,13 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 }
 
 // app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.Run();
+
 
 public class MockEmailSender : IEmailSender
 {

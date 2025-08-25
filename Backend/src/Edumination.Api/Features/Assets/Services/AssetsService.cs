@@ -5,6 +5,8 @@ using Edumination.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
 using Education.Domain.Entities;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Edumination.Api.Services;
 
@@ -19,8 +21,17 @@ public class AssetsService : IAssetService
         _assetRepository = assetRepository;
     }
 
-    public async Task<CreateAssetResponseDto> CreateAssetAsync(CreateAssetDto dto, string userId)
+    public async Task<CreateAssetResponseDto> CreateAssetAsync(CreateAssetDto dto, ClaimsPrincipal user)
     {
+        if (!user.IsInRole("TEACHER") && !user.IsInRole("ADMIN"))
+            throw new Exception("You are not allowed to upload assets.");
+
+        var userIdStr = user.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                  ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userIdStr) || !long.TryParse(userIdStr, out var userId))
+            throw new Exception("Missing or Invalid user ID claim.");
+
         // Tạo đường dẫn lưu trữ
         string storageUrl = await _storageService.GenerateUploadPathAsync(dto.MediaType, dto.ByteSize);
 
@@ -31,7 +42,7 @@ public class AssetsService : IAssetService
             MediaType = dto.MediaType,
             ByteSize = dto.ByteSize,
             StorageUrl = storageUrl,
-            CreatedBy = long.Parse(userId),
+            CreatedBy = userId,
             CreatedAt = DateTime.UtcNow
         };
 

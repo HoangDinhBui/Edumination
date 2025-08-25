@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Education.Api.Features.Assets;
 
-[Route("api/[controller]")]
+[Route("api/v1/assets")]
 [ApiController]
 [Authorize(Roles = "TEACHER,ADMIN")]
 public class AssetsController : ControllerBase
@@ -33,13 +33,17 @@ public class AssetsController : ControllerBase
 
         // Kiểm tra và lấy file từ form-data
         var file = Request.Form.Files.GetFile("file");
-        if (file == null || file.Length != dto.ByteSize)
+        if (file == null || file.Length == 0)
         {
             return BadRequest("File is required or size mismatch");
         }
 
+        dto.ByteSize = file.Length;
+        if (string.IsNullOrWhiteSpace(dto.MediaType))
+            dto.MediaType = file.ContentType;
+
         // Gọi service để tạo metadata và lưu file
-        var response = await _assetService.CreateAssetAsync(dto, User.Identity.Name);
+        var response = await _assetService.CreateAssetAsync(dto, User);
 
         // Lưu file vào storage
         using var stream = file.OpenReadStream();

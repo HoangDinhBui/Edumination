@@ -47,7 +47,7 @@ public class AuthService : IAuthService
         _audit = audit;
         _authOpt = authOpt.Value;
         _appOpt = appOptions.Value;
-        _jwt = jwtOpt.Value; // ✅ gán trong constructor
+        _jwt = jwtOpt.Value; //gán trong constructor
     }
 
     public async Task<ApiResult<RegisterResponse>> RegisterAsync(RegisterRequest req, CancellationToken ct)
@@ -115,17 +115,26 @@ public class AuthService : IAuthService
         if (user == null || !_hasher.Verify(request.Password, user.PasswordHash!))
             throw new UnauthorizedAccessException("Invalid email or password");
 
+        var role = await _db.UserRoles
+            .Where(ur => ur.UserId == user.Id)
+            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
+            .ToListAsync(ct);
+
         if (string.IsNullOrWhiteSpace(_jwt.Key) || _jwt.Key.Length < 32)
             throw new InvalidOperationException("JWT Key is missing or too short (>= 32 chars required).");
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
         var claims = new List<Claim> {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(ClaimTypes.NameIdentifier,    user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new("name", user.FullName)
         };
+
+        foreach (var code in role)
+            claims.Add(new Claim(ClaimTypes.Role, code));
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: _jwt.Issuer,
