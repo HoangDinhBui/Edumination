@@ -1,3 +1,5 @@
+using Edumination.Api.Domain.Entities;
+
 namespace Education.Domain.Entities;
 
 public class Asset
@@ -9,4 +11,5 @@ public class Asset
     public long ByteSize { get; set; }
     public long CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
+    public virtual ICollection<TestSection> TestSections { get; set; } = new List<TestSection>();
 }

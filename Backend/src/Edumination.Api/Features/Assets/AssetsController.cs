@@ -8,7 +8,6 @@ namespace Education.Api.Features.Assets;
 
 [Route("api/v1/assets")]
 [ApiController]
-[Authorize(Roles = "TEACHER,ADMIN")]
 public class AssetsController : ControllerBase
 {
     private readonly IAssetService _assetService;
@@ -19,6 +18,7 @@ public class AssetsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "TEACHER,ADMIN")] // Chỉ TEACHER và ADMIN tạo asset
     public async Task<IActionResult> CreateAsset([FromForm] CreateAssetDto dto)
     {
         if (!new[] { "VIDEO", "AUDIO", "IMAGE", "DOC", "SUBTITLE", "TRANSCRIPT", "OTHER" }.Contains(dto.Kind?.ToUpper()))
@@ -51,5 +51,28 @@ public class AssetsController : ControllerBase
         await storageService.SaveFileAsync(response.Asset.StorageUrl, stream);
 
         return Ok(response);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetAsset(long id)
+    {
+        try
+        {
+            var userId = long.Parse(User.FindFirst("sub")?.Value ?? "0"); // Lấy userId từ claim 'sub'
+            var userRoles = User.Claims.Where(c => c.Type == "role").Select(c => c.Value).ToArray(); // Lấy roles
+
+            // Gọi service để lấy metadata và URL
+            var result = await _assetService.GetAssetMetadataAndUrlAsync(id, userId, userRoles);
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 }

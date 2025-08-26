@@ -24,6 +24,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     {
         b.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(b);
+
+        // Cấu hình User
         b.Entity<User>(e =>
         {
             e.ToTable("users");
@@ -34,12 +36,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.PasswordHash).HasColumnName("password_hash").HasMaxLength(255);
             e.Property(x => x.FullName).HasColumnName("full_name").HasMaxLength(255).IsRequired();
             e.Property(x => x.AvatarUrl).HasColumnName("avatar_url").HasMaxLength(500);
-            e.Property(x => x.EmailVerified).HasColumnName("email_verified");   // <- quan trọng
+            e.Property(x => x.EmailVerified).HasColumnName("email_verified");
             e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
         });
 
+        // Cấu hình Role
         b.Entity<Role>(e =>
         {
             e.ToTable("roles");
@@ -49,6 +52,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.Name).HasMaxLength(100).IsRequired();
         });
 
+        // Cấu hình UserRole
         b.Entity<UserRole>(e =>
         {
             e.ToTable("user_roles");
@@ -57,6 +61,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId);
         });
 
+        // Cấu hình EmailVerification
         b.Entity<EmailVerification>(e =>
         {
             e.ToTable("email_verifications");
@@ -66,6 +71,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         });
 
+        // Cấu hình AuditLog
         b.Entity<AuditLog>(e =>
         {
             e.ToTable("audit_logs");
@@ -74,18 +80,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasIndex(x => x.UserId);
         });
 
+        // Cấu hình LeaderboardEntry
         b.Entity<LeaderboardEntry>(e =>
         {
             e.ToTable("leaderboard_entries");
             e.HasKey(x => x.Id);
         });
 
+        // Cấu hình UserEdu (view)
         b.Entity<UserEdu>(e =>
         {
             e.ToView("v_users_edu").HasNoKey();
-
         });
 
+        // Cấu hình Asset
         b.Entity<Asset>(e =>
         {
             e.ToTable("assets");
@@ -97,6 +105,57 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.CreatedBy).HasColumnName("created_by");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
             e.HasIndex(x => x.CreatedBy).HasDatabaseName("idx_assets_creator");
+        });
+
+        // Cấu hình TestPaper
+        b.Entity<TestPaper>(e =>
+        {
+            e.ToTable("test_papers");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Code).HasColumnName("code").HasMaxLength(50);
+            e.Property(x => x.Title).HasColumnName("title").HasMaxLength(255).IsRequired();
+            e.Property(x => x.SourceType).HasColumnName("source_type").HasMaxLength(50).IsRequired();
+            e.Property(x => x.UploadMethod).HasColumnName("upload_method").HasMaxLength(50).IsRequired();
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
+            e.Property(x => x.PdfAssetId).HasColumnName("pdf_asset_id"); // Foreign key
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.PublishedAt).HasColumnName("published_at");
+
+            // Mối quan hệ với Asset (PDF)
+            e.HasOne(tp => tp.PdfAsset)
+             .WithMany() // Asset không cần navigation ngược
+             .HasForeignKey(tp => tp.PdfAssetId)
+             .OnDelete(DeleteBehavior.Restrict); // Ngăn chặn xóa cascade nếu cần
+
+            // Mối quan hệ với TestSections
+            e.HasMany(tp => tp.TestSections)
+             .WithOne(ts => ts.TestPaper)
+             .HasForeignKey(ts => ts.PaperId);
+        });
+
+        // Cấu hình TestSection
+        b.Entity<TestSection>(e =>
+        {
+            e.ToTable("test_sections");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.PaperId).HasColumnName("paper_id");
+            e.Property(x => x.Skill).HasColumnName("skill").HasMaxLength(50).IsRequired();
+            e.Property(x => x.SectionNo).HasColumnName("section_no");
+            e.Property(x => x.TimeLimitSec).HasColumnName("time_limit_sec");
+            e.Property(x => x.IsPublished).HasColumnName("is_published");
+            e.Property(x => x.AudioAssetId).HasColumnName("audio_asset_id"); // Foreign key
+
+            // Mối quan hệ với TestPaper
+            e.HasOne(ts => ts.TestPaper)
+             .WithMany(tp => tp.TestSections)
+             .HasForeignKey(ts => ts.PaperId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            // Mối quan hệ với Asset (Audio)
+            _ = e.HasOne(ts => ts.AudioAsset)
+             .WithMany(a => a.TestSections)
+             .HasForeignKey(ts => ts.AudioAssetId)
+             .OnDelete(DeleteBehavior.Restrict); // Ngăn chặn xóa cascade nếu cần
         });
     }
 }
