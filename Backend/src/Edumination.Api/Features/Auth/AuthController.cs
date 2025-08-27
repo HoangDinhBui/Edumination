@@ -70,4 +70,16 @@ public class AuthController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Internal server error" });
         }
     }
+
+    [HttpPost("verify-email")]
+    [ProducesResponseType(typeof(ApiResult<VerifyEmailResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string? token, [FromBody] VerifyEmailRequest? body, CancellationToken ct)
+    {
+        var rawToken = !string.IsNullOrWhiteSpace(token) ? token : body?.Token;
+        var result = await _auth.VerifyEmailAsync(rawToken ?? string.Empty, ct);
+
+        // Có thể trả 400 khi fail, hoặc 200 với success=true/false (tuỳ convention)
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
 }

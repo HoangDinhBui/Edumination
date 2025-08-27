@@ -20,6 +20,7 @@ public interface IAuthService
 {
     Task<ApiResult<RegisterResponse>> RegisterAsync(RegisterRequest req, CancellationToken ct);
     Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken ct);
+    Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string rawToken, CancellationToken ct);
 }
 
 public class AuthService : IAuthService
@@ -151,5 +152,65 @@ public class AuthService : IAuthService
             Email = user.Email,
             FullName = user.FullName
         };
+    }
+
+    public async Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string rawToken, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(rawToken))
+            return new ApiResult<VerifyEmailResponse>(false, null, "Invalid token.");
+
+        // Hash khớp với cách bạn đã lưu (Sha256Hex())
+        var hash = rawToken.Sha256Hex();
+
+        // Lấy bản ghi token kèm user
+        var ev = await _db.EmailVerifications
+            .Include(x => x.User)
+            .SingleOrDefaultAsync(x => x.TokenHash == hash, ct);
+
+        if (ev == null)
+            return new ApiResult<VerifyEmailResponse>(false, null, "Token is invalid.");
+
+        // Hết hạn?
+        if (ev.ExpiresAt < DateTime.UtcNow)
+            return new ApiResult<VerifyEmailResponse>(false, null, "Token is expired.");
+
+        // Dùng rồi?
+        if (ev.UsedAt != null)
+        {
+            // Idempotent: nếu user đã được verify thì có thể trả success “đã xác minh”
+            if (ev.User.EmailVerified)
+            {
+                return new ApiResult<VerifyEmailResponse>(true, new VerifyEmailResponse
+                {
+                    UserId = ev.UserId,
+                    Email = ev.User.Email,
+                    EmailVerified = true
+                }, null);
+            }
+
+            return new ApiResult<VerifyEmailResponse>(false, null, "Token already used.");
+        }
+
+        // Đánh dấu verified + dùng token
+        ev.User.EmailVerified = true;
+        ev.UsedAt = DateTime.UtcNow;
+
+        // (khuyến nghị) Xoá các token cũ khác của user (nếu muốn single-use thật sự)
+        var others = await _db.EmailVerifications
+            .Where(x => x.UserId == ev.UserId && x.Id != ev.Id && x.UsedAt == null)
+            .ToListAsync(ct);
+        foreach (var other in others) other.UsedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(ct);
+
+        // Audit
+        await _audit.LogAsync(ev.UserId, "VERIFY_EMAIL", "USER", ev.UserId, new { ev.User.Email }, ct);
+
+        return new ApiResult<VerifyEmailResponse>(true, new VerifyEmailResponse
+        {
+            UserId = ev.UserId,
+            Email = ev.User.Email,
+            EmailVerified = true
+        }, null);
     }
 }
