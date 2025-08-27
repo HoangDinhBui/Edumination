@@ -19,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<LeaderboardEntry> LeaderboardEntries => Set<LeaderboardEntry>();
     public DbSet<UserEdu> UsersEdu => Set<UserEdu>();
+    public DbSet<PasswordReset> PasswordResets => Set<PasswordReset>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -156,6 +157,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
              .WithMany(a => a.TestSections)
              .HasForeignKey(ts => ts.AudioAssetId)
              .OnDelete(DeleteBehavior.Restrict); // Ngăn chặn xóa cascade nếu cần
+        });
+
+        b.Entity<PasswordReset>(e =>
+        {
+            e.ToTable("password_resets");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.UserId);
+            e.Property(x => x.TokenHash).HasMaxLength(64).IsRequired();
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         });
     }
 }

@@ -93,6 +93,14 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
+// Bind SMTP options
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+
+// Chọn implementation theo môi trường
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddScoped<IEmailSender, MockEmailSender>();
+else
+    builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 var app = builder.Build();
 

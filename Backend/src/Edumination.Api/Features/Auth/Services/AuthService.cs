@@ -21,6 +21,7 @@ public interface IAuthService
     Task<ApiResult<RegisterResponse>> RegisterAsync(RegisterRequest req, CancellationToken ct);
     Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken ct);
     Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string rawToken, CancellationToken ct);
+    Task<ApiResult<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct);
 }
 
 public class AuthService : IAuthService
@@ -212,5 +213,68 @@ public class AuthService : IAuthService
             Email = ev.User.Email,
             EmailVerified = true
         }, null);
+    }
+
+    public async Task<ApiResult<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct)
+    {
+        var emailNorm = (req.Email ?? "").Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(emailNorm))
+            return new(false, null, "Email is required");
+
+        // Tìm user (nhưng luôn trả 200 dù có hay không)
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Email == emailNorm && u.IsActive, ct);
+
+        // Luôn trả message “đã gửi” để tránh lộ tồn tại email
+        var okResp = new ForgotPasswordResponse();
+
+        if (user is null)
+        {
+            // Tùy chọn: sleep nhẹ để tránh timing attack
+            await Task.Delay(200, ct);
+            return new(true, okResp, null);
+        }
+
+        // Invalidate/reset các token cũ chưa dùng
+        var oldTokens = await _db.PasswordResets
+            .Where(x => x.UserId == user.Id && x.UsedAt == null && x.ExpiresAt > DateTime.UtcNow)
+            .ToListAsync(ct);
+        if (oldTokens.Count > 0)
+        {
+            _db.PasswordResets.RemoveRange(oldTokens);
+            await _db.SaveChangesAsync(ct);
+        }
+
+        // Tạo raw token + hash
+        var rawToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray()) + Guid.NewGuid().ToString("N");
+        var tokenHash = rawToken.Sha256Hex();
+
+        var pr = new PasswordReset
+        {
+            UserId = user.Id,
+            TokenHash = tokenHash,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(_authOpt.ResetPasswordTokenMinutes)
+        };
+        _db.PasswordResets.Add(pr);
+        await _db.SaveChangesAsync(ct);
+
+        // Tạo link reset (điểm đến FE)
+        if (string.IsNullOrWhiteSpace(_appOpt.FrontendBaseUrl))
+            throw new InvalidOperationException("Missing App:FrontendBaseUrl");
+
+        var resetUrl = $"{_appOpt.FrontendBaseUrl.TrimEnd('/')}/reset-password?token={Uri.EscapeDataString(rawToken)}";
+
+        var html = $"""
+            <h3>Reset your password</h3>
+            <p>Hi {System.Net.WebUtility.HtmlEncode(user.FullName)},</p>
+            <p>You (or someone) requested to reset your password. Click the link below to proceed:</p>
+            <p><a href="{resetUrl}">{resetUrl}</a></p>
+            <p>This link will expire in {_authOpt.ResetPasswordTokenMinutes} minutes. If you didn’t request this, you can safely ignore this email.</p>
+        """;
+
+        await _email.SendAsync(user.Email, "Reset your password", html, ct);
+
+        await _audit.LogAsync(user.Id, "PASSWORD_FORGOT_REQUEST", "USER", user.Id, new { user.Email }, ct);
+
+        return new(true, okResp, null);
     }
 }

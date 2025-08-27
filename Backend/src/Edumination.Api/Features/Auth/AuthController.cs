@@ -82,4 +82,16 @@ public class AuthController : ControllerBase
         if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
+
+    [AllowAnonymous]
+    [HttpPost("password/forgot")]
+    [ProducesResponseType(typeof(ApiResult<ForgotPasswordResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken ct)
+    {
+        var result = await _auth.ForgotPasswordAsync(request, ct);
+        // Luôn 200 để không lộ việc email tồn tại
+        return Ok(result.Success
+            ? result
+            : new ApiResult<ForgotPasswordResponse>(true, new ForgotPasswordResponse(), null));
+    }
 }

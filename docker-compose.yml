@@ -56,6 +56,13 @@ services:
       Jwt__Issuer: "Edumination"
       Jwt__Audience: "Edumination"
 
+      Smtp__Host: smtp.gmail.com
+      Smtp__Port: 587
+      Smtp__UseSsl: "true"
+      Smtp__Username: eduminationielts@gmail.com
+      Smtp__Password: psdsvbubflzlvfra
+      Smtp__From: eduminationielts@gmail.com
+
       # Nếu có CORS:
       AllowedHosts: "*"
     expose:
