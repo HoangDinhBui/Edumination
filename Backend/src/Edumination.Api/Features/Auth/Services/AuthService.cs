@@ -23,6 +23,7 @@ public interface IAuthService
     Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string rawToken, CancellationToken ct);
     Task<ApiResult<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct);
     Task<ApiResult<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest req, CancellationToken ct);
+    Task<MeResponse> GetMeAsync(ClaimsPrincipal user, CancellationToken ct);
 }
 
 public class AuthService : IAuthService
@@ -328,5 +329,44 @@ public class AuthService : IAuthService
         await _audit.LogAsync(pr.UserId, "PASSWORD_RESET", "USER", pr.UserId, new { pr.User.Email }, ct);
 
         return new(true, new ResetPasswordResponse { Email = pr.User.Email }, null);
+    }
+
+    public async Task<MeResponse> GetMeAsync(ClaimsPrincipal principal, CancellationToken ct)
+    {
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? principal.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new UnauthorizedAccessException("Missing user id claim.");
+
+        var id = long.Parse(userId);
+
+        // Lấy user
+        var u = await _db.Users
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == id && x.IsActive, ct);
+
+        if (u is null)
+            throw new UnauthorizedAccessException("User not found or inactive.");
+
+        // Lấy roles (Code: STUDENT/TEACHER/ADMIN)
+        var roleCodes = await _db.UserRoles
+            .Where(ur => ur.UserId == id)
+            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
+            .OrderBy(code => code)
+            .ToArrayAsync(ct);
+
+        return new MeResponse
+        {
+            Profile = new MeProfileDto
+            {
+                UserId = u.Id,
+                Email = u.Email,
+                FullName = u.FullName,
+                AvatarUrl = u.AvatarUrl,
+                EmailVerified = u.EmailVerified
+            },
+            Roles = roleCodes
+        };
     }
 }
