@@ -24,6 +24,7 @@ public interface IAuthService
     Task<ApiResult<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct);
     Task<ApiResult<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest req, CancellationToken ct);
     Task<MeResponse> GetMeAsync(ClaimsPrincipal user, CancellationToken ct);
+    Task<ApiResult<UpdateProfileResponse>> UpdateProfileAsync(long userId, UpdateProfileRequest req, CancellationToken ct);
 }
 
 public class AuthService : IAuthService
@@ -368,5 +369,55 @@ public class AuthService : IAuthService
             },
             Roles = roleCodes
         };
+    }
+
+    public async Task<ApiResult<UpdateProfileResponse>> UpdateProfileAsync(long userId, UpdateProfileRequest req, CancellationToken ct)
+    {
+        // Lấy user hiện tại
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Id == userId && u.IsActive, ct);
+        if (user == null)
+            return new(false, null, "User not found or inactive.");
+
+        // Chuẩn hoá input
+        var fullName = (req.FullName ?? "").Trim();
+        var avatar = string.IsNullOrWhiteSpace(req.AvatarUrl) ? null : req.AvatarUrl!.Trim();
+
+        // Cập nhật
+        bool changed = false;
+        if (!string.IsNullOrWhiteSpace(fullName) && !string.Equals(user.FullName, fullName, StringComparison.Ordinal))
+        {
+            user.FullName = fullName;
+            changed = true;
+        }
+        if (avatar != user.AvatarUrl)
+        {
+            user.AvatarUrl = avatar;
+            changed = true;
+        }
+
+        if (!changed)
+            return new(true, new UpdateProfileResponse
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                AvatarUrl = user.AvatarUrl,
+                EmailVerified = user.EmailVerified
+            }, null);
+
+        user.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+
+        // Audit
+        await _audit.LogAsync(user.Id, "UPDATE_PROFILE", "USER", user.Id, new { user.FullName, user.AvatarUrl }, ct);
+
+        return new(true, new UpdateProfileResponse
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            AvatarUrl = user.AvatarUrl,
+            EmailVerified = user.EmailVerified
+        }, null);
     }
 }

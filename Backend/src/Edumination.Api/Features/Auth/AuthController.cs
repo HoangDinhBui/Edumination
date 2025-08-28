@@ -6,6 +6,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Edumination.Api.Features.Auth;
 
@@ -15,11 +17,15 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
     private readonly IValidator<RegisterRequest> _registerValidator;
+    private readonly IValidator<UpdateProfileRequest> _updateProfileValidator;
 
-    public AuthController(IAuthService auth, IValidator<RegisterRequest> registerValidator)
+    public AuthController(IAuthService auth,
+                        IValidator<RegisterRequest> registerValidator,
+                        IValidator<UpdateProfileRequest> updateProfileValidator)
     {
         _auth = auth;
         _registerValidator = registerValidator;
+        _updateProfileValidator = updateProfileValidator ?? throw new ArgumentNullException(nameof(updateProfileValidator));
     }
 
     [HttpPost("register")]
@@ -113,5 +119,30 @@ public class AuthController : ControllerBase
     {
         var resp = await _auth.GetMeAsync(User, ct);
         return Ok(resp);
+    }
+
+    [Authorize]
+    [HttpPut("me/profile")]
+    [ProducesResponseType(typeof(ApiResult<UpdateProfileResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest req, CancellationToken ct)
+    {
+        // Validate
+        var val = await _updateProfileValidator.ValidateAsync(req, ct);
+        if (!val.IsValid)
+        {
+            var errors = val.Errors.Select(e => new { field = e.PropertyName, message = e.ErrorMessage });
+            return BadRequest(new ApiResult<object>(false, null, System.Text.Json.JsonSerializer.Serialize(errors)));
+        }
+
+        // Lấy userId từ token
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                        ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        if (string.IsNullOrWhiteSpace(userIdStr) || !long.TryParse(userIdStr, out var userId))
+            return Unauthorized(new ApiResult<object>(false, null, "Invalid token."));
+
+        var result = await _auth.UpdateProfileAsync(userId, req, ct);
+        if (!result.Success) return BadRequest(result);
+
+        return Ok(result);
     }
 }

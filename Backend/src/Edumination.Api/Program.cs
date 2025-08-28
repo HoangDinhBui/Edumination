@@ -50,6 +50,7 @@ builder.Services.AddScoped<IAssetService, AssetsService>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IVirusScanner, VirusScanner>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateProfileRequestValidator>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
