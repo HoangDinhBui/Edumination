@@ -5,6 +5,7 @@ using Edumination.Api.Features.Auth.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Edumination.Api.Features.Auth;
 
@@ -103,5 +104,14 @@ public class AuthController : ControllerBase
         var result = await _auth.ResetPasswordAsync(req, ct);
         if (!result.Success) return BadRequest(result);
         return Ok(result);
+    }
+
+    [HttpGet("me")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(typeof(MeResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Me(CancellationToken ct)
+    {
+        var resp = await _auth.GetMeAsync(User, ct);
+        return Ok(resp);
     }
 }
