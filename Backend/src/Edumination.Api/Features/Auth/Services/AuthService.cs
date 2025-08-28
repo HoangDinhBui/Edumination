@@ -22,6 +22,7 @@ public interface IAuthService
     Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken ct);
     Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string rawToken, CancellationToken ct);
     Task<ApiResult<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct);
+    Task<ApiResult<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest req, CancellationToken ct);
 }
 
 public class AuthService : IAuthService
@@ -157,11 +158,12 @@ public class AuthService : IAuthService
 
     public async Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string rawToken, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(rawToken))
+        var normalized = NormalizeRawToken(rawToken);
+        if (string.IsNullOrWhiteSpace(normalized))
             return new ApiResult<VerifyEmailResponse>(false, null, "Invalid token.");
 
         // Hash khớp với cách bạn đã lưu (Sha256Hex())
-        var hash = rawToken.Sha256Hex();
+        var hash = normalized.Sha256Hex();
 
         // Lấy bản ghi token kèm user
         var ev = await _db.EmailVerifications
@@ -213,6 +215,27 @@ public class AuthService : IAuthService
             Email = ev.User.Email,
             EmailVerified = true
         }, null);
+    }
+
+    private static string NormalizeRawToken(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return string.Empty;
+
+        // nhiều client biến '+' thành space
+        string t = token.Trim().Replace(' ', '+');
+
+        // gỡ URL-encode tối đa 2 lần
+        for (int i = 0; i < 2; i++)
+        {
+            if (t.Contains('%'))
+            {
+                t = Uri.UnescapeDataString(t);
+                t = t.Replace(' ', '+');
+            }
+            else break;
+        }
+
+        return t;
     }
 
     public async Task<ApiResult<ForgotPasswordResponse>> ForgotPasswordAsync(ForgotPasswordRequest req, CancellationToken ct)
@@ -276,5 +299,34 @@ public class AuthService : IAuthService
         await _audit.LogAsync(user.Id, "PASSWORD_FORGOT_REQUEST", "USER", user.Id, new { user.Email }, ct);
 
         return new(true, okResp, null);
+    }
+
+    public async Task<ApiResult<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest req, CancellationToken ct)
+    {
+        var raw = NormalizeRawToken(req.Token);
+        if (string.IsNullOrWhiteSpace(raw))
+            return new(false, null, "Invalid token.");
+
+        var tokenHash = raw.Sha256Hex();
+
+        var pr = await _db.PasswordResets
+            .Include(x => x.User)
+            .OrderByDescending(x => x.Id)
+            .SingleOrDefaultAsync(x => x.TokenHash == tokenHash, ct);
+
+        if (pr == null) return new(false, null, "Token is invalid.");
+        if (pr.ExpiresAt < DateTime.UtcNow) return new(false, null, "Token is expired.");
+        if (pr.UsedAt != null) return new(false, null, "Token already used.");
+
+        // TODO: validate password (độ dài, ký tự đặc biệt…)
+        // if (!IsStrong(req.NewPassword)) return new(false, null, "Weak password.");
+
+        pr.User.PasswordHash = _hasher.Hash(req.NewPassword);
+        pr.UsedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(ct);
+        await _audit.LogAsync(pr.UserId, "PASSWORD_RESET", "USER", pr.UserId, new { pr.User.Email }, ct);
+
+        return new(true, new ResetPasswordResponse { Email = pr.User.Email }, null);
     }
 }

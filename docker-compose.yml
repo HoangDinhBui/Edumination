@@ -47,6 +47,7 @@ services:
       context: ./Backend/src/Edumination.Api
       dockerfile: Dockerfile
     environment:
+      ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080
       App__FrontendBaseUrl: "http://localhost:8081"
       # Kết nối MySQL bên trong mạng compose

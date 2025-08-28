@@ -94,4 +94,14 @@ public class AuthController : ControllerBase
             ? result
             : new ApiResult<ForgotPasswordResponse>(true, new ForgotPasswordResponse(), null));
     }
+
+    [HttpPost("password/reset")]
+    [ProducesResponseType(typeof(ApiResult<ResetPasswordResponse>), StatusCodes.Status200OK)]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req, CancellationToken ct)
+    {
+        var result = await _auth.ResetPasswordAsync(req, ct);
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
 }
