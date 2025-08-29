@@ -124,11 +124,13 @@ public class AuthService : IAuthService
         if (string.IsNullOrWhiteSpace(_jwt.Key) || _jwt.Key.Length < 32)
             throw new InvalidOperationException("JWT Key is missing or too short (>= 32 chars required).");
 
-        var claims = new List<Claim> {
+        var claims = new List<Claim>
+        {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new(ClaimTypes.NameIdentifier,    user.Id.ToString()),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
-            new("name", user.FullName)
+            new("name", user.FullName),
+            new("user_id", user.Id.ToString()) // Thêm claim user_id
         };
 
         foreach (var code in role)
@@ -153,7 +155,6 @@ public class AuthService : IAuthService
             FullName = user.FullName
         };
     }
-
     public async Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string rawToken, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(rawToken))

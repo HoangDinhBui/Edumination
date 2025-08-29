@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Edumination.Domain.Entities;
 using Edumination.Api.Domain.Entities;
 using Edumination.Api.Domain.Entities.Leaderboard;
 using Education.Domain.Entities;
@@ -19,13 +20,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<LeaderboardEntry> LeaderboardEntries => Set<LeaderboardEntry>();
     public DbSet<UserEdu> UsersEdu => Set<UserEdu>();
+    public DbSet<Passage> Passages => Set<Passage>(); // Thêm DbSet cho Passage
+    public DbSet<Question> Questions => Set<Question>(); // Thêm DbSet cho Question
+    public DbSet<Exercise> Exercises => Set<Exercise>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(b);
 
-        // Cấu hình User
+        // Cấu hình User (giữ nguyên)
         b.Entity<User>(e =>
         {
             e.ToTable("users");
@@ -42,7 +46,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
         });
 
-        // Cấu hình Role
+        // Cấu hình Role (giữ nguyên)
         b.Entity<Role>(e =>
         {
             e.ToTable("roles");
@@ -52,7 +56,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.Name).HasMaxLength(100).IsRequired();
         });
 
-        // Cấu hình UserRole
+        // Cấu hình UserRole (giữ nguyên)
         b.Entity<UserRole>(e =>
         {
             e.ToTable("user_roles");
@@ -61,7 +65,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasOne(x => x.Role).WithMany().HasForeignKey(x => x.RoleId);
         });
 
-        // Cấu hình EmailVerification
+        // Cấu hình EmailVerification (giữ nguyên)
         b.Entity<EmailVerification>(e =>
         {
             e.ToTable("email_verifications");
@@ -71,7 +75,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
         });
 
-        // Cấu hình AuditLog
+        // Cấu hình AuditLog (giữ nguyên)
         b.Entity<AuditLog>(e =>
         {
             e.ToTable("audit_logs");
@@ -80,20 +84,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasIndex(x => x.UserId);
         });
 
-        // Cấu hình LeaderboardEntry
+        // Cấu hình LeaderboardEntry (giữ nguyên)
         b.Entity<LeaderboardEntry>(e =>
         {
             e.ToTable("leaderboard_entries");
             e.HasKey(x => x.Id);
         });
 
-        // Cấu hình UserEdu (view)
+        // Cấu hình UserEdu (giữ nguyên)
         b.Entity<UserEdu>(e =>
         {
             e.ToView("v_users_edu").HasNoKey();
         });
 
-        // Cấu hình Asset
+        // Cấu hình Asset (giữ nguyên)
         b.Entity<Asset>(e =>
         {
             e.ToTable("assets");
@@ -107,7 +111,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasIndex(x => x.CreatedBy).HasDatabaseName("idx_assets_creator");
         });
 
-        // Cấu hình TestPaper
+        // Cấu hình TestPaper (giữ nguyên)
         b.Entity<TestPaper>(e =>
         {
             e.ToTable("test_papers");
@@ -117,23 +121,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.SourceType).HasColumnName("source_type").HasMaxLength(50).IsRequired();
             e.Property(x => x.UploadMethod).HasColumnName("upload_method").HasMaxLength(50).IsRequired();
             e.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).IsRequired();
-            e.Property(x => x.PdfAssetId).HasColumnName("pdf_asset_id"); // Foreign key
+            e.Property(x => x.PdfAssetId).HasColumnName("pdf_asset_id");
+            e.Property(x => x.CreatedBy).HasColumnName("created_by");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
             e.Property(x => x.PublishedAt).HasColumnName("published_at");
 
-            // Mối quan hệ với Asset (PDF)
             e.HasOne(tp => tp.PdfAsset)
-             .WithMany() // Asset không cần navigation ngược
+             .WithMany()
              .HasForeignKey(tp => tp.PdfAssetId)
-             .OnDelete(DeleteBehavior.Restrict); // Ngăn chặn xóa cascade nếu cần
+             .OnDelete(DeleteBehavior.Restrict);
 
-            // Mối quan hệ với TestSections
+            e.HasOne(tp => tp.CreatedByUser)
+             .WithMany()
+             .HasForeignKey(tp => tp.CreatedBy)
+             .OnDelete(DeleteBehavior.Restrict);
+
             e.HasMany(tp => tp.TestSections)
              .WithOne(ts => ts.TestPaper)
              .HasForeignKey(ts => ts.PaperId);
         });
 
-        // Cấu hình TestSection
+        // Cấu hình TestSection (giữ nguyên)
         b.Entity<TestSection>(e =>
         {
             e.ToTable("test_sections");
@@ -143,19 +151,64 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.SectionNo).HasColumnName("section_no");
             e.Property(x => x.TimeLimitSec).HasColumnName("time_limit_sec");
             e.Property(x => x.IsPublished).HasColumnName("is_published");
-            e.Property(x => x.AudioAssetId).HasColumnName("audio_asset_id"); // Foreign key
+            e.Property(x => x.AudioAssetId).HasColumnName("audio_asset_id");
 
-            // Mối quan hệ với TestPaper
             e.HasOne(ts => ts.TestPaper)
              .WithMany(tp => tp.TestSections)
              .HasForeignKey(ts => ts.PaperId)
              .OnDelete(DeleteBehavior.Cascade);
 
-            // Mối quan hệ với Asset (Audio)
-            _ = e.HasOne(ts => ts.AudioAsset)
+            e.HasOne(ts => ts.AudioAsset)
              .WithMany(a => a.TestSections)
              .HasForeignKey(ts => ts.AudioAssetId)
-             .OnDelete(DeleteBehavior.Restrict); // Ngăn chặn xóa cascade nếu cần
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Cấu hình Passage
+        b.Entity<Passage>(e =>
+        {
+            e.ToTable("passages");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.SectionId).HasColumnName("section_id");
+            e.Property(x => x.Title).HasColumnName("title").HasMaxLength(255);
+            e.Property(x => x.ContentText).HasColumnName("content_text");
+            e.Property(x => x.AudioId).HasColumnName("audio_id");
+            e.Property(x => x.TranscriptId).HasColumnName("transcript_id");
+            e.Property(x => x.Position).HasColumnName("position");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+
+            e.HasOne(p => p.TestSection)
+             .WithMany(ts => ts.Passages)
+             .HasForeignKey(p => p.SectionId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(p => p.Audio)
+             .WithMany()
+             .HasForeignKey(p => p.AudioId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(p => p.Transcript)
+             .WithMany()
+             .HasForeignKey(p => p.TranscriptId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Cấu hình Question
+        b.Entity<Question>(e =>
+        {
+            e.ToTable("questions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.PassageId).HasColumnName("passage_id");
+            e.Property(x => x.Qtype).HasColumnName("qtype").HasMaxLength(50).IsRequired();
+            e.Property(x => x.Stem).HasColumnName("stem").IsRequired();
+            e.Property(x => x.MetaJson).HasColumnName("meta_json");
+            e.Property(x => x.Position).HasColumnName("position");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+
+            e.HasOne(q => q.Passage)
+             .WithMany(p => p.Questions)
+             .HasForeignKey(q => q.PassageId)
+             .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

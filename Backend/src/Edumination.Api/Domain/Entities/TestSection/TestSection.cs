@@ -1,4 +1,5 @@
 using Education.Domain.Entities;
+using Edumination.Domain.Entities;
 
 namespace Edumination.Api.Domain.Entities;
 
@@ -15,4 +16,5 @@ public class TestSection
     // Navigation properties
     public virtual TestPaper TestPaper { get; set; } = default!;
     public virtual Asset? AudioAsset { get; set; } // Liên kết với Asset
+    public virtual ICollection<Passage> Passages { get; set; } = new List<Passage>();
 }

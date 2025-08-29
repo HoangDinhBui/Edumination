@@ -11,10 +11,12 @@ public class TestPaper
     public string UploadMethod { get; set; } = "MANUAL"; // Có thể thay bằng enum: PDF_PARSER, MANUAL
     public string Status { get; set; } = "DRAFT"; // Có thể thay bằng enum: DRAFT, REVIEW, PUBLISHED, ARCHIVED
     public long? PdfAssetId { get; set; } // Liên kết với Asset (PDF gốc)
+    public long CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? PublishedAt { get; set; }
 
     // Navigation properties
     public virtual Asset? PdfAsset { get; set; } // Liên kết với Asset
+    public virtual User CreatedByUser { get; set; }
     public virtual ICollection<TestSection> TestSections { get; set; } = new List<TestSection>();
 }

@@ -20,6 +20,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using Edumination.Services;
+using Edumination.Domain.Interfaces;
+using Edumination.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,10 +91,12 @@ builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IEmailSender, MockEmailSender>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 
+// UnitOfWork
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 // Options
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-
 
 var app = builder.Build();
 
@@ -129,7 +133,6 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.Run();
-
 
 public class MockEmailSender : IEmailSender
 {
