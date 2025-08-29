@@ -20,6 +20,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using Edumination.Services;
+using Edumination.Domain.Interfaces; // nơi chứa IUnitOfWork
+using Edumination.Persistence; // nơi chứa UnitOfWork
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +53,8 @@ builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IVirusScanner, VirusScanner>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateProfileRequestValidator>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");

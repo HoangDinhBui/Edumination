@@ -132,7 +132,8 @@ public class AuthService : IAuthService
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(ClaimTypes.NameIdentifier,    user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
-            new("name", user.FullName)
+            new("name", user.FullName),
+             new("userid", user.Id.ToString())
         };
 
         foreach (var code in role)
