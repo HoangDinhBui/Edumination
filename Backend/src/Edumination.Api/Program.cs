@@ -21,7 +21,8 @@ using System.Text;
 using System.Security.Claims;
 using Edumination.Services;
 using Edumination.Domain.Interfaces; // nơi chứa IUnitOfWork
-using Edumination.Persistence; // nơi chứa UnitOfWork
+using Edumination.Persistence;
+using Edumination.Api.Features.Papers.Services; // nơi chứa UnitOfWork
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,7 +55,7 @@ builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IVirusScanner, VirusScanner>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateProfileRequestValidator>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
+builder.Services.AddScoped<IPaperService, PaperService>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");

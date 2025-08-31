@@ -1,5 +1,6 @@
 using Edumination.Api.Domain.Entities;
 using Edumination.Api.Features.Papers.Dtos;
+using Edumination.Api.Features.Papers.Services;
 using Edumination.Api.Infrastructure.Persistence;
 using Edumination.Domain.Entities;
 using Edumination.Domain.Interfaces;
@@ -8,22 +9,25 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Edumination.Api.Papers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "TEACHER,ADMIN")]
 public class PapersController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly AppDbContext _context;
 
-    public PapersController(IUnitOfWork unitOfWork, AppDbContext context)
+    private readonly IPaperService _paperService;
+
+    public PapersController(IUnitOfWork unitOfWork, AppDbContext context, IPaperService paperService)
     {
         _unitOfWork = unitOfWork;
         _context = context;
+        _paperService = paperService;
     }
 
     [HttpPost]
@@ -63,10 +67,30 @@ public async Task<IActionResult> CreatePaper([FromBody] CreatePaperRequest reque
     };
     return CreatedAtAction(nameof(GetPaper), new { id = testPaper.Id }, dto);
 }
+    [HttpGet]
+    [Authorize]  // Yêu cầu login, nhưng không giới hạn role
+    public async Task<IActionResult> ListPapers([FromQuery] string? status = null)
+    {
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+        bool isTeacherOrAdmin = roles.Contains("TEACHER") || roles.Contains("ADMIN");
+
+        if (!isTeacherOrAdmin && !string.IsNullOrEmpty(status))
+        {
+            return Forbid();  // Student không được filter status
+        }
+
+        var papers = await _paperService.ListAsync(status, isTeacherOrAdmin);
+        return Ok(papers);
+    }
+    
     [HttpGet("{id}")]
+    [Authorize]  // Yêu cầu login, nhưng không giới hạn role
     public async Task<IActionResult> GetPaper(long id)
     {
-        var paper = await _unitOfWork.TestPapers.GetByIdAsync(id);
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+        bool isStudent = roles.Contains("STUDENT") && !roles.Contains("TEACHER") && !roles.Contains("ADMIN");
+
+        var paper = await _paperService.GetDetailedAsync(id, hideAnswers: isStudent);
         if (paper == null)
         {
             return NotFound();
@@ -75,58 +99,58 @@ public async Task<IActionResult> CreatePaper([FromBody] CreatePaperRequest reque
     }
 
     private async Task ProcessPdfAsync(long paperId, long pdfAssetId)
-{
-    var paper = await _unitOfWork.TestPapers.GetByIdAsync(paperId);
-    if (paper == null || paper.Status != "DRAFT" || paper.PdfAssetId != pdfAssetId)
     {
-        return;
+        var paper = await _unitOfWork.TestPapers.GetByIdAsync(paperId);
+        if (paper == null || paper.Status != "DRAFT" || paper.PdfAssetId != pdfAssetId)
+        {
+            return;
+        }
+
+        var section = new TestSection
+        {
+            PaperId = paperId,
+            Skill = "READING",
+            SectionNo = 1,
+            TimeLimitSec = 0,
+            IsPublished = false
+        };
+        await _unitOfWork.TestSections.AddAsync(section);
+
+        var passage = new Passage
+        {
+            SectionId = section.Id,
+            Title = "Passage 1",
+            ContentText = "Nội dung mẫu",
+            Position = 1,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _unitOfWork.Passages.AddAsync(passage);
+
+        // Lấy exercise ngẫu nhiên
+        var randomExerciseId = await _context.Exercises
+            .OrderBy(e => Guid.NewGuid())
+            .Select(e => e.Id)
+            .FirstAsync();
+
+        // Tìm position lớn nhất hiện có trong exercise này
+        var maxPos = await _context.Questions
+            .Where(q => q.ExerciseId == randomExerciseId)
+            .MaxAsync(q => (int?)q.Position) ?? 0;
+
+        // Tạo question với Position = maxPos + 1
+        var question = new Question
+        {
+            PassageId = passage.Id,
+            Qtype = "MCQ",
+            Stem = "Câu hỏi mẫu",
+            Position = maxPos + 1,
+            CreatedAt = DateTime.UtcNow,
+            ExerciseId = randomExerciseId
+        };
+        await _unitOfWork.Questions.AddAsync(question);
+
+        await _unitOfWork.SaveChangesAsync();
     }
-
-    var section = new TestSection
-    {
-        PaperId = paperId,
-        Skill = "READING",
-        SectionNo = 1,
-        TimeLimitSec = 0,
-        IsPublished = false
-    };
-    await _unitOfWork.TestSections.AddAsync(section);
-
-    var passage = new Passage
-    {
-        SectionId = section.Id,
-        Title = "Passage 1",
-        ContentText = "Nội dung mẫu",
-        Position = 1,
-        CreatedAt = DateTime.UtcNow
-    };
-    await _unitOfWork.Passages.AddAsync(passage);
-
-    // Lấy exercise ngẫu nhiên
-    var randomExerciseId = await _context.Exercises
-        .OrderBy(e => Guid.NewGuid())
-        .Select(e => e.Id)
-        .FirstAsync();
-
-    // Tìm position lớn nhất hiện có trong exercise này
-    var maxPos = await _context.Questions
-        .Where(q => q.ExerciseId == randomExerciseId)
-        .MaxAsync(q => (int?)q.Position) ?? 0;
-
-    // Tạo question với Position = maxPos + 1
-    var question = new Question
-    {
-        PassageId = passage.Id,
-        Qtype = "MCQ",
-        Stem = "Câu hỏi mẫu",
-        Position = maxPos + 1,
-        CreatedAt = DateTime.UtcNow,
-        ExerciseId = randomExerciseId
-    };
-    await _unitOfWork.Questions.AddAsync(question);
-
-    await _unitOfWork.SaveChangesAsync();
-}
 
 private long GetCurrentUserId()
 {
