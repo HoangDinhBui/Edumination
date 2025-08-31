@@ -37,6 +37,10 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
+builder.Services.Configure<OAuthOptions>(builder.Configuration.GetSection("OAuth"));
+builder.Services.AddMemoryCache();
+
+
 builder.Services
     .AddOptions<AppOptions>()
     .Bind(builder.Configuration.GetSection("App"))
@@ -56,6 +60,9 @@ builder.Services.AddScoped<IVirusScanner, VirusScanner>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateProfileRequestValidator>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPaperService, PaperService>();
+builder.Services.AddScoped<IOAuthStartService, OAuthStartService>();
+builder.Services.AddScoped<OAuthStartService>();
+builder.Services.AddControllers().AddApplicationPart(typeof(OAuthStartService).Assembly);
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");

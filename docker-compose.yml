@@ -46,6 +46,8 @@ services:
     build:
       context: ./Backend/src/Edumination.Api
       dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080
@@ -63,6 +65,10 @@ services:
       Smtp__Username: eduminationielts@gmail.com
       Smtp__Password: psdsvbubflzlvfra
       Smtp__From: eduminationielts@gmail.com
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      OAuth__Google__RedirectUri: http://localhost:8081/api/v1/auth/oauth/google/callback
 
       # Nếu có CORS:
       AllowedHosts: "*"

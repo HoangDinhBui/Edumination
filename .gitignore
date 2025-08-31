@@ -76,3 +76,4 @@ project.assets.json
 *.nuget.g.targets
 appsetting.json
 
+.env
