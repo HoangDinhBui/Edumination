@@ -17,7 +17,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Edumination.Api.Features.Auth.Services
 {
-    // ===== DTOs =====
+    //DTOs
     public sealed class OAuthStartDto
     {
         public string Provider { get; set; } = default!;
@@ -38,7 +38,7 @@ namespace Edumination.Api.Features.Auth.Services
         public string Email { get; set; } = default!;
     }
 
-    // ===== Interface duy nhất =====
+    //Interface duy nhất
     public interface IOAuthService
     {
         // Bắt đầu flow OAuth cho login hoặc link (nếu userId != null)
@@ -58,7 +58,7 @@ namespace Edumination.Api.Features.Auth.Services
     {
         private readonly AppDbContext _db;
         private readonly IGoogleOAuthClient _google;
-        private readonly IPasswordHasher _hasher; // có thể dùng khi tạo user lần đầu (password null)
+        private readonly IPasswordHasher _hasher;
         private readonly JwtOptions _jwt;
         private readonly OAuthOptions _oauthOpt;
 
@@ -76,7 +76,7 @@ namespace Edumination.Api.Features.Auth.Services
             _oauthOpt = oauthOpt.Value;
         }
 
-        // ================== START (LOGIN / LINK) ==================
+        // START (LOGIN / LINK)
         public async Task<(string authUrl, string state)> StartAsync(string provider, string? returnUrl, long? userId, CancellationToken ct)
         {
             provider = provider.ToLowerInvariant();
@@ -134,7 +134,7 @@ namespace Edumination.Api.Features.Auth.Services
             return (authUrl, state);
         }
 
-        // ================== CALLBACK LOGIN ==================
+        // CALLBACK LOGIN
         public async Task<AuthResponse> HandleCallbackAsync(string provider, OAuthCallbackRequest req, CancellationToken ct)
         {
             provider = provider.ToLowerInvariant();
@@ -235,7 +235,7 @@ namespace Edumination.Api.Features.Auth.Services
             };
         }
 
-        // ================== LINK OAUTH ==================
+        // LINK OAUTH
         public async Task<ApiResult<LinkOAuthResponse>> LinkAsync(long userId, string provider, OAuthCallbackRequest req, CancellationToken ct)
         {
             provider = provider.ToLowerInvariant();
@@ -284,7 +284,7 @@ namespace Edumination.Api.Features.Auth.Services
             return new(true, new LinkOAuthResponse { Provider = provider, Email = info.email }, null);
         }
 
-        // ================== UNLINK OAUTH ==================
+        // UNLINK OAUTH
         public async Task<ApiResult<object>> UnlinkAsync(long userId, string provider, CancellationToken ct)
         {
             provider = provider.ToLowerInvariant();
@@ -309,7 +309,7 @@ namespace Edumination.Api.Features.Auth.Services
             return new(true, new { }, null);
         }
 
-        // ================== Helpers ==================
+        // Helpers
         private static byte[] RandomBytes(int len)
         {
             var b = new byte[len];
