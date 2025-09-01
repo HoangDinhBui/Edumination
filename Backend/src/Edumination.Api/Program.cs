@@ -20,9 +20,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using Edumination.Services;
-using Edumination.Domain.Interfaces; // nơi chứa IUnitOfWork
+using Edumination.Domain.Interfaces;
 using Edumination.Persistence;
-using Edumination.Api.Features.Papers.Services; // nơi chứa UnitOfWork
+using Edumination.Api.Features.Papers.Services;
+using Microsoft.AspNetCore.Routing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,9 +61,10 @@ builder.Services.AddScoped<IVirusScanner, VirusScanner>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateProfileRequestValidator>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPaperService, PaperService>();
-builder.Services.AddScoped<IOAuthStartService, OAuthStartService>();
-builder.Services.AddScoped<OAuthStartService>();
-builder.Services.AddControllers().AddApplicationPart(typeof(OAuthStartService).Assembly);
+builder.Services.Configure<GoogleOAuthOptions>(builder.Configuration.GetSection("OAuth:Google"));
+builder.Services.AddHttpClient<IGoogleOAuthClient, GoogleOAuthClient>();
+builder.Services.AddScoped<IOAuthService, OAuthService>();
+
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -89,6 +91,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 builder.Services.AddAuthorization();
+
+builder.Services.AddHttpClient();
 
 // DI Services
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
@@ -142,6 +146,19 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
         throw; // cho app fail fast nếu migrate lỗi
     }
 }
+
+
+var ep = app.Services.GetRequiredService<EndpointDataSource>();
+foreach (var e in ep.Endpoints.OfType<RouteEndpoint>())
+    Console.WriteLine($"[ROUTE] {e.RoutePattern.RawText}");
+
+var envClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+if (!string.IsNullOrWhiteSpace(envClientId))
+    builder.Configuration["OAuth:Google:ClientId"] = envClientId;
+
+var envClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+if (!string.IsNullOrWhiteSpace(envClientSecret))
+    builder.Configuration["OAuth:Google:ClientSecret"] = envClientSecret;
 
 // app.UseHttpsRedirection();
 app.UseAuthentication();

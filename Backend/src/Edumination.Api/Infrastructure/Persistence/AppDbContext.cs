@@ -24,11 +24,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<Passage> Passages => Set<Passage>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
-    
+
     public DbSet<QuestionChoice> QuestionChoices => Set<QuestionChoice>();
     public DbSet<QuestionAnswerKey> QuestionAnswerKeys => Set<QuestionAnswerKey>();
 
-
+    public DbSet<OAuthAccounts> OAuthAccounts => Set<OAuthAccounts>();
+    public DbSet<OAuthStates> OAuthStates => Set<OAuthStates>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -281,5 +282,25 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        b.Entity<OAuthAccounts>(e =>
+        {
+            e.ToTable("oauth_accounts");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.Provider, x.ProviderUserId }).IsUnique();
+            e.HasIndex(x => new { x.UserId, x.Provider }).IsUnique();
+            e.Property(x => x.Provider).HasMaxLength(50).IsRequired();
+            e.Property(x => x.ProviderUserId).HasMaxLength(128).IsRequired();
+            e.Property(x => x.Email).HasMaxLength(255).IsRequired();
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+        });
+
+        b.Entity<OAuthStates>(e =>
+        {
+            e.ToTable("oauth_states");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.Provider, x.State }).IsUnique();
+            e.Property(x => x.Provider).HasMaxLength(50).IsRequired();
+            e.Property(x => x.State).HasMaxLength(128).IsRequired();
+        });
     }
 }
