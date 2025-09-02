@@ -11,6 +11,7 @@ public interface IAdminUsersService
 {
     Task<PagedResult<AdminUserItemDto>> GetUsersAsync(AdminUserQuery q, CancellationToken ct);
     Task<ApiResult<CreateUserResponse>> CreateUserAsync(CreateUserRequest req, CancellationToken ct);
+    Task<ApiResult<AdminUserDto>> PatchUserAsync(long id, PatchUserRequest req, CancellationToken ct);
 }
 
 public class AdminUsersService : IAdminUsersService
@@ -139,5 +140,69 @@ public class AdminUsersService : IAdminUsersService
             FullName = user.FullName,
             Role = req.Role
         }, null);
+    }
+
+    public async Task<ApiResult<AdminUserDto>> PatchUserAsync(long id, PatchUserRequest req, CancellationToken ct)
+    {
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Id == id, ct);
+        if (user is null)
+            return new(false, null, "User not found.");
+
+        // Email
+        if (!string.IsNullOrWhiteSpace(req.Email))
+        {
+            var emailNorm = req.Email.Trim().ToLowerInvariant();
+            var dup = await _db.Users.AnyAsync(u => u.Email == emailNorm && u.Id != id, ct);
+            if (dup) return new(false, null, "Email already in use.");
+
+            user.Email = emailNorm;
+        }
+
+        // FullName
+        if (!string.IsNullOrWhiteSpace(req.FullName))
+            user.FullName = req.FullName.Trim();
+
+        // Active
+        if (req.Active.HasValue)
+            user.IsActive = req.Active.Value;
+
+        // Password
+        if (!string.IsNullOrWhiteSpace(req.Password))
+            user.PasswordHash = _hasher.Hash(req.Password);
+
+        // Role (đơn — nếu bạn dùng nhiều role, sửa logic bên dưới để add/remove thay vì “replace”)
+        if (!string.IsNullOrWhiteSpace(req.Role))
+        {
+            var code = req.Role.Trim().ToUpperInvariant();
+            var role = await _db.Roles.SingleOrDefaultAsync(r => r.Code == code, ct);
+            if (role is null)
+                return new(false, null, $"Role '{code}' not found.");
+
+            // Xóa toàn bộ role cũ (nếu mô hình 1 user = 1 role)
+            var existingUserRoles = await _db.UserRoles.Where(ur => ur.UserId == id).ToListAsync(ct);
+            if (existingUserRoles.Count > 0)
+                _db.UserRoles.RemoveRange(existingUserRoles);
+
+            _db.UserRoles.Add(new UserRole { UserId = id, RoleId = role.Id });
+        }
+
+        await _db.SaveChangesAsync(ct);
+
+        // build DTO trả về
+        var roles = await _db.UserRoles
+            .Where(ur => ur.UserId == id)
+            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
+            .ToArrayAsync(ct);
+
+        var dto = new AdminUserDto
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            IsActive = user.IsActive,
+            Roles = roles
+        };
+
+        return new(true, dto, null);
     }
 }

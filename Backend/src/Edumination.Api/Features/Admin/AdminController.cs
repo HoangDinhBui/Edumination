@@ -31,4 +31,14 @@ public class AdminUsersController : ControllerBase
         if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
+
+    // PATCH /api/v1/admin/users/{id}
+    [HttpPatch("{id:long}")]
+    [ProducesResponseType(typeof(ApiResult<AdminUserDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Patch([FromRoute] long id, [FromBody] PatchUserRequest req, CancellationToken ct)
+    {
+        var result = await _svc.PatchUserAsync(id, req, ct);
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
 }
