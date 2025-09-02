@@ -1,3 +1,4 @@
+using Edumination.Api.Common.Results;
 using Edumination.Api.Features.Admin.Dtos;
 using Edumination.Api.Features.Admin.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,15 @@ public class AdminUsersController : ControllerBase
     public async Task<IActionResult> Get([FromQuery] AdminUserQuery q, CancellationToken ct)
     {
         var result = await _svc.GetUsersAsync(q, ct);
+        return Ok(result);
+    }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResult<CreateUserResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Create([FromBody] CreateUserRequest req, CancellationToken ct)
+    {
+        var result = await _svc.CreateUserAsync(req, ct);
+        if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
 }

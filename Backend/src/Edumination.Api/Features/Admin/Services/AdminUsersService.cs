@@ -1,18 +1,27 @@
 using Edumination.Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Edumination.Api.Features.Admin.Dtos;
+using Edumination.Api.Common.Results;
+using Edumination.Api.Common.Services;
+using Edumination.Api.Domain.Entities;
 
 namespace Edumination.Api.Features.Admin.Services;
 
 public interface IAdminUsersService
 {
     Task<PagedResult<AdminUserItemDto>> GetUsersAsync(AdminUserQuery q, CancellationToken ct);
+    Task<ApiResult<CreateUserResponse>> CreateUserAsync(CreateUserRequest req, CancellationToken ct);
 }
 
 public class AdminUsersService : IAdminUsersService
 {
     private readonly AppDbContext _db;
-    public AdminUsersService(AppDbContext db) { _db = db; }
+    private readonly IPasswordHasher _hasher;
+    public AdminUsersService(AppDbContext db, IPasswordHasher hasher)
+    {
+        _db = db;
+        _hasher = hasher;
+    }
 
     public async Task<PagedResult<AdminUserItemDto>> GetUsersAsync(AdminUserQuery q, CancellationToken ct)
     {
@@ -93,5 +102,42 @@ public class AdminUsersService : IAdminUsersService
             Total = total,
             Items = items
         };
+    }
+
+    public async Task<ApiResult<CreateUserResponse>> CreateUserAsync(CreateUserRequest req, CancellationToken ct)
+    {
+        var emailNorm = req.Email.Trim().ToLowerInvariant();
+
+        // Check trùng email
+        if (await _db.Users.AnyAsync(u => u.Email == emailNorm, ct))
+            return new(false, null, "Email already exists.");
+
+        // Tạo user
+        var user = new User
+        {
+            Email = emailNorm,
+            FullName = req.FullName.Trim(),
+            PasswordHash = _hasher.Hash(req.Password),
+            IsActive = req.Active,
+            EmailVerified = true
+        };
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync(ct);
+
+        // Gán role
+        var role = await _db.Roles.FirstOrDefaultAsync(r => r.Code == req.Role, ct);
+        if (role != null)
+        {
+            _db.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = role.Id });
+            await _db.SaveChangesAsync(ct);
+        }
+
+        return new(true, new CreateUserResponse
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            Role = req.Role
+        }, null);
     }
 }
