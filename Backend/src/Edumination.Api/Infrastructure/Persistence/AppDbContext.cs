@@ -3,6 +3,7 @@ using Edumination.Api.Domain.Entities;
 using Edumination.Api.Domain.Entities.Leaderboard;
 using Education.Domain.Entities;
 using Edumination.Domain.Entities;
+using Edumination.Api.Domain.Entities.EduDomain;
 
 namespace Edumination.Api.Infrastructure.Persistence;
 
@@ -30,6 +31,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
 
     public DbSet<OAuthAccounts> OAuthAccounts => Set<OAuthAccounts>();
     public DbSet<OAuthStates> OAuthStates => Set<OAuthStates>();
+    public DbSet<EduDomain> EduDomains => Set<EduDomain>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -301,6 +303,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasIndex(x => new { x.Provider, x.State }).IsUnique();
             e.Property(x => x.Provider).HasMaxLength(50).IsRequired();
             e.Property(x => x.State).HasMaxLength(128).IsRequired();
+        });
+
+        b.Entity<EduDomain>(e =>
+        {
+            e.ToTable("edu_domains");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Domain).HasMaxLength(255).IsRequired();
+            e.HasIndex(x => x.Domain).IsUnique();
         });
     }
 }

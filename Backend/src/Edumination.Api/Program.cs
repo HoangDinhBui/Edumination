@@ -25,6 +25,7 @@ using Edumination.Persistence;
 using Edumination.Api.Features.Papers.Services;
 using Microsoft.AspNetCore.Routing;
 using Edumination.Api.Features.Admin.Services;
+using Edumination.Api.Features.Admin.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +67,8 @@ builder.Services.Configure<GoogleOAuthOptions>(builder.Configuration.GetSection(
 builder.Services.AddHttpClient<IGoogleOAuthClient, GoogleOAuthClient>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IAdminUsersService, AdminUsersService>();
+builder.Services.AddScoped<IEduDomainService, EduDomainService>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateEduDomainRequestValidator>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
