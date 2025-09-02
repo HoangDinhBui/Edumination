@@ -12,6 +12,7 @@ public interface IAdminUsersService
     Task<PagedResult<AdminUserItemDto>> GetUsersAsync(AdminUserQuery q, CancellationToken ct);
     Task<ApiResult<CreateUserResponse>> CreateUserAsync(CreateUserRequest req, CancellationToken ct);
     Task<ApiResult<AdminUserDto>> PatchUserAsync(long id, PatchUserRequest req, CancellationToken ct);
+    Task<ApiResult<AdminUserDto>> SetRolesAsync(long userId, SetUserRolesRequest req, CancellationToken ct);
 }
 
 public class AdminUsersService : IAdminUsersService
@@ -201,6 +202,108 @@ public class AdminUsersService : IAdminUsersService
             FullName = user.FullName,
             IsActive = user.IsActive,
             Roles = roles
+        };
+
+        return new(true, dto, null);
+    }
+
+    public async Task<ApiResult<AdminUserDto>> SetRolesAsync(long userId, SetUserRolesRequest req, CancellationToken ct)
+    {
+        // 1) Tải user
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Id == userId, ct);
+        if (user is null)
+            return new(false, null, "User not found.");
+
+        // Chuẩn hóa danh sách code
+        var codes = (req.Roles ?? Array.Empty<string>())
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => x.Trim().ToUpperInvariant())
+                    .Distinct()
+                    .ToArray();
+
+        // 2) Tải tất cả Role tương ứng
+        var rolesInDb = await _db.Roles
+            .Where(r => codes.Contains(r.Code))
+            .ToListAsync(ct);
+
+        // Kiểm tra code không tồn tại
+        var missing = codes.Except(rolesInDb.Select(r => r.Code)).ToArray();
+        if (missing.Length > 0)
+            return new(false, null, $"Unknown role(s): {string.Join(", ", missing)}");
+
+        // 3) Lấy roles hiện tại của user
+        var currentUserRoles = await _db.UserRoles
+            .Where(ur => ur.UserId == userId)
+            .ToListAsync(ct);
+
+        var currentCodes = await _db.UserRoles
+            .Where(ur => ur.UserId == userId)
+            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
+            .ToListAsync(ct);
+
+        // 4) Áp dụng theo Mode
+        switch (req.Mode)
+        {
+            case RoleUpdateMode.Replace:
+                if (codes.Length == 0 && !req.AllowEmptyWhenReplace)
+                    return new(false, null, "Replacing with empty roles is not allowed (set AllowEmptyWhenReplace=true to confirm).");
+
+                // Xóa những role không còn
+                var toRemove = currentUserRoles
+                    .Where(ur => !rolesInDb.Select(r => r.Id).Contains(ur.RoleId))
+                    .ToList();
+                if (toRemove.Count > 0) _db.UserRoles.RemoveRange(toRemove);
+
+                // Thêm những role thiếu
+                var currentRoleIds = currentUserRoles.Select(ur => ur.RoleId).ToHashSet();
+                var toAdd = rolesInDb
+                    .Where(r => !currentRoleIds.Contains(r.Id))
+                    .Select(r => new UserRole { UserId = userId, RoleId = r.Id })
+                    .ToList();
+                if (toAdd.Count > 0) await _db.UserRoles.AddRangeAsync(toAdd, ct);
+                break;
+
+            case RoleUpdateMode.Add:
+                // Thêm những role chưa có
+                var existingRoleIds = currentUserRoles.Select(ur => ur.RoleId).ToHashSet();
+                var addList = rolesInDb
+                    .Where(r => !existingRoleIds.Contains(r.Id))
+                    .Select(r => new UserRole { UserId = userId, RoleId = r.Id })
+                    .ToList();
+                if (addList.Count > 0) await _db.UserRoles.AddRangeAsync(addList, ct);
+                break;
+
+            case RoleUpdateMode.Remove:
+                // Gỡ những role có trong danh sách
+                var removeIds = rolesInDb.Select(r => r.Id).ToHashSet();
+                var removeList = currentUserRoles.Where(ur => removeIds.Contains(ur.RoleId)).ToList();
+
+                if (removeList.Count == currentUserRoles.Count)
+                    return new(false, null, "Cannot remove all roles from user.");
+
+                if (removeList.Count > 0) _db.UserRoles.RemoveRange(removeList);
+                break;
+
+            default:
+                return new(false, null, "Unsupported mode.");
+        }
+
+        await _db.SaveChangesAsync(ct);
+
+        // 5) Build DTO kết quả
+        var rolesAfter = await _db.UserRoles
+            .Where(ur => ur.UserId == userId)
+            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
+            .OrderBy(c => c)
+            .ToArrayAsync(ct);
+
+        var dto = new AdminUserDto
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            IsActive = user.IsActive,
+            Roles = rolesAfter
         };
 
         return new(true, dto, null);

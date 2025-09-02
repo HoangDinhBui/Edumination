@@ -41,4 +41,14 @@ public class AdminUsersController : ControllerBase
         if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
+
+    // POST /api/v1/admin/users/{id}/roles
+    [HttpPost("{id:long}/roles")]
+    [ProducesResponseType(typeof(ApiResult<AdminUserDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SetRoles([FromRoute] long id, [FromBody] SetUserRolesRequest req, CancellationToken ct)
+    {
+        var result = await _svc.SetRolesAsync(id, req, ct);
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
 }
