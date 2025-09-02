@@ -51,4 +51,14 @@ public class AdminUsersController : ControllerBase
         if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
+
+    // DELETE /api/v1/admin/users/{id}/roles/{role_code}
+    [HttpDelete("{id:long}/roles/{role_code}")]
+    [ProducesResponseType(typeof(ApiResult<AdminUserDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RemoveRole([FromRoute] long id, [FromRoute] string role_code, CancellationToken ct)
+    {
+        var result = await _svc.RemoveRoleAsync(id, role_code, ct);
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
 }

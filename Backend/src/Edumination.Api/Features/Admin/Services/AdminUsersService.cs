@@ -13,6 +13,8 @@ public interface IAdminUsersService
     Task<ApiResult<CreateUserResponse>> CreateUserAsync(CreateUserRequest req, CancellationToken ct);
     Task<ApiResult<AdminUserDto>> PatchUserAsync(long id, PatchUserRequest req, CancellationToken ct);
     Task<ApiResult<AdminUserDto>> SetRolesAsync(long userId, SetUserRolesRequest req, CancellationToken ct);
+    Task<ApiResult<AdminUserDto>> RemoveRoleAsync(long userId, string roleCode, CancellationToken ct);
+
 }
 
 public class AdminUsersService : IAdminUsersService
@@ -294,6 +296,54 @@ public class AdminUsersService : IAdminUsersService
         var rolesAfter = await _db.UserRoles
             .Where(ur => ur.UserId == userId)
             .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
+            .OrderBy(c => c)
+            .ToArrayAsync(ct);
+
+        var dto = new AdminUserDto
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            FullName = user.FullName,
+            IsActive = user.IsActive,
+            Roles = rolesAfter
+        };
+
+        return new(true, dto, null);
+    }
+
+    public async Task<ApiResult<AdminUserDto>> RemoveRoleAsync(long userId, string roleCode, CancellationToken ct)
+    {
+        roleCode = (roleCode ?? "").Trim().ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(roleCode))
+            return new(false, null, "role_code is required.");
+
+        // 1) User
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Id == userId, ct);
+        if (user is null)
+            return new(false, null, "User not found.");
+
+        // 2) Role
+        var role = await _db.Roles.SingleOrDefaultAsync(r => r.Code == roleCode, ct);
+        if (role is null)
+            return new(false, null, $"Role '{roleCode}' not found.");
+
+        // 3) UserRole record
+        var ur = await _db.UserRoles.SingleOrDefaultAsync(x => x.UserId == userId && x.RoleId == role.Id, ct);
+        if (ur is null)
+            return new(false, null, $"User does not have role '{roleCode}'.");
+
+        // 4) Safety: không cho gỡ role cuối cùng
+        var totalRoles = await _db.UserRoles.CountAsync(x => x.UserId == userId, ct);
+        if (totalRoles <= 1)
+            return new(false, null, "Cannot remove the last role from user.");
+
+        _db.UserRoles.Remove(ur);
+        await _db.SaveChangesAsync(ct);
+
+        // 5) Trả lại thông tin user + roles hiện tại
+        var rolesAfter = await _db.UserRoles
+            .Where(x => x.UserId == userId)
+            .Join(_db.Roles, ur2 => ur2.RoleId, r => r.Id, (ur2, r) => r.Code)
             .OrderBy(c => c)
             .ToArrayAsync(ct);
 
