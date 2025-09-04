@@ -28,6 +28,71 @@ public class PapersController : ControllerBase
         _paperService = paperService;
     }
 
+    [HttpGet("{id}/sections")]
+        [Authorize] // Yêu cầu đăng nhập
+        public async Task<IActionResult> GetPaperSections(long id)
+        {
+            // Kiểm tra vai trò của người dùng
+            var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            bool isStudent = roles.Contains("STUDENT") && !roles.Contains("TEACHER") && !roles.Contains("ADMIN");
+            bool hideAnswers = isStudent;
+
+            // Lấy TestPaper và các section liên quan
+            var paper = await _unitOfWork.TestPapers.GetByIdAsync(id);
+            if (paper == null)
+            {
+                return NotFound($"Bài kiểm tra với ID {id} không tồn tại.");
+            }
+
+            var sections = await _context.TestSections
+                .AsNoTracking()
+                .Include(s => s.Passages)
+                    .ThenInclude(p => p.Questions)
+                        .ThenInclude(q => q.QuestionChoices)
+                .Include(s => s.Passages)
+                    .ThenInclude(p => p.Questions)
+                        .ThenInclude(q => q.QuestionAnswerKey)
+                .Where(s => s.PaperId == id)
+                .ToListAsync();
+
+            if (sections == null || !sections.Any())
+            {
+                return NotFound($"Không tìm thấy section nào cho bài kiểm tra với ID {id}.");
+            }
+
+            // Chuyển đổi sang DTO
+            var sectionDtos = sections.Select(s => new SectionDto
+            {
+                Id = s.Id,
+                Skill = s.Skill,
+                SectionNo = s.SectionNo,
+                TimeLimitSec = s.TimeLimitSec ?? 0,
+                AudioAssetId = s.AudioAssetId,
+                IsPublished = s.IsPublished,
+                Passages = s.Passages.Select(p => new PassageDto
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    ContentText = p.ContentText,
+                    Questions = p.Questions.Select(q => new QuestionDto
+                    {
+                        Id = q.Id,
+                        Qtype = q.Qtype,
+                        Stem = q.Stem,
+                        Position = q.Position,
+                        Choices = hideAnswers ? null : q.QuestionChoices?.Select(c => new ChoiceDto
+                        {
+                            Content = c.Content,
+                            IsCorrect = c.IsCorrect
+                        }).ToList(),
+                        AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson
+                    }).ToList()
+                }).ToList()
+            }).ToList();
+
+            return Ok(sectionDtos);
+        }
+
     [HttpPost]
     public async Task<IActionResult> CreatePaper([FromBody] CreatePaperRequest request)
     {
