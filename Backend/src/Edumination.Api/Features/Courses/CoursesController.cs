@@ -51,4 +51,14 @@ public class CoursesController : ControllerBase
         if (!ok) return NotFound(new { error = "Course not found." });
         return Ok(new { success = true });
     }
+
+    [HttpGet("{id:long}")]
+    [AllowAnonymous] // public được; server sẽ ẩn nội dung nếu chưa đủ quyền
+    [ProducesResponseType(typeof(CourseDetailDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Detail([FromRoute] long id, CancellationToken ct)
+    {
+        var dto = await _svc.GetDetailAsync(id, User, ct);
+        if (dto is null) return NotFound();
+        return Ok(dto);
+    }
 }

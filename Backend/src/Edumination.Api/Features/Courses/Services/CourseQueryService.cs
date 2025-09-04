@@ -11,6 +11,7 @@ public interface ICourseService
     Task<PagedResult<CourseItemDto>> GetAsync(CourseListQuery query, ClaimsPrincipal? user, CancellationToken ct);
     Task<bool> EnrollAsync(long courseId, long userId, CancellationToken ct);
     Task<bool> UnenrollAsync(long courseId, long userId, CancellationToken ct);
+    Task<CourseDetailDto?> GetDetailAsync(long id, ClaimsPrincipal? user, CancellationToken ct);
 }
 
 public class CourseService : ICourseService
@@ -107,5 +108,120 @@ public class CourseService : ICourseService
         _db.Enrollments.Remove(row);
         await _db.SaveChangesAsync(ct);
         return true;
+    }
+
+    public async Task<CourseDetailDto?> GetDetailAsync(long id, ClaimsPrincipal? user, CancellationToken ct)
+    {
+        var course = await _db.Courses.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (course is null) return null;
+
+        // Resolve user + quyền
+        long? uid = null;
+        if (user is not null)
+        {
+            var idStr = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                      ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+            if (long.TryParse(idStr, out var parsed)) uid = parsed;
+        }
+
+        var isStaff = user?.IsInRole("ADMIN") == true || user?.IsInRole("TEACHER") == true;
+        var isOwner = uid.HasValue && course.CreatedBy == uid.Value;
+
+        // Ẩn khóa chưa publish với người thường
+        if (!course.IsPublished && !(isOwner || isStaff))
+            return null; // Controller -> 404
+
+        // Kiểm tra enroll
+        var enrolled = false;
+        if (uid.HasValue)
+        {
+            enrolled = await _db.Enrollments
+                .AnyAsync(e => e.CourseId == id && e.UserId == uid.Value, ct);
+        }
+
+        var canViewContent = enrolled || isOwner || isStaff;
+
+        // Lấy module + lesson (chỉ outline cho người chưa có quyền)
+        // - Nếu chưa có quyền: chỉ lấy lesson published
+        // - Nếu có quyền: lấy tất cả lesson (cả unpublished, để giáo viên/owner xem draft)
+        var lessonsQuery = _db.Lessons.AsNoTracking()
+            .Join(_db.Modules.AsNoTracking().Where(m => m.CourseId == id),
+                  l => l.ModuleId, m => m.Id, (l, m) => new { l, m });
+
+        if (!canViewContent)
+        {
+            lessonsQuery = lessonsQuery.Where(x => x.l.IsPublished);
+        }
+
+        var raw = await lessonsQuery
+            .OrderBy(x => x.m.Position)
+            .ThenBy(x => x.l.Position)
+            .Select(x => new
+            {
+                ModuleId = x.m.Id,
+                ModuleTitle = x.m.Title,
+                ModulePos = x.m.Position,
+
+                LessonId = x.l.Id,
+                LessonTitle = x.l.Title,
+                LessonPos = x.l.Position,
+                x.l.IsPublished,
+                x.l.Objective,
+                x.l.VideoId,
+                x.l.TranscriptId
+            })
+            .ToListAsync(ct);
+
+        // group theo module
+        var modules = raw
+            .GroupBy(r => new { r.ModuleId, r.ModuleTitle, r.ModulePos })
+            .Select(g => new ModuleDto
+            {
+                Id = g.Key.ModuleId,
+                Title = g.Key.ModuleTitle,
+                Position = g.Key.ModulePos,
+                Lessons = g.Select(r => new LessonDto
+                {
+                    Id = r.LessonId,
+                    Title = r.LessonTitle,
+                    Position = r.LessonPos,
+                    IsPublished = r.IsPublished,
+                    Objective = canViewContent ? r.Objective : null,
+                    VideoId = canViewContent ? r.VideoId : null,
+                    TranscriptId = canViewContent ? r.TranscriptId : null
+                }).ToList()
+            })
+            .OrderBy(m => m.Position)
+            .ToList();
+
+        // Tiến độ (nếu có uid)
+        int? total = null, completed = null;
+        if (uid.HasValue)
+        {
+            total = await _db.Lessons.AsNoTracking()
+                .Join(_db.Modules.AsNoTracking().Where(m => m.CourseId == id),
+                      l => l.ModuleId, m => m.Id, (l, m) => l.Id)
+                .CountAsync(ct);
+
+            completed = await _db.LessonCompletions.AsNoTracking()
+                .Join(_db.Lessons.AsNoTracking(), lc => lc.LessonId, l => l.Id, (lc, l) => new { lc, l })
+                .Join(_db.Modules.AsNoTracking().Where(m => m.CourseId == id),
+                      t => t.l.ModuleId, m => m.Id, (t, m) => t.lc)
+                .CountAsync(x => x.UserId == uid.Value, ct);
+        }
+
+        return new CourseDetailDto
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Description = course.Description,
+            Level = course.Level.ToString(),
+            IsPublished = course.IsPublished,
+            Enrolled = enrolled,
+            CanViewContent = canViewContent,
+            Modules = modules,
+            TotalLessons = total,
+            CompletedLessons = completed
+        };
     }
 }

@@ -34,7 +34,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<EduDomain> EduDomains => Set<EduDomain>();
     public DbSet<Course> Courses => Set<Course>();
     public DbSet<Enrollments> Enrollments => Set<Enrollments>();
-
+    public DbSet<Module> Modules => Set<Module>();
+    public DbSet<Lesson> Lessons => Set<Lesson>();
+    public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -341,5 +343,48 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
             e.HasOne(x => x.Course).WithMany(c => c.Enrollments).HasForeignKey(x => x.CourseId);
         });
+
+        // ===== Modules =====
+        b.Entity<Module>(e =>
+        {
+            e.ToTable("modules");
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Description);
+            e.Property(x => x.Position).IsRequired();
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            e.HasIndex(x => new { x.CourseId, x.Position }).IsUnique();
+        });
+
+        // ===== Lessons =====
+        b.Entity<Lesson>(e =>
+        {
+            e.ToTable("lessons");
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Objective);
+            e.Property(x => x.Position).IsRequired();
+            e.Property(x => x.IsPublished).HasDefaultValue(false);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            e.HasIndex(x => new { x.ModuleId, x.Position }).IsUnique();
+        });
+
+        // ===== LessonCompletions =====
+        b.Entity<LessonCompletion>(e =>
+        {
+            e.ToTable("lesson_completions");
+            e.HasKey(x => new { x.UserId, x.LessonId });
+
+            e.Property(x => x.CompletedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            e.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId);
+        });
+
     }
 }
