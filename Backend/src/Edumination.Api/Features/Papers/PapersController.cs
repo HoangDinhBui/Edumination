@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Edumination.Api.Papers;
 
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [ApiController]
 public class PapersController : ControllerBase
 {
