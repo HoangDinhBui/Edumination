@@ -14,6 +14,7 @@ public interface ICourseService
     Task<bool> UnenrollAsync(long courseId, long userId, CancellationToken ct);
     Task<CourseDetailDto?> GetDetailAsync(long id, ClaimsPrincipal? user, CancellationToken ct);
     Task<ApiResult<CreateCourseResponse>> CreateAsync(CreateCourseRequest req, long creatorUserId, CancellationToken ct);
+    Task<ApiResult<CourseDetailDto>> UpdatePartialAsync(long id, UpdateCourseRequest req, ClaimsPrincipal user, CancellationToken ct);
 }
 
 public class CourseService : ICourseService
@@ -264,5 +265,58 @@ public class CourseService : ICourseService
         };
 
         return new(true, resp, null);
+    }
+
+    public async Task<ApiResult<CourseDetailDto>> UpdatePartialAsync(
+    long id, UpdateCourseRequest req, ClaimsPrincipal user, CancellationToken ct)
+    {
+        var course = await _db.Courses.SingleOrDefaultAsync(c => c.Id == id, ct);
+        if (course is null) return new(false, null, "NOT_FOUND");
+
+        // resolve uid + role
+        long? uid = null;
+        var idStr = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+        if (long.TryParse(idStr, out var parsed)) uid = parsed;
+
+        var isStaff = user.IsInRole("ADMIN") || user.IsInRole("TEACHER");
+        var isOwner = uid.HasValue && course.CreatedBy == uid.Value;
+
+        if (!(isStaff || isOwner))
+            return new(false, null, "FORBIDDEN");
+
+        // Apply partial updates
+        if (req.Title != null)
+        {
+            var trimmed = req.Title.Trim();
+            if (trimmed.Length == 0)
+                return new(false, null, "Title cannot be empty.");
+            course.Title = trimmed;
+        }
+
+        if (req.Description != null)
+        {
+            // empty string => NULL để "xoá mô tả"
+            course.Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim();
+        }
+
+        if (req.Level != null)
+        {
+            if (!Enum.TryParse<CourseLevel>(req.Level.Trim(), true, out var lvl))
+                return new(false, null, "Invalid level. Allowed: BEGINNER, ELEMENTARY, PRE_INTERMEDIATE, INTERMEDIATE, UPPER_INTERMEDIATE, ADVANCED.");
+            course.Level = lvl;
+        }
+
+        if (req.IsPublished.HasValue)
+        {
+            course.IsPublished = req.IsPublished.Value;
+        }
+
+        course.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+
+        // Trả lại detail (tôn trọng quyền xem nội dung)
+        var dto = await GetDetailAsync(id, user, ct);
+        return new(true, dto!, null);
     }
 }

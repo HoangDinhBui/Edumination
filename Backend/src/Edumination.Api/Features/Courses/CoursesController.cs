@@ -16,10 +16,14 @@ public class CoursesController : ControllerBase
 {
     private readonly ICourseService _svc;
     private readonly IValidator<CreateCourseRequest> _validator;
-    public CoursesController(ICourseService svc, IValidator<CreateCourseRequest> validator)
+    private readonly IValidator<UpdateCourseRequest> _updateValidator;
+    public CoursesController(ICourseService svc,
+                            IValidator<CreateCourseRequest> validator,
+                            IValidator<UpdateCourseRequest> updateValidator)
     {
         _svc = svc;
         _validator = validator;
+        _updateValidator = updateValidator;
     }
 
     // GET /api/v1/courses?published=1&q=&level=&page=1&pageSize=20
@@ -95,6 +99,37 @@ public class CoursesController : ControllerBase
             routeValues: new { id = result.Data!.Id },
             value: result
         );
+    }
+
+    [HttpPatch("{id:long}")]
+    [Authorize] // yêu cầu đăng nhập; quyền chi tiết check trong service (ADMIN/TEACHER/Owner)
+    [ProducesResponseType(typeof(ApiResult<CourseDetailDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Patch([FromRoute] long id, [FromBody] UpdateCourseRequest req, CancellationToken ct)
+    {
+        // validate input
+        var val = await _updateValidator.ValidateAsync(req, ct);
+        if (!val.IsValid)
+        {
+            var errs = val.Errors.Select(e => new { field = e.PropertyName, message = e.ErrorMessage });
+            return BadRequest(new ApiResult<object>(false, null, System.Text.Json.JsonSerializer.Serialize(errs)));
+        }
+
+        var result = await _svc.UpdatePartialAsync(id, req, User, ct);
+
+        if (!result.Success)
+        {
+            return result.Error switch
+            {
+                "NOT_FOUND" => NotFound(new { error = "Course not found." }),
+                "FORBIDDEN" => Forbid(),
+                _ => BadRequest(result) // các lỗi message còn lại
+            };
+        }
+
+        return Ok(result);
     }
 
     // helper: lấy userId từ token

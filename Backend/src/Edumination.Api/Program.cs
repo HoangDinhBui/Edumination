@@ -30,6 +30,8 @@ using Edumination.Api.Features.Courses.Services;
 using Edumination.Api.Repositories.Interfaces;
 using Edumination.Api.Repositories;
 using Edumination.Api.Services.Interfaces;
+using Edumination.Api.Features.Courses.Dtos;
+using Edumination.Api.Features.Courses.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +78,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateEduDomainRequestValid
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ISectionRepository, SectionRepository>();
 builder.Services.AddScoped<ISectionService, SectionService>();
+builder.Services.AddScoped<IValidator<UpdateCourseRequest>, UpdateCourseRequestValidator>();
+
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
