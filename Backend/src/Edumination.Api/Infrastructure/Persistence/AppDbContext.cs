@@ -32,6 +32,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<OAuthAccounts> OAuthAccounts => Set<OAuthAccounts>();
     public DbSet<OAuthStates> OAuthStates => Set<OAuthStates>();
     public DbSet<EduDomain> EduDomains => Set<EduDomain>();
+    public DbSet<Course> Courses => Set<Course>();
+    public DbSet<Enrollments> Enrollments => Set<Enrollments>();
+
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -311,6 +314,32 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasKey(x => x.Id);
             e.Property(x => x.Domain).HasMaxLength(255).IsRequired();
             e.HasIndex(x => x.Domain).IsUnique();
+        });
+
+        b.Entity<Course>(e =>
+        {
+            e.ToTable("courses");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Title).HasMaxLength(255).IsRequired();
+            e.Property(x => x.Description).HasColumnType("text");
+            e.Property(x => x.Level).HasConversion<string>().HasMaxLength(32).HasColumnName("level");
+            e.Property(x => x.IsPublished).HasColumnName("is_published");
+            e.Property(x => x.CreatedBy).HasColumnName("created_by");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAddOrUpdate();
+        });
+
+        b.Entity<Enrollments>(e =>
+        {
+            e.ToTable("enrollments");
+            e.HasKey(x => new { x.UserId, x.CourseId });
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.CourseId).HasColumnName("course_id");
+            e.Property(x => x.EnrolledAt).HasColumnName("enrolled_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId);
+            e.HasOne(x => x.Course).WithMany(c => c.Enrollments).HasForeignKey(x => x.CourseId);
         });
     }
 }

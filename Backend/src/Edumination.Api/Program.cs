@@ -26,6 +26,7 @@ using Edumination.Api.Features.Papers.Services;
 using Microsoft.AspNetCore.Routing;
 using Edumination.Api.Features.Admin.Services;
 using Edumination.Api.Features.Admin.Validators;
+using Edumination.Api.Features.Courses.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +70,8 @@ builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IAdminUsersService, AdminUsersService>();
 builder.Services.AddScoped<IEduDomainService, EduDomainService>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEduDomainRequestValidator>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
