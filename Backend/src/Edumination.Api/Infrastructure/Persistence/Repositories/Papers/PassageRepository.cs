@@ -16,7 +16,6 @@ public class PassageRepository
     public async Task<Passage> AddAsync(Passage passage)
     {
         await _context.Passages.AddAsync(passage);
-        await _context.SaveChangesAsync();
-        return passage;
+        return passage; // UnitOfWork sẽ xử lý SaveChanges
     }
 }
