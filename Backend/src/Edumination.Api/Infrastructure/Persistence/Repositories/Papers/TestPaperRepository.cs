@@ -18,8 +18,7 @@ public class TestPaperRepository
     public async Task<TestPaper> AddAsync(TestPaper testPaper)
     {
         await _context.TestPapers.AddAsync(testPaper);
-        await _context.SaveChangesAsync();
-        return testPaper;
+        return testPaper; // UnitOfWork sẽ xử lý SaveChanges
     }
 
     public async Task<TestPaper> GetByIdAsync(long id)

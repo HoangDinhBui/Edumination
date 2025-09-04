@@ -2,21 +2,21 @@ using Edumination.Api.Infrastructure.Persistence;
 using Edumination.Domain.Entities;
 using System.Threading.Tasks;
 
-namespace Edumination.Persistence.Repositories;
-
-public class QuestionRepository
+namespace Edumination.Persistence.Repositories
 {
-    private readonly AppDbContext _context;
-
-    public QuestionRepository(AppDbContext context)
+    public class QuestionRepository
     {
-        _context = context;
-    }
+        private readonly AppDbContext _context;
 
-    public async Task<Question> AddAsync(Question question)
-    {
-        await _context.Questions.AddAsync(question);
-        await _context.SaveChangesAsync();
-        return question;
+        public QuestionRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<Question> AddAsync(Question question)
+        {
+            await _context.Questions.AddAsync(question);
+            return question; // UnitOfWork sẽ xử lý SaveChanges
+        }
     }
 }

@@ -36,4 +36,9 @@ public class AssetRepository : IAssetRepository
             .Include(tp => tp.TestSections) // Đảm bảo tải TestSections
             .ToListAsync();
     }
+
+    public async Task<Asset> GetByIdAsync(long id)
+        {
+            return await _context.Assets.FindAsync(id);
+        }
 }
