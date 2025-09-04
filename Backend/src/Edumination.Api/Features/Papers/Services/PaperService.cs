@@ -54,8 +54,11 @@ public class PaperService : IPaperService
         .Include(p => p.TestSections)
             .ThenInclude(s => s.Passages)
                 .ThenInclude(pa => pa.Questions)
-                    .ThenInclude(q => q.QuestionChoices)
-                    .ThenInclude(q => q.QuestionAnswerKey)
+                    .ThenInclude(q => q.QuestionChoices) // Tải QuestionChoices
+        .Include(p => p.TestSections)
+            .ThenInclude(s => s.Passages)
+                .ThenInclude(pa => pa.Questions)
+                    .ThenInclude(q => q.QuestionAnswerKey) // Tải QuestionAnswerKey riêng
         .FirstOrDefaultAsync(p => p.Id == id, ct);
 
     if (paper == null) return null;
@@ -84,7 +87,7 @@ public class PaperService : IPaperService
                     Stem = q.Stem,
                     Position = q.Position,
                     Choices = hideAnswers ? null : q.QuestionChoices?.Select(c => new ChoiceDto { Content = c.Content, IsCorrect = c.IsCorrect }).ToList(),
-                    AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson // Sử dụng q.QuestionAnswerKey, không phải q.QuestionChoices
+                    AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson
                 }).ToList()
             }).ToList()
         }).ToList()

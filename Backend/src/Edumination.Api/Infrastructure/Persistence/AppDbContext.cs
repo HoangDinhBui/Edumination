@@ -161,21 +161,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.SectionNo).HasColumnName("section_no");
             e.Property(x => x.TimeLimitSec).HasColumnName("time_limit_sec");
             e.Property(x => x.IsPublished).HasColumnName("is_published");
-            e.Property(x => x.AudioAssetId).HasColumnName("audio_asset_id"); // Foreign key
+            e.Property(x => x.AudioAssetId).HasColumnName("audio_asset_id");
 
-            // Mối quan hệ với TestPaper
             e.HasOne(ts => ts.TestPaper)
-             .WithMany(tp => tp.TestSections)
-             .HasForeignKey(ts => ts.PaperId)
-             .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(tp => tp.TestSections)
+                .HasForeignKey(ts => ts.PaperId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Mối quan hệ với Asset (Audio)
-            _ = e.HasOne(ts => ts.AudioAsset)
-             .WithMany(a => a.TestSections)
-             .HasForeignKey(ts => ts.AudioAssetId)
-             .OnDelete(DeleteBehavior.Restrict); // Ngăn chặn xóa cascade nếu cần
+            e.HasOne(ts => ts.AudioAsset)
+                .WithMany(a => a.TestSections)
+                .HasForeignKey(ts => ts.AudioAssetId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            e.HasMany(ts => ts.Passages).WithOne(pa => pa.TestSection).HasForeignKey(pa => pa.SectionId);
+            e.HasIndex(s => new { s.PaperId, s.Skill }).IsUnique(); // Thêm chỉ mục duy nhất
         });
 
         b.Entity<PasswordReset>(e =>
@@ -191,53 +189,56 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
         {
             e.ToTable("passages");
             e.HasKey(x => x.Id);
+            e.Property(x => x.SectionId).HasColumnName("section_id").IsRequired();
             e.Property(x => x.Title).HasColumnName("title").HasMaxLength(255);
             e.Property(x => x.ContentText).HasColumnName("content_text");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
 
             e.HasOne(p => p.TestSection)
-            .WithMany(ts => ts.Passages)
-            .HasForeignKey(p => p.SectionId);
+                .WithMany(ts => ts.Passages)
+                .HasForeignKey(p => p.SectionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
 
             e.HasOne(p => p.Audio)
-            .WithMany()
-            .HasForeignKey(p => p.AudioId);
+                .WithMany()
+                .HasForeignKey(p => p.AudioId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             e.HasOne(p => p.Transcript)
-            .WithMany()
-            .HasForeignKey(p => p.TranscriptId);
+                .WithMany()
+                .HasForeignKey(p => p.TranscriptId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             e.HasMany(pa => pa.Questions).WithOne(q => q.Passage).HasForeignKey(q => q.PassageId);
         });
 
         b.Entity<Question>(e =>
-        {
-            e.ToTable("questions");
-            e.HasKey(x => x.Id);
-            e.Property(x => x.PassageId).HasColumnName("passage_id"); // Cập nhật khóa ngoại
-            e.Property(x => x.Qtype).HasColumnName("qtype").HasMaxLength(50).IsRequired();
-            e.Property(x => x.Stem).HasColumnName("stem").IsRequired();
-            e.Property(x => x.Position).HasColumnName("position");
-            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+    {
+        e.ToTable("questions");
+        e.HasKey(x => x.Id);
+        e.Property(x => x.PassageId).HasColumnName("passage_id").IsRequired();
+        e.Property(x => x.Qtype).HasColumnName("qtype").HasMaxLength(50).IsRequired();
+        e.Property(x => x.Stem).HasColumnName("stem").IsRequired();
+        e.Property(x => x.Position).HasColumnName("position");
+        e.Property(x => x.CreatedAt).HasColumnName("created_at");
 
-            e.HasOne(q => q.Passage)
-                .WithMany(p => p.Questions)
-                .HasForeignKey(q => q.PassageId)
-                .OnDelete(DeleteBehavior.Cascade); // Hoặc Restrict tùy ý
+        e.HasOne(q => q.Passage)
+            .WithMany(p => p.Questions)
+            .HasForeignKey(q => q.PassageId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
 
-            e.HasMany(q => q.QuestionChoices)
-                .WithOne(c => c.Question)
-                .HasForeignKey(c => c.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
+        e.HasMany(q => q.QuestionChoices)
+            .WithOne(c => c.Question)
+            .HasForeignKey(c => c.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-            e.HasOne(q => q.QuestionAnswerKey)
-                .WithOne(k => k.Question)
-                .HasForeignKey<QuestionAnswerKey>(k => k.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Xóa hoặc điều chỉnh mối quan hệ với Section nếu không còn cần
-            // e.HasOne(q => q.Section).WithMany().HasForeignKey(q => q.SectionId); // Xóa nếu không dùng
-        });
+        e.HasOne(q => q.QuestionAnswerKey)
+            .WithOne(k => k.Question)
+            .HasForeignKey<QuestionAnswerKey>(k => k.QuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
+    });
 
         b.Entity<Exercise>(e =>
         {

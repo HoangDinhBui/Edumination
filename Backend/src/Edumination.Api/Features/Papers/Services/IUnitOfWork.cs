@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Education.Repositories;
 using Edumination.Persistence.Repositories;
 
 namespace Edumination.Domain.Interfaces;
@@ -10,4 +11,5 @@ public interface IUnitOfWork : IDisposable
     TestSectionRepository TestSections { get; }
     PassageRepository Passages { get; }
     QuestionRepository Questions { get; }
+    AssetRepository Assets { get; }
 }
