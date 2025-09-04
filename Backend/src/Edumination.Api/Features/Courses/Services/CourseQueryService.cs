@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Edumination.Api.Infrastructure.Persistence;
 using Edumination.Api.Features.Courses.Dtos;
 using Edumination.Api.Domain.Entities;
+using Edumination.Api.Common.Results;
 
 namespace Edumination.Api.Features.Courses.Services;
 
@@ -12,6 +13,7 @@ public interface ICourseService
     Task<bool> EnrollAsync(long courseId, long userId, CancellationToken ct);
     Task<bool> UnenrollAsync(long courseId, long userId, CancellationToken ct);
     Task<CourseDetailDto?> GetDetailAsync(long id, ClaimsPrincipal? user, CancellationToken ct);
+    Task<ApiResult<CreateCourseResponse>> CreateAsync(CreateCourseRequest req, long creatorUserId, CancellationToken ct);
 }
 
 public class CourseService : ICourseService
@@ -223,5 +225,44 @@ public class CourseService : ICourseService
             TotalLessons = total,
             CompletedLessons = completed
         };
+    }
+
+    public async Task<ApiResult<CreateCourseResponse>> CreateAsync(
+    CreateCourseRequest req, long creatorUserId, CancellationToken ct)
+    {
+        // validate cơ bản
+        if (string.IsNullOrWhiteSpace(req.Title))
+            return new(false, null, "Title is required.");
+
+        // parse string -> enum (mặc định BEGINNER nếu không hợp lệ)
+        if (!Enum.TryParse<CourseLevel>((req.Level ?? "BEGINNER").Trim(), ignoreCase: true, out var levelEnum))
+            levelEnum = CourseLevel.BEGINNER;
+
+        var course = new Course
+        {
+            Title = req.Title.Trim(),
+            Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim(),
+            Level = levelEnum,                 // enum
+            IsPublished = req.IsPublished,
+            CreatedBy = creatorUserId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _db.Courses.Add(course);
+        await _db.SaveChangesAsync(ct);
+
+        var resp = new CreateCourseResponse
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Description = course.Description,
+            Level = course.Level.ToString(),
+            IsPublished = course.IsPublished,
+            CreatedBy = course.CreatedBy,
+            CreatedAt = course.CreatedAt
+        };
+
+        return new(true, resp, null);
     }
 }
