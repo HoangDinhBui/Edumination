@@ -15,6 +15,8 @@ public interface ICourseService
     Task<CourseDetailDto?> GetDetailAsync(long id, ClaimsPrincipal? user, CancellationToken ct);
     Task<ApiResult<CreateCourseResponse>> CreateAsync(CreateCourseRequest req, long creatorUserId, CancellationToken ct);
     Task<ApiResult<CourseDetailDto>> UpdatePartialAsync(long id, UpdateCourseRequest req, ClaimsPrincipal user, CancellationToken ct);
+    Task<List<ModuleDto>?> GetModulesAsync(long courseId, ClaimsPrincipal? user, CancellationToken ct);
+
 }
 
 public class CourseService : ICourseService
@@ -318,5 +320,95 @@ public class CourseService : ICourseService
         // Trả lại detail (tôn trọng quyền xem nội dung)
         var dto = await GetDetailAsync(id, user, ct);
         return new(true, dto!, null);
+    }
+
+    public async Task<List<ModuleDto>?> GetModulesAsync(long courseId, ClaimsPrincipal? user, CancellationToken ct)
+    {
+        // 1) Tải course + check quyền xem outline
+        var course = await _db.Courses.AsNoTracking().SingleOrDefaultAsync(c => c.Id == courseId, ct);
+        if (course is null) return null;
+
+        long? uid = null;
+        if (user is not null)
+        {
+            var idStr = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+            if (long.TryParse(idStr, out var parsed)) uid = parsed;
+        }
+
+        var isStaff = user?.IsInRole("ADMIN") == true || user?.IsInRole("TEACHER") == true;
+        var isOwner = uid.HasValue && course.CreatedBy == uid.Value;
+
+        // Ẩn khóa chưa publish với người thường
+        if (!course.IsPublished && !(isOwner || isStaff))
+            return null; // Controller -> 404
+
+        // 2) Xác định quyền xem nội dung (draft lessons)
+        var enrolled = false;
+        if (uid.HasValue)
+        {
+            enrolled = await _db.Enrollments.AsNoTracking()
+                .AnyAsync(e => e.CourseId == courseId && e.UserId == uid.Value, ct);
+        }
+        var canViewContent = enrolled || isOwner || isStaff;
+
+        // 3) Lấy modules
+        var modules = await _db.Modules.AsNoTracking()
+            .Where(m => m.CourseId == courseId)
+            .OrderBy(m => m.Position)
+            .Select(m => new { m.Id, m.Title, m.Description, m.Position })
+            .ToListAsync(ct);
+
+        if (modules.Count == 0)
+            return new List<ModuleDto>();
+
+        var moduleIds = modules.Select(m => m.Id).ToList();
+
+        // 4) Lấy lessons (lọc đã publish nếu không có quyền)
+        var lessonsQ = _db.Lessons.AsNoTracking()
+            .Where(l => moduleIds.Contains(l.ModuleId));
+
+        if (!canViewContent)
+            lessonsQ = lessonsQ.Where(l => l.IsPublished);
+
+        var lessons = await lessonsQ
+            .OrderBy(l => l.ModuleId).ThenBy(l => l.Position)
+            .Select(l => new
+            {
+                l.Id,
+                l.Title,
+                l.Position,
+                l.IsPublished,
+                l.ModuleId,
+                l.Objective,
+                l.VideoId,
+                l.TranscriptId
+            })
+            .ToListAsync(ct);
+
+        // 5) Group vào DTO (ẩn field nhạy cảm khi không có quyền)
+        var lessonLookup = lessons.GroupBy(x => x.ModuleId)
+            .ToDictionary(g => g.Key, g => g.Select(r => new LessonDto
+            {
+                Id = r.Id,
+                Title = r.Title,
+                Position = r.Position,
+                IsPublished = r.IsPublished,
+                Objective = canViewContent ? r.Objective : null,
+                VideoId = canViewContent ? r.VideoId : null,
+                TranscriptId = canViewContent ? r.TranscriptId : null
+            }).OrderBy(l => l.Position).ToList());
+
+        var result = modules.Select(m => new ModuleDto
+        {
+            Id = m.Id,
+            Title = m.Title,
+            Position = m.Position,
+            Lessons = lessonLookup.TryGetValue(m.Id, out var ls) ? ls : new List<LessonDto>()
+        })
+        .OrderBy(x => x.Position)
+        .ToList();
+
+        return result;
     }
 }

@@ -132,6 +132,17 @@ public class CoursesController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id:long}/modules")]
+    [AllowAnonymous] // Public: service sẽ ẩn dữ liệu theo quyền
+    [ProducesResponseType(typeof(List<ModuleDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetModules([FromRoute] long id, CancellationToken ct)
+    {
+        var list = await _svc.GetModulesAsync(id, User, ct);
+        if (list is null) return NotFound();
+        return Ok(list);
+    }
+
     // helper: lấy userId từ token
     private long? GetUserId()
     {
