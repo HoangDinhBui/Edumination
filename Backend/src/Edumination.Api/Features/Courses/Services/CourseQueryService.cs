@@ -16,7 +16,8 @@ public interface ICourseService
     Task<ApiResult<CreateCourseResponse>> CreateAsync(CreateCourseRequest req, long creatorUserId, CancellationToken ct);
     Task<ApiResult<CourseDetailDto>> UpdatePartialAsync(long id, UpdateCourseRequest req, ClaimsPrincipal user, CancellationToken ct);
     Task<List<ModuleDto>?> GetModulesAsync(long courseId, ClaimsPrincipal? user, CancellationToken ct);
-
+    Task<ApiResult<ModuleDto>> CreateModuleAsync(
+        long courseId, CreateModuleRequest req, ClaimsPrincipal user, CancellationToken ct);
 }
 
 public class CourseService : ICourseService
@@ -410,5 +411,83 @@ public class CourseService : ICourseService
         .ToList();
 
         return result;
+    }
+
+    public async Task<ApiResult<ModuleDto>> CreateModuleAsync(
+    long courseId, CreateModuleRequest req, ClaimsPrincipal user, CancellationToken ct)
+    {
+        // 1) Tìm course
+        var course = await _db.Courses.SingleOrDefaultAsync(c => c.Id == courseId, ct);
+        if (course is null) return new(false, null, "NOT_FOUND");
+
+        // 2) Quyền: ADMIN/TEACHER hoặc Owner
+        long? uid = null;
+        var idStr = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+        if (long.TryParse(idStr, out var parsed)) uid = parsed;
+
+        var isStaff = user.IsInRole("ADMIN") || user.IsInRole("TEACHER");
+        var isOwner = uid.HasValue && course.CreatedBy == uid.Value;
+        if (!(isStaff || isOwner)) return new(false, null, "FORBIDDEN");
+
+        // 3) Tính position mục tiêu
+        int targetPos;
+        if (!req.Position.HasValue || req.Position!.Value <= 0)
+        {
+            var maxPos = await _db.Modules
+                .Where(m => m.CourseId == courseId)
+                .MaxAsync(m => (int?)m.Position, ct);
+            targetPos = (maxPos ?? 0) + 1; // append
+        }
+        else
+        {
+            targetPos = req.Position.Value;
+        }
+
+        // 4) Transaction: shift các module >= targetPos lên +1 (để tránh UNIQUE (course_id, position) đụng nhau)
+        using var tx = await _db.Database.BeginTransactionAsync(ct);
+        try
+        {
+            if (targetPos > 0)
+            {
+                // dịch chuyển hàng loạt chỉ trong course này
+                await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                    UPDATE modules
+                    SET position = position + 1
+                    WHERE course_id = {courseId} AND position >= {targetPos};", ct);
+            }
+
+            var entity = new Module   // chú ý: entity của bạn là 'Modules' (đúng như bạn đang dùng _db.Modules)
+            {
+                CourseId = courseId,
+                Title = req.Title.Trim(),
+                Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim(),
+                Position = targetPos
+            };
+
+            _db.Modules.Add(entity);
+
+            // cập nhật UpdatedAt của course cho đúng semantics
+            course.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+
+            var dto = new ModuleDto
+            {
+                Id = entity.Id,
+                Title = entity.Title,
+                Position = entity.Position,
+                Lessons = new List<LessonDto>()
+            };
+
+            return new(true, dto, null);
+        }
+        catch (DbUpdateException ex)
+        {
+            await tx.RollbackAsync(ct);
+            // có thể là lỗi UNIQUE (course_id, position) hiếm gặp nếu race condition
+            return new(false, null, "CONFLICT: Duplicate position.");
+        }
     }
 }

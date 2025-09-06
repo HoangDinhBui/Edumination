@@ -17,13 +17,16 @@ public class CoursesController : ControllerBase
     private readonly ICourseService _svc;
     private readonly IValidator<CreateCourseRequest> _validator;
     private readonly IValidator<UpdateCourseRequest> _updateValidator;
+    private readonly IValidator<CreateModuleRequest> _createModuleValidator;
     public CoursesController(ICourseService svc,
                             IValidator<CreateCourseRequest> validator,
-                            IValidator<UpdateCourseRequest> updateValidator)
+                            IValidator<UpdateCourseRequest> updateValidator,
+                            IValidator<CreateModuleRequest> createModuleValidator)
     {
         _svc = svc;
         _validator = validator;
         _updateValidator = updateValidator;
+        _createModuleValidator = createModuleValidator;
     }
 
     // GET /api/v1/courses?published=1&q=&level=&page=1&pageSize=20
@@ -149,5 +152,38 @@ public class CoursesController : ControllerBase
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
                         ?? User.FindFirstValue(JwtNames.Sub);
         return long.TryParse(userIdStr, out var id) ? id : (long?)null;
+    }
+
+    [HttpPost("{id:long}/modules")]
+    [Authorize] // kiểm tra chi tiết quyền ở service (Admin/Teacher/Owner)
+    [ProducesResponseType(typeof(ApiResult<ModuleDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CreateModule([FromRoute] long id, [FromBody] CreateModuleRequest req, CancellationToken ct)
+    {
+        // inject validator qua ctor: IValidator<CreateModuleRequest> _createModuleValidator;
+        var val = await _createModuleValidator.ValidateAsync(req, ct);
+        if (!val.IsValid)
+        {
+            var errs = val.Errors.Select(e => new { field = e.PropertyName, message = e.ErrorMessage });
+            return BadRequest(new ApiResult<object>(false, null, System.Text.Json.JsonSerializer.Serialize(errs)));
+        }
+
+        var result = await _svc.CreateModuleAsync(id, req, User, ct);
+
+        if (!result.Success)
+        {
+            return result.Error switch
+            {
+                "NOT_FOUND" => NotFound(new { error = "Course not found." }),
+                "FORBIDDEN" => Forbid(),
+                _ when result.Error?.StartsWith("CONFLICT") == true => Conflict(new { error = result.Error }),
+                _ => BadRequest(result)
+            };
+        }
+
+        // Trả 201; Location có thể trỏ về list modules
+        return CreatedAtAction(nameof(GetModules), new { id }, result);
     }
 }
