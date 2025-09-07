@@ -1,3 +1,5 @@
+using Edumination.Api.Domain.Entities;
+
 namespace Edumination.Domain.Entities;
 
 public class QuestionAnswerKey

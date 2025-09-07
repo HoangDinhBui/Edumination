@@ -1,15 +1,26 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using Edumination.Api.Domain.Entities;
+
 namespace Edumination.Domain.Entities;
 
 public class QuestionChoice
 {
-    internal object QuestionAnswerKey;
-
     public long Id { get; set; }
-    public long QuestionId { get; set; }
-    public string Content { get; set; }
-    public bool IsCorrect { get; set; }
-    public int Position { get; set; }
 
-    // Navigation property
-    public virtual Question Question { get; set; }
+        [ForeignKey(nameof(Question))]
+        public long QuestionId { get; set; }
+
+        [Required]
+        [StringLength(1000)]
+        public string Content { get; set; }
+
+        public int Position { get; set; }
+
+        [Required]
+        public bool IsCorrect { get; set; }
+        [JsonIgnore]
+
+        public virtual Question? Question { get; set; }
 }

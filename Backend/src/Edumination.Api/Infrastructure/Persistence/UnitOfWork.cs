@@ -1,5 +1,6 @@
 using Education.Repositories;
 using Edumination.Api.Infrastructure.Persistence;
+using Edumination.Api.Infrastructure.Persistence.Repositories;
 using Edumination.Domain.Interfaces;
 using Edumination.Persistence.Repositories;
 using System.Threading.Tasks;

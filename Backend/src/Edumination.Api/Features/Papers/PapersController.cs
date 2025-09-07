@@ -293,7 +293,7 @@ public class PapersController : ControllerBase
         CreatedAt = DateTime.UtcNow,
         ExerciseId = randomExerciseId
     };
-    await _unitOfWork.Questions.AddAsync(question);
+        _ = await _unitOfWork.Questions.CreateAsync(question);
 
     await _unitOfWork.SaveChangesAsync(); // Lưu tất cả cùng lúc
     Console.WriteLine($"Section ID: {section.Id}, Passage ID: {passage.Id}, Question Passage ID: {question.PassageId}");

@@ -32,6 +32,7 @@ using Edumination.Persistence;
 using Edumination.Api.Features.Admin.Validators;
 using Edumination.Api.Features.Courses.Dtos;
 using Edumination.Api.Features.Courses.Validators;
+using Edumination.Api.Infrastructure.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,6 +87,11 @@ builder.Services.AddScoped<IValidator<CreateModuleRequest>, CreateModuleRequestV
 // Thêm vào phần đăng ký dịch vụ trong Program.cs
 builder.Services.AddScoped<IPassageRepository, PassageRepository>();
 builder.Services.AddScoped<IPassageService, PassageService>();
+builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>(); 
+builder.Services.AddScoped<IQuestionChoiceService, QuestionChoiceService>();
+builder.Services.AddScoped<IQuestionChoiceRepository, QuestionChoiceRepository>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
