@@ -32,6 +32,7 @@ using Edumination.Api.Repositories;
 using Edumination.Api.Services.Interfaces;
 using Edumination.Api.Features.Courses.Dtos;
 using Edumination.Api.Features.Courses.Validators;
+using Edumination.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,9 @@ builder.Services.AddScoped<ISectionRepository, SectionRepository>();
 builder.Services.AddScoped<ISectionService, SectionService>();
 builder.Services.AddScoped<IValidator<UpdateCourseRequest>, UpdateCourseRequestValidator>();
 builder.Services.AddScoped<IValidator<CreateModuleRequest>, CreateModuleRequestValidator>();
+// Thêm vào phần đăng ký dịch vụ trong Program.cs
+builder.Services.AddScoped<IPassageRepository, PassageRepository>();
+builder.Services.AddScoped<IPassageService, PassageService>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");

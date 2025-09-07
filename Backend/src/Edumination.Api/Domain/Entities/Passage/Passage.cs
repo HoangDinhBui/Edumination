@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Education.Domain.Entities;
 using Edumination.Api.Domain.Entities;
 
@@ -15,6 +16,8 @@ public class Passage
     public long? TranscriptId { get; set; }
     public int Position { get; set; }
     public DateTime CreatedAt { get; set; }
+    
+    [JsonIgnore] 
 
     // Navigation properties
     public virtual TestSection TestSection { get; set; }
