@@ -18,21 +18,20 @@ using Edumination.Api.Features.Leaderboard.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Security.Claims;
-using Edumination.Services;
-using Edumination.Domain.Interfaces;
-using Edumination.Persistence;
 using Edumination.Api.Features.Papers.Services;
-using Microsoft.AspNetCore.Routing;
 using Edumination.Api.Features.Admin.Services;
-using Edumination.Api.Features.Admin.Validators;
 using Edumination.Api.Features.Courses.Services;
 using Edumination.Api.Repositories.Interfaces;
 using Edumination.Api.Repositories;
 using Edumination.Api.Services.Interfaces;
+using Edumination.Persistence.Repositories;
+using System.Security.Claims;
+using Edumination.Services;
+using Edumination.Domain.Interfaces;
+using Edumination.Persistence;
+using Edumination.Api.Features.Admin.Validators;
 using Edumination.Api.Features.Courses.Dtos;
 using Edumination.Api.Features.Courses.Validators;
-using Edumination.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,10 +45,8 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 // Options
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-
 builder.Services.Configure<OAuthOptions>(builder.Configuration.GetSection("OAuth"));
 builder.Services.AddMemoryCache();
-
 
 builder.Services
     .AddOptions<AppOptions>()
@@ -58,7 +55,12 @@ builder.Services
     .ValidateOnStart();
 
 // MVC + FluentValidation + Swagger
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddFluentValidationAutoValidation();
@@ -81,6 +83,9 @@ builder.Services.AddScoped<ISectionRepository, SectionRepository>();
 builder.Services.AddScoped<ISectionService, SectionService>();
 builder.Services.AddScoped<IValidator<UpdateCourseRequest>, UpdateCourseRequestValidator>();
 builder.Services.AddScoped<IValidator<CreateModuleRequest>, CreateModuleRequestValidator>();
+// Thêm vào phần đăng ký dịch vụ trong Program.cs
+builder.Services.AddScoped<IPassageRepository, PassageRepository>();
+builder.Services.AddScoped<IPassageService, PassageService>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -114,26 +119,18 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IAssetRepository, AssetRepository>();
-builder.Services.AddScoped<IAssetService, AssetsService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 
-// Email sender (mock dev)
-builder.Services.AddScoped<IEmailSender, MockEmailSender>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
-
-// Options
-builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth"));
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
-
-// Bind SMTP options
-builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
-
-// Chọn implementation theo môi trường
+// Email sender
 if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IEmailSender, MockEmailSender>();
 else
     builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+
+// Bind SMTP options
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 
 var app = builder.Build();
 
@@ -143,26 +140,28 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Edumination v1"));
 }
 
-// Áp dụng mọi migration còn thiếu khi khởi động (bật/tắt bằng cấu hình)
+// Middleware debug
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"[MIDDLEWARE] Request Path: {context.Request.Path}, Content-Type: {context.Request.ContentType}");
+    await next.Invoke();
+});
+
 if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
     try
     {
-        db.Database.Migrate(); // hoặc await db.Database.MigrateAsync();
+        db.Database.Migrate();
         Console.WriteLine("[DB] Migrations applied successfully.");
-        // (tùy chọn) Seed dữ liệu:
-        // await SeedData.RunAsync(db);
     }
     catch (Exception ex)
     {
         Console.Error.WriteLine($"[DB] Migration failed: {ex.Message}");
-        throw; // cho app fail fast nếu migrate lỗi
+        throw;
     }
 }
-
 
 var ep = app.Services.GetRequiredService<EndpointDataSource>();
 foreach (var e in ep.Endpoints.OfType<RouteEndpoint>())
@@ -176,13 +175,13 @@ var envClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")
 if (!string.IsNullOrWhiteSpace(envClientSecret))
     builder.Configuration["OAuth:Google:ClientSecret"] = envClientSecret;
 
-// app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.Run();
+
+// MockEmailSender và AppOptions giữ nguyên như trong mã của bạn
 
 
 public class MockEmailSender : IEmailSender
