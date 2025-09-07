@@ -111,7 +111,7 @@ namespace Edumination.Api.Controllers
         [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> GetPassage(long pid)
         {
-            // Triển khai logic lấy passage (placeholder)
+           
             return NotFound();
         }
     }
