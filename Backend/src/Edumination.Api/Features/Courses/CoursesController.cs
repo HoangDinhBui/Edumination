@@ -15,10 +15,12 @@ namespace Edumination.Api.Features.Courses;
 public class CoursesController : ControllerBase
 {
     private readonly ICourseService _svc;
+    private readonly IModuleService _moduleService;
     private readonly IValidator<CreateCourseRequest> _validator;
     private readonly IValidator<UpdateCourseRequest> _updateValidator;
     private readonly IValidator<CreateModuleRequest> _createModuleValidator;
     public CoursesController(ICourseService svc,
+                            IModuleService moduleService,
                             IValidator<CreateCourseRequest> validator,
                             IValidator<UpdateCourseRequest> updateValidator,
                             IValidator<CreateModuleRequest> createModuleValidator)
@@ -27,6 +29,7 @@ public class CoursesController : ControllerBase
         _validator = validator;
         _updateValidator = updateValidator;
         _createModuleValidator = createModuleValidator;
+        _moduleService = moduleService;
     }
 
     // GET /api/v1/courses?published=1&q=&level=&page=1&pageSize=20
@@ -185,5 +188,17 @@ public class CoursesController : ControllerBase
 
         // Trả 201; Location có thể trỏ về list modules
         return CreatedAtAction(nameof(GetModules), new { id }, result);
+    }
+
+    // GET /api/v1/modules/{mid}/lessons
+    [HttpGet("/modules/{mid:long}/lessons")]
+    [AllowAnonymous] // quyền xem được check trong service
+    [ProducesResponseType(typeof(List<LessonDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetLessons([FromRoute] long mid, CancellationToken ct)
+    {
+        var list = await _moduleService.GetLessonsAsync(mid, User, ct);
+        if (list is null) return NotFound(); // module không tồn tại hoặc bị ẩn vì course chưa publish
+        return Ok(list); // có thể là mảng rỗng nếu không có lesson/published nào
     }
 }

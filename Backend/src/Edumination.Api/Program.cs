@@ -80,6 +80,8 @@ builder.Services.AddScoped<ISectionRepository, SectionRepository>();
 builder.Services.AddScoped<ISectionService, SectionService>();
 builder.Services.AddScoped<IValidator<UpdateCourseRequest>, UpdateCourseRequestValidator>();
 builder.Services.AddScoped<IValidator<CreateModuleRequest>, CreateModuleRequestValidator>();
+builder.Services.AddScoped<IModuleService, ModuleService>();
+
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
