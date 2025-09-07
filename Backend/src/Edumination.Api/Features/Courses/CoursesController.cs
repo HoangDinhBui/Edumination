@@ -19,17 +19,20 @@ public class CoursesController : ControllerBase
     private readonly IValidator<CreateCourseRequest> _validator;
     private readonly IValidator<UpdateCourseRequest> _updateValidator;
     private readonly IValidator<CreateModuleRequest> _createModuleValidator;
+    private readonly IValidator<CreateLessonRequest> _createLessonRequestValidator;
     public CoursesController(ICourseService svc,
                             IModuleService moduleService,
                             IValidator<CreateCourseRequest> validator,
                             IValidator<UpdateCourseRequest> updateValidator,
-                            IValidator<CreateModuleRequest> createModuleValidator)
+                            IValidator<CreateModuleRequest> createModuleValidator,
+                            IValidator<CreateLessonRequest> createLessonValidator)
     {
         _svc = svc;
         _validator = validator;
         _updateValidator = updateValidator;
         _createModuleValidator = createModuleValidator;
         _moduleService = moduleService;
+        _createLessonRequestValidator = createLessonValidator;
     }
 
     // GET /api/v1/courses?published=1&q=&level=&page=1&pageSize=20
