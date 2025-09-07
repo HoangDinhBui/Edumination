@@ -22,21 +22,18 @@ namespace Edumination.Api.Services
 
         public async Task<Passage> CreatePassageAsync(long sectionId, PassageCreateDto dto)
         {
-            // Kiểm tra section có tồn tại không
             var section = await _sectionRepository.GetByIdAsync(sectionId);
             if (section == null)
             {
-                throw new KeyNotFoundException($"Section với ID {sectionId} không được tìm thấy.");
+                throw new KeyNotFoundException($"Section with ID {sectionId} not found.");
             }
 
-            // Kiểm tra trùng lặp vị trí
             var existingPassage = await _passageRepository.GetBySectionIdAndPositionAsync(sectionId, dto.Position);
             if (existingPassage != null)
             {
-                throw new InvalidOperationException($"Đã có passage tại vị trí {dto.Position} cho section {sectionId}.");
+                throw new InvalidOperationException($"A passage already exists at position {dto.Position} for section {sectionId}.");
             }
 
-            // Tạo passage mới
             var passage = new Passage
             {
                 SectionId = sectionId,
@@ -49,6 +46,42 @@ namespace Edumination.Api.Services
             };
 
             return await _passageRepository.CreateAsync(passage);
+        }
+
+        public async Task<Passage> UpdatePassageAsync(long id, PassageUpdateDto dto)
+        {
+            var passage = await _passageRepository.GetByIdAsync(id);
+            if (passage == null)
+            {
+                throw new KeyNotFoundException($"Passage with ID {id} not found.");
+            }
+
+            if (dto.Title != null) passage.Title = dto.Title;
+            if (dto.ContentText != null) passage.ContentText = dto.ContentText;
+            if (dto.AudioId.HasValue) passage.AudioId = dto.AudioId;
+            if (dto.TranscriptId.HasValue) passage.TranscriptId = dto.TranscriptId;
+            if (dto.Position.HasValue)
+            {
+                var existingPassage = await _passageRepository.GetBySectionIdAndPositionAsync(passage.SectionId, dto.Position.Value);
+                if (existingPassage != null && existingPassage.Id != id)
+                {
+                    throw new InvalidOperationException($"A passage already exists at position {dto.Position.Value} for section {passage.SectionId}.");
+                }
+                passage.Position = dto.Position.Value;
+            }
+
+            await _passageRepository.UpdateAsync(passage);
+            return passage;
+        }
+
+        public async Task DeletePassageAsync(long id)
+        {
+            var passage = await _passageRepository.GetByIdAsync(id);
+            if (passage == null)
+            {
+                throw new KeyNotFoundException($"Passage with ID {id} not found.");
+            }
+            await _passageRepository.DeleteAsync(id);
         }
     }
 }

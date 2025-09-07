@@ -10,6 +10,7 @@ namespace Edumination.Api.Repositories.Interfaces
         Task<Passage> CreateAsync(Passage passage);
         Task<Passage> GetByIdAsync(long id);
         Task<Passage> GetBySectionIdAndPositionAsync(long sectionId, int position);
-        // Other existing methods...
+        Task<Passage> UpdateAsync(Passage passage);
+        Task DeleteAsync(long id);
     }
 }

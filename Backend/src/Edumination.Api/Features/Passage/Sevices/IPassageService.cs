@@ -9,5 +9,7 @@ namespace Edumination.Api.Services.Interfaces
     public interface IPassageService
     {
         Task<Passage> CreatePassageAsync(long sectionId, PassageCreateDto dto);
+        Task<Passage> UpdatePassageAsync(long id, PassageUpdateDto dto);
+        Task DeletePassageAsync(long id);
     }
 }
