@@ -16,14 +16,17 @@ namespace Edumination.Api.Controllers
         private readonly IQuestionService _questionService;
         private readonly IQuestionChoiceService _questionChoiceService; // Thêm service
         private readonly ILogger<QuestionsController> _logger;
+        private readonly IQuestionAnswerKeyService _questionAnswerKeyService;
 
         public QuestionsController(
             IQuestionService questionService,
             IQuestionChoiceService questionChoiceService, // Thêm dependency
+            IQuestionAnswerKeyService questionAnswerKeyService,
             ILogger<QuestionsController> logger)
         {
             _questionService = questionService;
             _questionChoiceService = questionChoiceService;
+            _questionAnswerKeyService = questionAnswerKeyService;
             _logger = logger;
         }
 
@@ -105,6 +108,103 @@ namespace Edumination.Api.Controllers
         {
             // Triển khai logic lấy choice (placeholder)
             return NotFound();
+        }
+
+        [HttpPost("questions/{qid}/answer-key")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
+        public async Task<IActionResult> CreateAnswerKey(long qid, [FromBody] QuestionAnswerKeyCreateDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("ModelState không hợp lệ: {@Errors}", ModelState.Values.SelectMany(v => v.Errors));
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var createdAnswerKey = await _questionAnswerKeyService.CreateAnswerKeyAsync(qid, dto);
+                return CreatedAtAction(nameof(GetAnswerKey), new { qid }, createdAnswerKey);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "Không tìm thấy câu hỏi hoặc khóa đáp án cho ID: {Qid}", qid);
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Lỗi xung đột cho ID câu hỏi: {Qid}", qid);
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi máy chủ nội bộ cho ID câu hỏi: {Qid}", qid);
+                return StatusCode(500, "Lỗi máy chủ nội bộ");
+            }
+        }
+
+        [HttpPatch("questions/{qid}/answer-key")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
+        public async Task<IActionResult> UpdateAnswerKey(long qid, [FromBody] QuestionAnswerKeyUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("ModelState không hợp lệ: {@Errors}", ModelState.Values.SelectMany(v => v.Errors));
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var updatedAnswerKey = await _questionAnswerKeyService.UpdateAnswerKeyAsync(qid, dto);
+                return Ok(updatedAnswerKey);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "Không tìm thấy khóa đáp án cho ID: {Qid}", qid);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi máy chủ nội bộ cho ID câu hỏi: {Qid}", qid);
+                return StatusCode(500, "Lỗi máy chủ nội bộ");
+            }
+        }
+
+        [HttpDelete("questions/{qid}/answer-key")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
+        public async Task<IActionResult> DeleteAnswerKey(long qid)
+        {
+            try
+            {
+                await _questionAnswerKeyService.DeleteAnswerKeyAsync(qid);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "Không tìm thấy khóa đáp án cho ID: {Qid}", qid);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi máy chủ nội bộ cho ID câu hỏi: {Qid}", qid);
+                return StatusCode(500, "Lỗi máy chủ nội bộ");
+            }
+        }
+
+        // Thêm endpoint GET nếu cần (tùy chọn)
+        [HttpGet("questions/{qid}/answer-key")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
+        public async Task<IActionResult> GetAnswerKey(long qid)
+        {
+            try
+            {
+                var answerKey = await _questionAnswerKeyService.GetAnswerKeyAsync(qid); // Triển khai trong service
+                return Ok(answerKey);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "Không tìm thấy khóa đáp án cho ID: {Qid}", qid);
+                return NotFound(ex.Message);
+            }
         }
     }
 }
