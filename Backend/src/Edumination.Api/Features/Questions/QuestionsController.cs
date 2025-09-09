@@ -63,7 +63,6 @@ namespace Edumination.Api.Controllers
         [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> GetQuestion(long sid, long qid)
         {
-            // Triển khai logic lấy question (placeholder)
             return NotFound();
         }
 
@@ -103,7 +102,6 @@ namespace Edumination.Api.Controllers
         [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> GetChoice(long qid, long cid)
         {
-            // Triển khai logic lấy choice (placeholder)
             return NotFound();
         }
     }

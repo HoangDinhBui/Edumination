@@ -17,6 +17,6 @@ public class TestPaper
 
     // Navigation properties
     public virtual Asset? PdfAsset { get; set; } // Liên kết với Asset
-    public virtual User CreatedByUser { get; set; }
+    public virtual User? CreatedByUser { get; set; }
     public virtual ICollection<TestSection> TestSections { get; set; } = new List<TestSection>();
 }

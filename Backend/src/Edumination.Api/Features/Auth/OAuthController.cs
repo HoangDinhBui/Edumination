@@ -19,9 +19,18 @@ public class OAuthController : ControllerBase
     private readonly OAuthOptions _opt;
     private readonly AppDbContext _db;
 
-    public OAuthController(IOAuthService oauth)
+    public OAuthController(
+        IOAuthService oauth,
+        IMemoryCache cache,
+        IHttpClientFactory http,
+        OAuthOptions opt,
+        AppDbContext db)
     {
         _oauth = oauth;
+        _cache = cache;
+        _http = http;
+        _opt = opt;
+        _db = db;
     }
 
     [HttpPost("{provider}/start")]

@@ -14,7 +14,7 @@ namespace Edumination.Api.Repositories
             _context = context;
         }
 
-        public async Task<TestSection> GetByIdAsync(long id)
+        public async Task<TestSection?> GetByIdAsync(long id)
         {
             return await _context.TestSections.FindAsync(id);
         }

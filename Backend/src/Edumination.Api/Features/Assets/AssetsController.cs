@@ -48,6 +48,10 @@ public class AssetsController : ControllerBase
         // Lưu file vào storage
         using var stream = file.OpenReadStream();
         var storageService = HttpContext.RequestServices.GetService<IStorageService>();
+        if (storageService == null)
+        {
+            return StatusCode(500, "Storage service is not available");
+        }
         await storageService.SaveFileAsync(response.Asset.StorageUrl, stream);
 
         return Ok(response);

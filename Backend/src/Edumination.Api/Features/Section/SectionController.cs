@@ -35,7 +35,7 @@ namespace Edumination.Api.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Log error (sử dụng IAuditLogger nếu đã có)
                 return StatusCode(500, "Internal server error");

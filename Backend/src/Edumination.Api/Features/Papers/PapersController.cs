@@ -29,69 +29,69 @@ public class PapersController : ControllerBase
     }
 
     [HttpGet("{id}/sections")]
-        [Authorize] // Yêu cầu đăng nhập
-        public async Task<IActionResult> GetPaperSections(long id)
+    [Authorize] // Yêu cầu đăng nhập
+    public async Task<IActionResult> GetPaperSections(long id)
+    {
+        // Kiểm tra vai trò của người dùng
+        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+        bool isStudent = roles.Contains("STUDENT") && !roles.Contains("TEACHER") && !roles.Contains("ADMIN");
+        bool hideAnswers = isStudent;
+
+        // Lấy TestPaper và các section liên quan
+        var paper = await _unitOfWork.TestPapers.GetByIdAsync(id);
+        if (paper == null)
         {
-            // Kiểm tra vai trò của người dùng
-            var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
-            bool isStudent = roles.Contains("STUDENT") && !roles.Contains("TEACHER") && !roles.Contains("ADMIN");
-            bool hideAnswers = isStudent;
-
-            // Lấy TestPaper và các section liên quan
-            var paper = await _unitOfWork.TestPapers.GetByIdAsync(id);
-            if (paper == null)
-            {
-                return NotFound($"Bài kiểm tra với ID {id} không tồn tại.");
-            }
-
-            var sections = await _context.TestSections
-                .AsNoTracking()
-                .Include(s => s.Passages)
-                    .ThenInclude(p => p.Questions)
-                        .ThenInclude(q => q.QuestionChoices)
-                .Include(s => s.Passages)
-                    .ThenInclude(p => p.Questions)
-                        .ThenInclude(q => q.QuestionAnswerKey)
-                .Where(s => s.PaperId == id)
-                .ToListAsync();
-
-            if (sections == null || !sections.Any())
-            {
-                return NotFound($"Không tìm thấy section nào cho bài kiểm tra với ID {id}.");
-            }
-
-            // Chuyển đổi sang DTO
-            var sectionDtos = sections.Select(s => new SectionDto
-            {
-                Id = s.Id,
-                Skill = s.Skill,
-                SectionNo = s.SectionNo,
-                TimeLimitSec = s.TimeLimitSec ?? 0,
-                AudioAssetId = s.AudioAssetId,
-                IsPublished = s.IsPublished,
-                Passages = s.Passages.Select(p => new PassageDto
-                {
-                    Id = p.Id,
-                    Title = p.Title,
-                    ContentText = p.ContentText,
-                    Questions = p.Questions.Select(q => new QuestionDto
-                    {
-                        Id = q.Id,
-                        Qtype = q.Qtype,
-                        Stem = q.Stem,
-                        Position = q.Position,
-                        Choices = hideAnswers ? null : q.QuestionChoices?.Select(c => new ChoiceDto
-                        {
-                            Content = c.Content,
-                            IsCorrect = c.IsCorrect
-                        }).ToList(),
-                        AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson
-                    }).ToList()
-                }).ToList()
-            }).ToList();
-
-            return Ok(sectionDtos);
+            return NotFound($"Bài kiểm tra với ID {id} không tồn tại.");
         }
+
+        var sections = await _context.TestSections
+            .AsNoTracking()
+            .Include(s => s.Passages)
+                .ThenInclude(p => p.Questions)
+                    .ThenInclude(q => q.QuestionChoices)
+            .Include(s => s.Passages)
+                .ThenInclude(p => p.Questions)
+                    .ThenInclude(q => q.QuestionAnswerKey)
+            .Where(s => s.PaperId == id)
+            .ToListAsync();
+
+        if (sections == null || !sections.Any())
+        {
+            return NotFound($"Không tìm thấy section nào cho bài kiểm tra với ID {id}.");
+        }
+
+        // Chuyển đổi sang DTO
+        var sectionDtos = sections.Select(s => new SectionDto
+        {
+            Id = s.Id,
+            Skill = s.Skill,
+            SectionNo = s.SectionNo,
+            TimeLimitSec = s.TimeLimitSec ?? 0,
+            AudioAssetId = s.AudioAssetId,
+            IsPublished = s.IsPublished,
+            Passages = s.Passages.Select(p => new PassageDto
+            {
+                Id = p.Id,
+                Title = p.Title ?? string.Empty,
+                ContentText = p.ContentText ?? string.Empty,
+                Questions = p.Questions.Select(q => new QuestionDto
+                {
+                    Id = q.Id,
+                    Qtype = q.Qtype ?? string.Empty,
+                    Stem = q.Stem ?? string.Empty,
+                    Position = q.Position,
+                    Choices = hideAnswers ? null : q.QuestionChoices?.Select(c => new ChoiceDto
+                    {
+                        Content = c.Content ?? string.Empty,
+                        IsCorrect = c.IsCorrect
+                    }).ToList(),
+                    AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson
+                }).ToList()
+            }).ToList()
+        }).ToList();
+
+        return Ok(sectionDtos);
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreatePaper([FromBody] CreatePaperRequest request)
@@ -105,7 +105,7 @@ public class PapersController : ControllerBase
         var testPaper = new TestPaper
         {
             Title = request.Title,
-            UploadMethod = request.UploadMethod,
+            UploadMethod = request.UploadMethod ?? "MANUAL",
             PdfAssetId = request.PdfAssetId,
             CreatedBy = userId,
             CreatedAt = DateTime.UtcNow,
@@ -248,56 +248,56 @@ public class PapersController : ControllerBase
     }
 
     private async Task ProcessPdfAsync(long paperId, long pdfAssetId)
-{
-    var paper = await _unitOfWork.TestPapers.GetByIdAsync(paperId);
-    if (paper == null || paper.Status != "DRAFT" || paper.PdfAssetId != pdfAssetId)
     {
-        return;
-    }
+        var paper = await _unitOfWork.TestPapers.GetByIdAsync(paperId);
+        if (paper == null || paper.Status != "DRAFT" || paper.PdfAssetId != pdfAssetId)
+        {
+            return;
+        }
 
-    var section = new TestSection
-    {
-        PaperId = paperId,
-        Skill = "READING",
-        SectionNo = 1,
-        TimeLimitSec = 0,
-        IsPublished = false
-    };
-    await _unitOfWork.TestSections.AddAsync(section);
+        var section = new TestSection
+        {
+            PaperId = paperId,
+            Skill = "READING",
+            SectionNo = 1,
+            TimeLimitSec = 0,
+            IsPublished = false
+        };
+        await _unitOfWork.TestSections.AddAsync(section);
 
-    var passage = new Passage
-    {
-        SectionId = section.Id,
-        Title = "Passage 1",
-        ContentText = "Nội dung mẫu",
-        Position = 1,
-        CreatedAt = DateTime.UtcNow
-    };
-    await _unitOfWork.Passages.AddAsync(passage);
+        var passage = new Passage
+        {
+            SectionId = section.Id,
+            Title = "Passage 1",
+            ContentText = "Nội dung mẫu",
+            Position = 1,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _unitOfWork.Passages.AddAsync(passage);
 
-    var randomExerciseId = await _context.Exercises
-        .OrderBy(e => Guid.NewGuid())
-        .Select(e => e.Id)
-        .FirstAsync();
+        var randomExerciseId = await _context.Exercises
+            .OrderBy(e => Guid.NewGuid())
+            .Select(e => e.Id)
+            .FirstAsync();
 
-    var maxPos = await _context.Questions
-        .Where(q => q.ExerciseId == randomExerciseId)
-        .MaxAsync(q => (int?)q.Position) ?? 0;
+        var maxPos = await _context.Questions
+            .Where(q => q.ExerciseId == randomExerciseId)
+            .MaxAsync(q => (int?)q.Position) ?? 0;
 
-    var question = new Question
-    {
-        PassageId = passage.Id,
-        Qtype = "MCQ",
-        Stem = "Câu hỏi mẫu",
-        Position = maxPos + 1,
-        CreatedAt = DateTime.UtcNow,
-        ExerciseId = randomExerciseId
-    };
+        var question = new Question
+        {
+            PassageId = passage.Id,
+            Qtype = "MCQ",
+            Stem = "Câu hỏi mẫu",
+            Position = maxPos + 1,
+            CreatedAt = DateTime.UtcNow,
+            ExerciseId = randomExerciseId
+        };
         _ = await _unitOfWork.Questions.CreateAsync(question);
 
-    await _unitOfWork.SaveChangesAsync(); // Lưu tất cả cùng lúc
-    Console.WriteLine($"Section ID: {section.Id}, Passage ID: {passage.Id}, Question Passage ID: {question.PassageId}");
-}
+        await _unitOfWork.SaveChangesAsync(); // Lưu tất cả cùng lúc
+        Console.WriteLine($"Section ID: {section.Id}, Passage ID: {passage.Id}, Question Passage ID: {question.PassageId}");
+    }
     private long GetCurrentUserId()
     {
         var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userid" || c.Type == "sub")?.Value;
@@ -307,14 +307,14 @@ public class PapersController : ControllerBase
 
 public class CreatePaperRequest
 {
-    public string Title { get; set; }
-    public string UploadMethod { get; set; } // "PDF_PARSER" or "MANUAL"
+    public string? Title { get; set; }
+    public string? UploadMethod { get; set; } // "PDF_PARSER" or "MANUAL"
     public long? PdfAssetId { get; set; }
 }
 
 public class SectionCreateRequest
 {
-    public string Skill { get; set; } // ENUM: LISTENING, READING, WRITING, SPEAKING
+    public string? Skill { get; set; } // ENUM: LISTENING, READING, WRITING, SPEAKING
     public int SectionNo { get; set; }
     public int TimeLimitSec { get; set; }
     public long? AudioAssetId { get; set; }

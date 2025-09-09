@@ -21,7 +21,7 @@ public class TestPaperRepository
         return testPaper; // UnitOfWork sẽ xử lý SaveChanges
     }
 
-    public async Task<TestPaper> GetByIdAsync(long id)
+    public async Task<TestPaper?> GetByIdAsync(long id)
     {
         return await _context.TestPapers
             .Include(t => t.PdfAsset)

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Edumination.Api.Features.Papers.Services;
+
 public class PaperService : IPaperService
 {
     private readonly AppDbContext _db;
@@ -48,51 +49,51 @@ public class PaperService : IPaperService
     }
 
     public async Task<DetailedPaperDto?> GetDetailedAsync(long id, bool hideAnswers, CancellationToken ct = default)
-{
-    var paper = await _db.TestPapers
-        .AsNoTracking()
-        .Include(p => p.TestSections)
-            .ThenInclude(s => s.Passages)
-                .ThenInclude(pa => pa.Questions)
-                    .ThenInclude(q => q.QuestionChoices) // Tải QuestionChoices
-        .Include(p => p.TestSections)
-            .ThenInclude(s => s.Passages)
-                .ThenInclude(pa => pa.Questions)
-                    .ThenInclude(q => q.QuestionAnswerKey) // Tải QuestionAnswerKey riêng
-        .FirstOrDefaultAsync(p => p.Id == id, ct);
-
-    if (paper == null) return null;
-
-    var dto = new DetailedPaperDto
     {
-        Id = paper.Id,
-        Title = paper.Title,
-        Status = paper.Status,
-        CreatedAt = paper.CreatedAt,
-        PdfAssetId = paper.PdfAssetId,
-        Sections = paper.TestSections.Select(s => new SectionDto
+        var paper = await _db.TestPapers
+            .AsNoTracking()
+            .Include(p => p.TestSections)
+                .ThenInclude(s => s.Passages)
+                    .ThenInclude(pa => pa.Questions)
+                        .ThenInclude(q => q.QuestionChoices) // Tải QuestionChoices
+            .Include(p => p.TestSections)
+                .ThenInclude(s => s.Passages)
+                    .ThenInclude(pa => pa.Questions)
+                        .ThenInclude(q => q.QuestionAnswerKey) // Tải QuestionAnswerKey riêng
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
+
+        if (paper == null) return null;
+
+        var dto = new DetailedPaperDto
         {
-            Id = s.Id,
-            Skill = s.Skill,
-            SectionNo = s.SectionNo,
-            Passages = s.Passages.Select(pa => new PassageDto
+            Id = paper.Id,
+            Title = paper.Title,
+            Status = paper.Status,
+            CreatedAt = paper.CreatedAt,
+            PdfAssetId = paper.PdfAssetId,
+            Sections = paper.TestSections.Select(s => new SectionDto
             {
-                Id = pa.Id,
-                Title = pa.Title,
-                ContentText = pa.ContentText,
-                Questions = pa.Questions.Select(q => new QuestionDto
+                Id = s.Id,
+                Skill = s.Skill,
+                SectionNo = s.SectionNo,
+                Passages = s.Passages.Select(pa => new PassageDto
                 {
-                    Id = q.Id,
-                    Qtype = q.Qtype,
-                    Stem = q.Stem,
-                    Position = q.Position,
-                    Choices = hideAnswers ? null : q.QuestionChoices?.Select(c => new ChoiceDto { Content = c.Content, IsCorrect = c.IsCorrect }).ToList(),
-                    AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson
+                    Id = pa.Id,
+                    Title = pa.Title ?? string.Empty,
+                    ContentText = pa.ContentText ?? string.Empty,
+                    Questions = pa.Questions.Select(q => new QuestionDto
+                    {
+                        Id = q.Id,
+                        Qtype = q.Qtype ?? string.Empty,
+                        Stem = q.Stem ?? string.Empty,
+                        Position = q.Position,
+                        Choices = hideAnswers ? null : (q.QuestionChoices?.Select(c => new ChoiceDto { Content = c.Content ?? string.Empty, IsCorrect = c.IsCorrect }).ToList() ?? new List<ChoiceDto>()),
+                        AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson ?? string.Empty
+                    }).ToList()
                 }).ToList()
             }).ToList()
-        }).ToList()
-    };
+        };
 
-    return dto;
-}
+        return dto;
+    }
 }

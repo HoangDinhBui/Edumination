@@ -28,12 +28,12 @@ public class PassageRepository : IPassageRepository
         return passage;
     }
 
-    public async Task<Passage> GetByIdAsync(long id)
+    public async Task<Passage?> GetByIdAsync(long id)
     {
         return await _context.Passages.FindAsync(id);
     }
 
-    public async Task<Passage> GetBySectionIdAndPositionAsync(long sectionId, int position)
+    public async Task<Passage?> GetBySectionIdAndPositionAsync(long sectionId, int position)
     {
         return await _context.Passages
             .FirstOrDefaultAsync(p => p.SectionId == sectionId && p.Position == position);
@@ -46,12 +46,12 @@ public class PassageRepository : IPassageRepository
         return passage;
     }
     public async Task DeleteAsync(long id)
+    {
+        var passage = await _context.Passages.FindAsync(id);
+        if (passage != null)
         {
-            var passage = await _context.Passages.FindAsync(id);
-            if (passage != null)
-            {
-                _context.Passages.Remove(passage);
-                await _context.SaveChangesAsync();
-            }
+            _context.Passages.Remove(passage);
+            await _context.SaveChangesAsync();
         }
+    }
 }

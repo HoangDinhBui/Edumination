@@ -102,7 +102,7 @@ public class CourseService : ICourseService
         var courseExists = await _db.Courses.AnyAsync(c => c.Id == courseId && c.IsPublished, ct);
         if (!courseExists) return false;
 
-        _db.Enrollments.Add(new Enrollments { CourseId = courseId, UserId = userId });
+        _db.Enrollments.Add(new Domain.Entities.Enrollments { CourseId = courseId, UserId = userId });
         await _db.SaveChangesAsync(ct);
         return true;
     }
@@ -483,7 +483,7 @@ public class CourseService : ICourseService
 
             return new(true, dto, null);
         }
-        catch (DbUpdateException ex)
+        catch (DbUpdateException)
         {
             await tx.RollbackAsync(ct);
             // có thể là lỗi UNIQUE (course_id, position) hiếm gặp nếu race condition

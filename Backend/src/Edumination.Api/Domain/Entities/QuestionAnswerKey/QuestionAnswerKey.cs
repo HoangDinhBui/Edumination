@@ -6,8 +6,8 @@ public class QuestionAnswerKey
 {
     public long Id { get; set; }
     public long QuestionId { get; set; }
-    public string KeyJson { get; set; }
+    public string? KeyJson { get; set; }
 
     // Navigation property
-    public virtual Question Question { get; set; }
+    public virtual Question? Question { get; set; }
 }

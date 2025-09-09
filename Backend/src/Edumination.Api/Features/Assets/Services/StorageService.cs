@@ -18,7 +18,7 @@ public class StorageService : IStorageService
         }
     }
 
-    public async Task<string> GenerateUploadPathAsync(string mediaType, long byteSize)
+    public async Task<string?> GenerateUploadPathAsync(string mediaType, long byteSize)
     {
         // Tạo đường dẫn duy nhất dựa trên thời gian và GUID
         string fileName = $"{Guid.NewGuid()}.{GetFileExtension(mediaType)}";
@@ -32,8 +32,8 @@ public class StorageService : IStorageService
     public async Task<string> SaveFileAsync(string filePath, Stream fileStream)
     {
         string fullPath = Path.Combine(_baseStoragePath, filePath.TrimStart('/'));
-        string directory = Path.GetDirectoryName(fullPath);
-        if (!Directory.Exists(directory))
+        string? directory = Path.GetDirectoryName(fullPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }

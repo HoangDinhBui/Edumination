@@ -16,11 +16,11 @@ public class Passage
     public long? TranscriptId { get; set; }
     public int Position { get; set; }
     public DateTime CreatedAt { get; set; }
-    
-    [JsonIgnore] 
+
+    [JsonIgnore]
 
     // Navigation properties
-    public virtual TestSection TestSection { get; set; }
+    public virtual TestSection? TestSection { get; set; }
     public virtual Asset? Audio { get; set; }
     public virtual Asset? Transcript { get; set; }
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();

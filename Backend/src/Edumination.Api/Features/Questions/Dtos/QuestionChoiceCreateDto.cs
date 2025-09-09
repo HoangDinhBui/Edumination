@@ -7,7 +7,7 @@ namespace Edumination.Api.Dtos
     {
         [Required(ErrorMessage = "Content is required.")]
         [StringLength(1000, ErrorMessage = "Content cannot exceed 1000 characters.")]
-        public string Content { get; set; }
+        public string? Content { get; set; }
 
         [Range(0, int.MaxValue, ErrorMessage = "Position must be non-negative.")]
         public int Position { get; set; }

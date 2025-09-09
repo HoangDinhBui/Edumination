@@ -13,8 +13,8 @@ public class Question
     [ForeignKey(nameof(Passage))]
     public long? PassageId { get; set; } // Thay đổi thành nullable nếu phù hợp
 
-    public string Qtype { get; set; } // Xóa giá trị mặc định
-    public string Stem { get; set; } // Xóa giá trị mặc định
+    public string? Qtype { get; set; } // Xóa giá trị mặc định
+    public string? Stem { get; set; } // Xóa giá trị mặc định
     public string? MetaJson { get; set; }
     public int Position { get; set; }
     public DateTime CreatedAt { get; set; } // Xóa giá trị mặc định, để database xử lý
