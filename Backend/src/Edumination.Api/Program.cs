@@ -92,7 +92,6 @@ builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IQuestionChoiceService, QuestionChoiceService>();
 builder.Services.AddScoped<IQuestionChoiceRepository, QuestionChoiceRepository>();
-builder.Services.AddScoped<IMyEnrollmentsService, MyEnrollmentsService>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
