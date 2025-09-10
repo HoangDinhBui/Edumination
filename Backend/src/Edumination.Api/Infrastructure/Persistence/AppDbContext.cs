@@ -37,6 +37,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<Module> Modules => Set<Module>();
     public DbSet<Lesson> Lessons => Set<Lesson>();
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
+    public DbSet<UserStats> UserStats => Set<UserStats>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -387,5 +388,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
                 .HasForeignKey(x => x.UserId);
         });
 
+        b.Entity<UserStats>(e =>
+        {
+            e.ToTable("user_stats");
+            e.HasKey(x => x.UserId);
+
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.TotalTests).HasColumnName("total_tests");
+            e.Property(x => x.BestBand).HasColumnName("best_band").HasColumnType("decimal(3,1)");
+            e.Property(x => x.WorstBand).HasColumnName("worst_band").HasColumnType("decimal(3,1)");
+            e.Property(x => x.BestSkill).HasColumnName("best_skill")
+                .HasConversion<string>().HasMaxLength(50);
+            e.Property(x => x.WorstSkill).HasColumnName("worst_skill")
+                .HasConversion<string>().HasMaxLength(50);
+            e.Property(x => x.AvgListeningBand).HasColumnName("avg_listening_band").HasColumnType("decimal(3,1)");
+            e.Property(x => x.AvgReadingBand).HasColumnName("avg_reading_band").HasColumnType("decimal(3,1)");
+            e.Property(x => x.AvgWritingBand).HasColumnName("avg_writing_band").HasColumnType("decimal(3,1)");
+            e.Property(x => x.AvgSpeakingBand).HasColumnName("avg_speaking_band").HasColumnType("decimal(3,1)");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+
+            e.HasOne(x => x.User)
+                .WithOne()
+                .HasForeignKey<UserStats>(x => x.UserId)
+                .HasConstraintName("fk_us_user")
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

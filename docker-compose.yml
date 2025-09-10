@@ -53,7 +53,7 @@ services:
       ASPNETCORE_URLS: http://0.0.0.0:8080
       App__FrontendBaseUrl: "http://localhost:8081"
       # Kết nối MySQL bên trong mạng compose
-      ConnectionStrings__DefaultConnection: "server=mysql;port=3306;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
+      ConnectionStrings__DefaultConnection: "server=100.127.114.108;port=3307;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
 
       Jwt__Key: "H8w3v7gZ1rQm2Kp9TtB4xY6cV0nJ5uLfD3sA8pRq"
       Jwt__Issuer: "Edumination"
