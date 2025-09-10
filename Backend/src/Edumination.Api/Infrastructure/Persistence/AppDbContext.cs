@@ -37,6 +37,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<Module> Modules => Set<Module>();
     public DbSet<Lesson> Lessons => Set<Lesson>();
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
+    public DbSet<BandScale> BandScales => Set<BandScale>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -385,6 +386,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.HasOne(x => x.User)
                 .WithMany()
                 .HasForeignKey(x => x.UserId);
+        });
+
+        b.Entity<BandScale>(e =>
+        {
+            e.ToTable("band_scales");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.PaperId).HasColumnName("paper_id").IsRequired();
+            e.Property(x => x.Skill).HasColumnName("skill").HasMaxLength(50).IsRequired();
+            e.Property(x => x.RawMin).HasColumnName("raw_min").IsRequired();
+            e.Property(x => x.RawMax).HasColumnName("raw_max").IsRequired();
+            e.Property(x => x.Band).HasColumnName("band").HasColumnType("decimal(3,1)").IsRequired();
+
+            e.HasOne(bs => bs.TestPaper)
+                .WithMany(tp => tp.BandScales)
+                .HasForeignKey(bs => bs.PaperId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasIndex(bs => new { bs.PaperId, bs.Skill, bs.RawMin, bs.RawMax }).IsUnique();
         });
 
     }

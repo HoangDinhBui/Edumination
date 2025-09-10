@@ -1,4 +1,5 @@
 using Edumination.Api.Domain.Entities;
+using Edumination.Api.Domain.Enums;
 using Edumination.Api.Features.Papers.Dtos;
 using Edumination.Api.Features.Papers.Services;
 using Edumination.Api.Infrastructure.Persistence;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Data;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -20,13 +22,15 @@ public class PapersController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly AppDbContext _context;
     private readonly IPaperService _paperService;
+    private readonly ILogger<PapersController> _logger;
 
-    public PapersController(IUnitOfWork unitOfWork, AppDbContext context, IPaperService paperService)
-    {
-        _unitOfWork = unitOfWork;
-        _context = context;
-        _paperService = paperService;
-    }
+    public PapersController(IUnitOfWork unitOfWork, AppDbContext context, IPaperService paperService, ILogger<PapersController> logger)
+{
+    _unitOfWork = unitOfWork;
+    _context = context;
+    _paperService = paperService;
+    _logger = logger;
+}
 
     [HttpGet("{id}/sections")]
     [Authorize] // Yêu cầu đăng nhập
@@ -303,6 +307,105 @@ public class PapersController : ControllerBase
         var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userid" || c.Type == "sub")?.Value;
         return long.Parse(userIdClaim ?? throw new UnauthorizedAccessException("Không tìm thấy ID người dùng."));
     }
+
+    [HttpPost("{id}/band-scales")]
+[Authorize(Roles = "TEACHER,ADMIN")]
+public async Task<IActionResult> CreateBandScales(long id, [FromBody] BandScaleCreateRequest request)
+{
+    _logger.LogInformation("Received request to create band scales for paper ID: {Id}, Raw Request: {@Request}", id, request);
+
+    if (request == null || string.IsNullOrEmpty(request.Skill) || request.Ranges == null || !request.Ranges.Any())
+    {
+        _logger.LogWarning("Invalid request data for paper ID: {Id}", id);
+        return BadRequest("Dữ liệu band scales là bắt buộc và phải bao gồm skill và ranges.");
+    }
+
+    var paper = await _unitOfWork.TestPapers.GetByIdAsync(id);
+    if (paper == null)
+    {
+        _logger.LogWarning("Paper with ID {Id} not found", id);
+        return NotFound($"Bài kiểm tra với ID {id} không tồn tại.");
+    }
+
+    if (!Enum.TryParse<Skill>(request.Skill, true, out var skill))
+    {
+        _logger.LogWarning("Invalid skill value: {Skill} for paper ID: {Id}", request.Skill, id);
+        return BadRequest("Skill không hợp lệ. Phải là LISTENING, READING, WRITING, hoặc SPEAKING.");
+    }
+
+    var ranges = request.Ranges.OrderBy(r => r.RawMin).ToList();
+    _logger.LogInformation("Processed ranges before validation: {@Ranges}", ranges); // Ghi log để kiểm tra đầu vào
+
+    // Kiểm tra tính hợp lệ của ranges
+    var seenRanges = new HashSet<(int RawMin, int RawMax)>();
+    foreach (var range in ranges)
+    {
+        if (range.RawMin >= range.RawMax)
+        {
+            _logger.LogWarning("Invalid range: [{RawMin}-{RawMax}] for paper ID: {Id}", range.RawMin, range.RawMax, id);
+            return BadRequest($"Range [{range.RawMin}-{range.RawMax}] không hợp lệ: raw_min phải nhỏ hơn raw_max.");
+        }
+        var key = (range.RawMin, range.RawMax);
+        if (!seenRanges.Add(key))
+        {
+            _logger.LogWarning("Duplicate range in request: [{RawMin}-{RawMax}] for paper ID: {Id}", range.RawMin, range.RawMax, id);
+            return BadRequest($"Range [{range.RawMin}-{range.RawMax}] bị trùng lặp trong dữ liệu yêu cầu.");
+        }
+    }
+
+    // Kiểm tra chồng lấp
+    for (int i = 0; i < ranges.Count - 1; i++)
+    {
+        if (ranges[i].RawMax > ranges[i + 1].RawMin)
+        {
+            _logger.LogWarning("Overlapping ranges detected: [{RawMin}-{RawMax}] and [{NextRawMin}-{NextRawMax}] for paper ID: {Id}", 
+                ranges[i].RawMin, ranges[i].RawMax, ranges[i + 1].RawMin, ranges[i + 1].RawMax, id);
+            return BadRequest($"Range [{ranges[i].RawMin}-{ranges[i].RawMax}] và [{ranges[i + 1].RawMin}-{ranges[i + 1].RawMax}] bị chồng lấp.");
+        }
+    }
+
+    using var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+    try
+    {
+        var queryable = await _unitOfWork.BandScales.GetQueryable();
+        var existingScales = await queryable
+            .Where(bs => bs.PaperId == id && bs.Skill == request.Skill)
+            .ToListAsync();
+
+        if (existingScales.Any())
+        {
+            _logger.LogInformation("Removing {Count} existing band scales for paper ID: {Id}, Skill: {Skill}", existingScales.Count, id, request.Skill);
+            _unitOfWork.BandScales.RemoveRange(existingScales);
+            await _unitOfWork.SaveChangesAsync(); // Cam kết xóa ngay lập tức
+        }
+
+        foreach (var range in ranges)
+        {
+            _logger.LogInformation("Adding range: PaperId={PaperId}, Skill={Skill}, RawMin={RawMin}, RawMax={RawMax}, Band={Band}", id, request.Skill, range.RawMin, range.RawMax, range.Band);
+            var bandScale = new BandScale
+            {
+                PaperId = id,
+                Skill = request.Skill,
+                RawMin = range.RawMin,
+                RawMax = range.RawMax,
+                Band = range.Band
+            };
+            await _unitOfWork.BandScales.AddAsync(bandScale);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        await transaction.CommitAsync();
+
+        _logger.LogInformation("Band scales updated successfully for paper ID: {Id}", id);
+        return Ok(new { Message = "Band scales đã được cập nhật thành công." });
+    }
+    catch (Exception ex)
+    {
+        await transaction.RollbackAsync();
+        _logger.LogError(ex, "Error updating band scales for paper ID: {Id}", id);
+        return StatusCode(500, "Có lỗi xảy ra khi cập nhật band scales.");
+    }
+}
 }
 
 public class CreatePaperRequest
