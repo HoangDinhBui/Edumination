@@ -35,6 +35,7 @@ using Edumination.Api.Features.Courses.Validators;
 using Edumination.Api.Infrastructure.Persistence.Repositories;
 using Edumination.Api.Features.Enrollments.Services;
 using Edumination.Api.Features.Stats.Services;
+using Edumination.Api.Features.Recommendations.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +95,8 @@ builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IQuestionChoiceService, QuestionChoiceService>();
 builder.Services.AddScoped<IQuestionChoiceRepository, QuestionChoiceRepository>();
 builder.Services.AddScoped<IUserStatsService, UserStatsService>();
+builder.Services.AddScoped<ICourseRecommendationService, CourseRecommendationService>();
+builder.Services.AddScoped<IMyEnrollmentsService, MyEnrollmentsService>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
