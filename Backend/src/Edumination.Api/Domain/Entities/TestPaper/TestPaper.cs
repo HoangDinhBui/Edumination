@@ -1,4 +1,5 @@
 using Education.Domain.Entities;
+using Edumination.Domain.Entities;
 
 namespace Edumination.Api.Domain.Entities;
 
@@ -19,4 +20,5 @@ public class TestPaper
     public virtual Asset? PdfAsset { get; set; } // Liên kết với Asset
     public virtual User? CreatedByUser { get; set; }
     public virtual ICollection<TestSection> TestSections { get; set; } = new List<TestSection>();
+    public virtual ICollection<BandScale> BandScales { get; set; } = new List<BandScale>();
 }
