@@ -5,12 +5,6 @@ using Edumination.Api.Domain.Entities;
 
 namespace Edumination.Api.Features.Recommendations.Services;
 
-public interface ICourseRecommendationService
-{
-    Task<(decimal? targetBand, List<RecommendedCourseDto> items)> GetForUserAsync(
-        long userId, CourseRecommendationQuery query, CancellationToken ct);
-}
-
 public class CourseRecommendationService : ICourseRecommendationService
 {
     private readonly AppDbContext _db;

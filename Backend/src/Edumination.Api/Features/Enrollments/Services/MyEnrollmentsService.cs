@@ -8,12 +8,6 @@ using Edumination.Api.Features.Admin.Dtos;
 
 namespace Edumination.Api.Features.Enrollments.Services;
 
-public interface IMyEnrollmentsService
-{
-    Task<PagedResult<MyEnrollmentItemDto>> GetMineAsync(
-        long userId, MyEnrollmentQuery query, CancellationToken ct);
-}
-
 public class MyEnrollmentsService : IMyEnrollmentsService
 {
     private readonly AppDbContext _db;

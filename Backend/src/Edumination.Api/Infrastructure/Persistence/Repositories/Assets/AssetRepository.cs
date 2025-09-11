@@ -24,7 +24,7 @@ public class AssetRepository : IAssetRepository
         return asset.Id;
     }
 
-    public async Task<Asset> GetAssetByIdAsync(long assetId)
+    public async Task<Asset?> GetAssetByIdAsync(long assetId)
     {
         return await _context.Assets.FindAsync(assetId);
     }
@@ -37,8 +37,8 @@ public class AssetRepository : IAssetRepository
             .ToListAsync();
     }
 
-    public async Task<Asset> GetByIdAsync(long id)
-        {
-            return await _context.Assets.FindAsync(id);
-        }
+    public async Task<Asset?> GetByIdAsync(long id)
+    {
+        return await _context.Assets.FindAsync(id);
+    }
 }

@@ -23,13 +23,13 @@ namespace Edumination.Api.Infrastructure.Persistence.Repositories
             return question;
         }
 
-        public async Task<Question?> GetByIdAsync(long id)
+        public async Task<Question> GetByIdAsync(long id)
         {
             return await _context.Questions
                 .FirstOrDefaultAsync(q => q.Id == id);
         }
 
-        public async Task<Question?> GetBySectionIdAndPositionAsync(long sectionId, int position)
+        public async Task<Question> GetBySectionIdAndPositionAsync(long sectionId, int position)
         {
             return await _context.Questions
                 .FirstOrDefaultAsync(q => q.SectionId == sectionId && q.Position == position);

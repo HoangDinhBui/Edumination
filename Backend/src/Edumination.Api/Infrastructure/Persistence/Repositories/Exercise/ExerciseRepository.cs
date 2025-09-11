@@ -17,7 +17,7 @@ namespace Edumination.Api.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<Exercise?> GetByIdAsync(long id)
+        public async Task<Exercise> GetByIdAsync(long id)
         {
             return await _context.Exercises.FindAsync(id);
         }

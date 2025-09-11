@@ -12,7 +12,7 @@ public class BandScale
     public long PaperId { get; set; }
 
     [Column("skill")]
-    public string Skill { get; set; } // ENUM: LISTENING, READING, WRITING, SPEAKING
+    public string? Skill { get; set; } // ENUM: LISTENING, READING, WRITING, SPEAKING
 
     [Column("raw_min")]
     public int RawMin { get; set; }
@@ -25,5 +25,5 @@ public class BandScale
 
     // Navigation property
     [ForeignKey("PaperId")]
-    public virtual TestPaper TestPaper { get; set; }
+    public virtual TestPaper? TestPaper { get; set; }
 }

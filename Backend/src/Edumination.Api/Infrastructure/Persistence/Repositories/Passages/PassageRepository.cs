@@ -33,7 +33,7 @@ public class PassageRepository : IPassageRepository
         return await _context.Passages.FindAsync(id);
     }
 
-    public async Task<Passage?> GetBySectionIdAndPositionAsync(long sectionId, int position)
+    public async Task<Passage> GetBySectionIdAndPositionAsync(long sectionId, int position)
     {
         return await _context.Passages
             .FirstOrDefaultAsync(p => p.SectionId == sectionId && p.Position == position);

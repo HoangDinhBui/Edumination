@@ -24,7 +24,7 @@ namespace Edumination.Api.Infrastructure.Persistence.Repositories
             return choice;
         }
 
-        public async Task<QuestionChoice?> GetByQuestionIdAndPositionAsync(long questionId, int position)
+        public async Task<QuestionChoice> GetByQuestionIdAndPositionAsync(long questionId, int position)
         {
             return await _context.QuestionChoices
                 .FirstOrDefaultAsync(c => c.QuestionId == questionId && c.Position == position);

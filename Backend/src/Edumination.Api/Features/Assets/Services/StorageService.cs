@@ -18,7 +18,7 @@ public class StorageService : IStorageService
         }
     }
 
-    public async Task<string?> GenerateUploadPathAsync(string mediaType, long byteSize)
+    public async Task<string> GenerateUploadPathAsync(string mediaType, long byteSize)
     {
         // Tạo đường dẫn duy nhất dựa trên thời gian và GUID
         string fileName = $"{Guid.NewGuid()}.{GetFileExtension(mediaType)}";
