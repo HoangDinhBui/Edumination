@@ -1,13 +1,14 @@
-namespace Edumination.Api.Features.Attempts.Services;
-
 using Microsoft.EntityFrameworkCore;
 using Edumination.Api.Domain.Entities;
 using Edumination.Api.Features.Attempts.Dtos;
 using Edumination.Api.Infrastructure.Persistence;
 
+namespace Edumination.Api.Features.Attempts.Services;
+
 public class AttemptService : IAttemptService
 {
     private readonly AppDbContext _db;
+
     public AttemptService(AppDbContext db) => _db = db;
 
     public async Task<StartAttemptResponse> StartAsync(long userId, StartAttemptRequest req, CancellationToken ct)
@@ -41,6 +42,9 @@ public class AttemptService : IAttemptService
                 TestAttemptId = attempt.Id,
                 SectionId = s.Id,
                 StartedAt = DateTime.UtcNow,
+                FinishedAt = null,
+                RawScore = null,
+                ScaledBand = null,
                 Status = "IN_PROGRESS"
             });
         }

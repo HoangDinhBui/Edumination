@@ -12,6 +12,7 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public virtual ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();
 }
 
 public class Role

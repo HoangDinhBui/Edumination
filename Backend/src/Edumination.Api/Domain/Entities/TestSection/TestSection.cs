@@ -17,4 +17,5 @@ public class TestSection
     public virtual TestPaper TestPaper { get; set; } = default!;
     public virtual Asset? AudioAsset { get; set; } // Liên kết với Asset
     public virtual ICollection<Passage> Passages { get; set; } = new List<Passage>();
+    public virtual ICollection<SectionAttempt> SectionAttempts { get; set; } = new List<SectionAttempt>();
 }

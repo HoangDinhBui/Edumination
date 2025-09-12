@@ -20,5 +20,6 @@ public class TestPaper
     public virtual Asset? PdfAsset { get; set; } // Liên kết với Asset
     public virtual User? CreatedByUser { get; set; }
     public virtual ICollection<TestSection> TestSections { get; set; } = new List<TestSection>();
+    public virtual ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();
     public virtual ICollection<BandScale> BandScales { get; set; } = new List<BandScale>();
 }

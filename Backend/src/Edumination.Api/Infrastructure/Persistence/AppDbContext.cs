@@ -60,6 +60,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.IsActive).HasColumnName("is_active").HasDefaultValue(true);
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            e.HasMany(u => u.TestAttempts).WithOne(ta => ta.User).HasForeignKey(ta => ta.UserId);
         });
 
         // Cấu hình Role
@@ -416,5 +417,57 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
 
             e.HasIndex(bs => new { bs.PaperId, bs.Skill, bs.RawMin }).IsUnique();
         });
+
+        // Cấu hình TestAttempt
+b.Entity<TestAttempt>(e =>
+{
+    e.ToTable("test_attempts");
+    e.HasKey(x => x.Id);
+    e.Property(x => x.UserId).HasColumnName("user_id");
+    e.Property(x => x.PaperId).HasColumnName("paper_id");
+    e.Property(x => x.AttemptNo).HasColumnName("attempt_no");
+    e.Property(x => x.StartedAt).HasColumnName("started_at");
+    e.Property(x => x.FinishedAt).HasColumnName("finished_at");
+    e.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("IN_PROGRESS");
+
+    e.HasOne(ta => ta.User)
+        .WithMany(u => u.TestAttempts)
+        .HasForeignKey(ta => ta.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+    e.HasOne(ta => ta.TestPaper)
+        .WithMany(tp => tp.TestAttempts)
+        .HasForeignKey(ta => ta.PaperId)
+        .OnDelete(DeleteBehavior.Cascade);
+    
+    e.HasMany(ta => ta.SectionAttempts)
+        .WithOne(sa => sa.TestAttempt)
+        .HasForeignKey(sa => sa.TestAttemptId)
+        .OnDelete(DeleteBehavior.Cascade);
+});
+
+// Cấu hình SectionAttempt
+b.Entity<SectionAttempt>(e =>
+{
+    e.ToTable("section_attempts");
+    e.HasKey(x => x.Id);
+    e.Property(x => x.TestAttemptId).HasColumnName("test_attempt_id");
+    e.Property(x => x.SectionId).HasColumnName("section_id");
+    e.Property(x => x.StartedAt).HasColumnName("started_at");
+    e.Property(x => x.FinishedAt).HasColumnName("finished_at");
+    e.Property(x => x.RawScore).HasColumnName("raw_score").HasColumnType("decimal(10,2)");
+    e.Property(x => x.ScaledBand).HasColumnName("scaled_band").HasColumnType("decimal(4,2)");
+    e.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("IN_PROGRESS");
+
+    e.HasOne(sa => sa.TestAttempt)
+        .WithMany(ta => ta.SectionAttempts)
+        .HasForeignKey(sa => sa.TestAttemptId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    e.HasOne(sa => sa.TestSection)
+        .WithMany(ts => ts.SectionAttempts)
+        .HasForeignKey(sa => sa.SectionId)
+        .OnDelete(DeleteBehavior.Restrict);
+});
     }
 }
