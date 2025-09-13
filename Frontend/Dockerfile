@@ -3,6 +3,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+RUN npm install lucide-react
 COPY . .
 # VITE_BASE_URL có thể cần nếu deploy dưới subpath
 RUN npm run build
