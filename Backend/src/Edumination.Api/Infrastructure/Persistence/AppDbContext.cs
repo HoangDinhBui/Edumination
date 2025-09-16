@@ -39,7 +39,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
     public DbSet<UserStats> UserStats => Set<UserStats>();
     public DbSet<BandScale> BandScales { get; set; }
-
+    public DbSet<Answer> Answers => Set<Answer>();
+    
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
@@ -222,31 +223,36 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
         });
 
         b.Entity<Question>(e =>
-    {
-        e.ToTable("questions");
-        e.HasKey(x => x.Id);
-        e.Property(x => x.PassageId).HasColumnName("passage_id").IsRequired();
-        e.Property(x => x.Qtype).HasColumnName("qtype").HasMaxLength(50).IsRequired();
-        e.Property(x => x.Stem).HasColumnName("stem").IsRequired();
-        e.Property(x => x.Position).HasColumnName("position");
-        e.Property(x => x.CreatedAt).HasColumnName("created_at");
+        {
+            e.ToTable("questions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.SectionId).HasColumnName("section_id").IsRequired();
+            e.Property(x => x.PassageId).HasColumnName("passage_id"); // Loại bỏ .IsRequired() nếu nullable
+            e.Property(x => x.Qtype).HasColumnName("qtype").HasMaxLength(50).IsRequired(); // Thêm .IsRequired() nếu bắt buộc
+            e.Property(x => x.Stem).HasColumnName("stem").IsRequired(); // Thêm .IsRequired() nếu bắt buộc
+            e.Property(x => x.Position).HasColumnName("position");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-        e.HasOne(q => q.Passage)
-            .WithMany(p => p.Questions)
-            .HasForeignKey(q => q.PassageId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+            e.HasOne(q => q.Passage)
+                .WithMany(p => p.Questions)
+                .HasForeignKey(q => q.PassageId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        e.HasMany(q => q.QuestionChoices)
-            .WithOne(c => c.Question)
-            .HasForeignKey(c => c.QuestionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(q => q.QuestionChoices)
+                .WithOne(c => c.Question)
+                .HasForeignKey(c => c.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        e.HasOne(q => q.QuestionAnswerKey)
-            .WithOne(k => k.Question)
-            .HasForeignKey<QuestionAnswerKey>(k => k.QuestionId)
-            .OnDelete(DeleteBehavior.Cascade);
-    });
+            e.HasOne(q => q.QuestionAnswerKey)
+                .WithOne(k => k.Question)
+                .HasForeignKey<QuestionAnswerKey>(k => k.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasMany(q => q.Answers)
+                .WithOne(a => a.Question)
+                .HasForeignKey(a => a.QuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         b.Entity<Exercise>(e =>
         {
@@ -419,55 +425,85 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
         });
 
         // Cấu hình TestAttempt
-b.Entity<TestAttempt>(e =>
-{
-    e.ToTable("test_attempts");
-    e.HasKey(x => x.Id);
-    e.Property(x => x.UserId).HasColumnName("user_id");
-    e.Property(x => x.PaperId).HasColumnName("paper_id");
-    e.Property(x => x.AttemptNo).HasColumnName("attempt_no");
-    e.Property(x => x.StartedAt).HasColumnName("started_at");
-    e.Property(x => x.FinishedAt).HasColumnName("finished_at");
-    e.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("IN_PROGRESS");
+        b.Entity<TestAttempt>(e =>
+        {
+            e.ToTable("test_attempts");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.PaperId).HasColumnName("paper_id");
+            e.Property(x => x.AttemptNo).HasColumnName("attempt_no");
+            e.Property(x => x.StartedAt).HasColumnName("started_at");
+            e.Property(x => x.FinishedAt).HasColumnName("finished_at");
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("IN_PROGRESS");
 
-    e.HasOne(ta => ta.User)
-        .WithMany(u => u.TestAttempts)
-        .HasForeignKey(ta => ta.UserId)
-        .OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(ta => ta.User)
+                .WithMany(u => u.TestAttempts)
+                .HasForeignKey(ta => ta.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-    e.HasOne(ta => ta.TestPaper)
-        .WithMany(tp => tp.TestAttempts)
-        .HasForeignKey(ta => ta.PaperId)
-        .OnDelete(DeleteBehavior.Cascade);
-    
-    e.HasMany(ta => ta.SectionAttempts)
-        .WithOne(sa => sa.TestAttempt)
-        .HasForeignKey(sa => sa.TestAttemptId)
-        .OnDelete(DeleteBehavior.Cascade);
-});
+            e.HasOne(ta => ta.TestPaper)
+                .WithMany(tp => tp.TestAttempts)
+                .HasForeignKey(ta => ta.PaperId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-// Cấu hình SectionAttempt
-b.Entity<SectionAttempt>(e =>
-{
-    e.ToTable("section_attempts");
-    e.HasKey(x => x.Id);
-    e.Property(x => x.TestAttemptId).HasColumnName("test_attempt_id");
-    e.Property(x => x.SectionId).HasColumnName("section_id");
-    e.Property(x => x.StartedAt).HasColumnName("started_at");
-    e.Property(x => x.FinishedAt).HasColumnName("finished_at");
-    e.Property(x => x.RawScore).HasColumnName("raw_score").HasColumnType("decimal(10,2)");
-    e.Property(x => x.ScaledBand).HasColumnName("scaled_band").HasColumnType("decimal(4,2)");
-    e.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("IN_PROGRESS");
+            e.HasMany(ta => ta.SectionAttempts)
+                .WithOne(sa => sa.TestAttempt)
+                .HasForeignKey(sa => sa.TestAttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
-    e.HasOne(sa => sa.TestAttempt)
-        .WithMany(ta => ta.SectionAttempts)
-        .HasForeignKey(sa => sa.TestAttemptId)
-        .OnDelete(DeleteBehavior.Cascade);
+        // Cấu hình SectionAttempt
+        b.Entity<SectionAttempt>(e =>
+        {
+            e.ToTable("section_attempts");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.TestAttemptId).HasColumnName("test_attempt_id");
+            e.Property(x => x.SectionId).HasColumnName("section_id");
+            e.Property(x => x.StartedAt).HasColumnName("started_at");
+            e.Property(x => x.FinishedAt).HasColumnName("finished_at");
+            e.Property(x => x.RawScore).HasColumnName("raw_score").HasColumnType("decimal(10,2)");
+            e.Property(x => x.ScaledBand).HasColumnName("scaled_band").HasColumnType("decimal(4,2)");
+            e.Property(x => x.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("IN_PROGRESS");
 
-    e.HasOne(sa => sa.TestSection)
-        .WithMany(ts => ts.SectionAttempts)
-        .HasForeignKey(sa => sa.SectionId)
-        .OnDelete(DeleteBehavior.Restrict);
-});
+            e.HasOne(sa => sa.TestAttempt)
+                .WithMany(ta => ta.SectionAttempts)
+                .HasForeignKey(sa => sa.TestAttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(sa => sa.TestSection)
+                .WithMany(ts => ts.SectionAttempts)
+                .HasForeignKey(sa => sa.SectionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasMany(sa => sa.Answers)
+                .WithOne(a => a.SectionAttempt)
+                .HasForeignKey(a => a.SectionAttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Cấu hình Answer
+        b.Entity<Answer>(e =>
+        {
+            e.ToTable("answers");
+            e.HasKey(a => a.Id);
+            e.Property(a => a.SectionAttemptId).IsRequired();
+            e.Property(a => a.QuestionId).IsRequired();
+            e.Property(a => a.AnswerJson).IsRequired();
+            e.Property(a => a.IsCorrect);
+            e.Property(a => a.EarnedScore).HasColumnType("decimal(6,2)");
+            e.Property(a => a.CheckedAt);
+
+            e.HasOne(a => a.SectionAttempt)
+                .WithMany(sa => sa.Answers)
+                .HasForeignKey(a => a.SectionAttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(a => a.Question)
+                .WithMany(q => q.Answers)
+                .HasForeignKey(a => a.QuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasIndex(a => new { a.SectionAttemptId, a.QuestionId }).IsUnique();
+        });
     }
 }

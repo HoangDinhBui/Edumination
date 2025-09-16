@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Edumination.Api.Domain.Entities;
 using Edumination.Api.Features.Attempts.Dtos;
 using Edumination.Api.Infrastructure.Persistence;
+using System.Text.Json;
 
 namespace Edumination.Api.Features.Attempts.Services;
 
@@ -13,6 +14,7 @@ public class AttemptService : IAttemptService
 
     public async Task<StartAttemptResponse> StartAsync(long userId, StartAttemptRequest req, CancellationToken ct)
     {
+        // Giữ nguyên logic hiện tại
         var published = await _db.TestPapers.AnyAsync(p => p.Id == req.PaperId && p.Status == "PUBLISHED", ct);
         if (!published) throw new InvalidOperationException("Paper not published");
 
@@ -54,5 +56,76 @@ public class AttemptService : IAttemptService
             attempt.Id,
             sections.Select(s => new SectionSummary(s.Id, s.Skill, s.TimeLimitSec))
         );
+    }
+
+    public async Task<SubmitAnswerResponse> SubmitAnswerAsync(long attemptId, long sectionId, SubmitAnswerRequest request, long userId, CancellationToken ct)
+    {
+        // Kiểm tra TestAttempt
+        var testAttempt = await _db.TestAttempts
+            .FirstOrDefaultAsync(ta => ta.Id == attemptId && ta.UserId == userId && ta.Status != "CANCELLED", ct);
+        if (testAttempt == null)
+            throw new InvalidOperationException("Test attempt not found or not accessible.");
+
+        // Kiểm tra SectionAttempt
+        var sectionAttempt = await _db.SectionAttempts
+            .FirstOrDefaultAsync(sa => sa.TestAttemptId == attemptId && sa.SectionId == sectionId && sa.Status != "CANCELLED", ct);
+        if (sectionAttempt == null)
+            throw new InvalidOperationException("Section attempt not found or not accessible.");
+
+        // Kiểm tra Question
+        var question = await _db.Questions
+            .FirstOrDefaultAsync(q => q.Id == request.QuestionId && q.SectionId == sectionId, ct);
+        if (question == null)
+            throw new InvalidOperationException("Question not found.");
+
+        // Tạo và lưu Answer
+        var answer = new Answer
+        {
+            SectionAttemptId = sectionAttempt.Id,
+            QuestionId = request.QuestionId,
+            AnswerJson = JsonSerializer.Serialize(request.AnswerJson)
+        };
+
+        // Chấm điểm tự động cho L/R
+        var answerKey = await _db.QuestionAnswerKeys
+            .FirstOrDefaultAsync(ak => ak.QuestionId == request.QuestionId, ct);
+        if (answerKey != null)
+        {
+            var keyJson = JsonSerializer.Deserialize<object>(answerKey.KeyJson);
+            var userAnswer = request.AnswerJson;
+            if (IsAnswerCorrect(keyJson, userAnswer))
+            {
+                answer.IsCorrect = true;
+                try
+                {
+                    answer.EarnedScore = question.MetaJson != null 
+                        ? JsonSerializer.Deserialize<Dictionary<string, object>>(question.MetaJson)?
+                            .GetValueOrDefault("max_score") as decimal? ?? 1.0m 
+                        : 1.0m;
+                }
+                catch (JsonException)
+                {
+                    answer.EarnedScore = 1.0m; // Giá trị mặc định khi JSON không hợp lệ
+                }
+            }
+            else
+            {
+                answer.IsCorrect = false;
+                answer.EarnedScore = 0.0m;
+            }
+            answer.CheckedAt = DateTime.UtcNow;
+        }
+
+        _db.Answers.Add(answer);
+        await _db.SaveChangesAsync(ct);
+
+        return new SubmitAnswerResponse(answer.Id, answer.QuestionId, answer.IsCorrect, answer.EarnedScore);
+    }
+
+    private bool IsAnswerCorrect(object keyJson, object userAnswer)
+    {
+        var keyStr = keyJson?.ToString()?.ToLower();
+        var userStr = userAnswer?.ToString()?.ToLower();
+        return keyStr == userStr;
     }
 }

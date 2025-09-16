@@ -24,7 +24,7 @@ public class AttemptsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize] // Yêu cầu người dùng đã đăng nhập
+    [Authorize]
     public async Task<IActionResult> StartAttempt([FromBody] StartAttemptRequest request, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Received request to start attempt, Request: {@Request}", request);
@@ -35,7 +35,6 @@ public class AttemptsController : ControllerBase
             return BadRequest("Dữ liệu yêu cầu là bắt buộc và phải bao gồm paper_id hợp lệ.");
         }
 
-        // Lấy UserId từ token
         var userId = GetCurrentUserId();
         if (userId <= 0)
         {
@@ -80,6 +79,43 @@ public class AttemptsController : ControllerBase
             FinishedAt = attempt.FinishedAt,
             Status = attempt.Status
         });
+    }
+
+    [HttpPost("{aid}/sections/{sid}/answer")]
+    [Authorize]
+    public async Task<IActionResult> SubmitAnswer(long aid, long sid, [FromBody] SubmitAnswerRequest request, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Received request to submit answer, Attempt ID: {Aid}, Section ID: {Sid}, Request: {@Request}", aid, sid, request);
+
+        if (request == null || request.QuestionId <= 0)
+        {
+            _logger.LogWarning("Invalid request data for submitting answer");
+            return BadRequest("Dữ liệu yêu cầu là bắt buộc và phải bao gồm question_id hợp lệ.");
+        }
+
+        var userId = GetCurrentUserId();
+        if (userId <= 0)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized("Không tìm thấy ID người dùng.");
+        }
+
+        try
+        {
+            var response = await _attemptService.SubmitAnswerAsync(aid, sid, request, userId, cancellationToken);
+            _logger.LogInformation("Answer submitted successfully for attempt ID: {Aid}, section ID: {Sid}, question ID: {QuestionId}", aid, sid, request.QuestionId);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Failed to submit answer for attempt ID: {Aid}, section ID: {Sid}, question ID: {QuestionId}", aid, sid, request.QuestionId);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error submitting answer for attempt ID: {Aid}, section ID: {Sid}, question ID: {QuestionId}", aid, sid, request.QuestionId);
+            return StatusCode(500, "Có lỗi xảy ra khi lưu đáp án.");
+        }
     }
 
     private long GetCurrentUserId()
