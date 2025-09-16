@@ -16,5 +16,7 @@ public interface IUnitOfWork : IDisposable
     QuestionRepository Questions { get; }
     AssetRepository Assets { get; }
     IBandScaleRepository BandScales { get; }
+    ITestAttemptRepository TestAttempts { get; }
+    ISectionAttemptRepository SectionAttempts { get; }
     Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel);
 }

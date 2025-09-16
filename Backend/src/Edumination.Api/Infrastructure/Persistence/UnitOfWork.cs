@@ -1,4 +1,5 @@
 using Education.Repositories;
+using Edumination.Api.Domain.Entities;
 using Edumination.Api.Infrastructure.Persistence;
 using Edumination.Api.Infrastructure.Persistence.Repositories;
 using Edumination.Domain.Interfaces;
@@ -24,6 +25,8 @@ namespace Edumination.Persistence
             Questions = new QuestionRepository(_context);
             Assets = new AssetRepository(_context); // Đảm bảo AssetRepository được triển khai
             BandScales = new BandScaleRepository(_context);
+            TestAttempts = new TestAttemptRepository(_context);
+            SectionAttempts = new SectionAttemptRepository(_context);
         }
 
         public TestPaperRepository TestPapers { get; private set; }
@@ -32,6 +35,8 @@ namespace Edumination.Persistence
         public QuestionRepository Questions { get; private set; }
         public AssetRepository Assets { get; private set; }
         public IBandScaleRepository BandScales { get; private set; }
+        public ITestAttemptRepository TestAttempts { get; }
+    public ISectionAttemptRepository SectionAttempts { get; }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel)
         {

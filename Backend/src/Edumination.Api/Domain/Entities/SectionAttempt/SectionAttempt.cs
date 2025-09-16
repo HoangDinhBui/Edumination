@@ -10,4 +10,6 @@ public class SectionAttempt
     public decimal? RawScore { get; set; }
     public decimal? ScaledBand { get; set; }
     public string Status { get; set; } = "IN_PROGRESS";
+    public virtual TestAttempt TestAttempt { get; set; }
+    public virtual TestSection TestSection { get; set; }
 }
