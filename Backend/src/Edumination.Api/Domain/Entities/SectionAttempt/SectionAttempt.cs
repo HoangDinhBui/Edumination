@@ -12,4 +12,7 @@ public class SectionAttempt
     public string Status { get; set; } = "IN_PROGRESS";
     public virtual TestAttempt TestAttempt { get; set; }
     public virtual TestSection TestSection { get; set; }
+    public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>(); // Thêm quan hệ với Answer
+    // Thêm UpdatedAt nếu cần
+    // public DateTime? UpdatedAt { get; set; }
 }

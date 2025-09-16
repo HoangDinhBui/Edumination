@@ -101,6 +101,10 @@ builder.Services.AddScoped<IMyEnrollmentsService, MyEnrollmentsService>();
 builder.Services.AddScoped<ITestAttemptRepository, TestAttemptRepository>();
 builder.Services.AddScoped<ISectionAttemptRepository, SectionAttemptRepository>();
 builder.Services.AddScoped<IAttemptService, AttemptService>();
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 36)))
+       .UseSnakeCaseNamingConvention());
+builder.Services.AddScoped<IAttemptService, AttemptService>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");

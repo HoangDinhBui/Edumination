@@ -39,10 +39,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
     public DbSet<UserStats> UserStats => Set<UserStats>();
     public DbSet<BandScale> BandScales { get; set; }
-    public DbSet<CoursePrice> CoursePrices => Set<CoursePrice>();
-    public DbSet<Order> Orders => Set<Order>();
-    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-    public DbSet<Payment> Payments => Set<Payment>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -226,31 +222,36 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
         });
 
         b.Entity<Question>(e =>
-    {
-        e.ToTable("questions");
-        e.HasKey(x => x.Id);
-        e.Property(x => x.PassageId).HasColumnName("passage_id").IsRequired();
-        e.Property(x => x.Qtype).HasColumnName("qtype").HasMaxLength(50).IsRequired();
-        e.Property(x => x.Stem).HasColumnName("stem").IsRequired();
-        e.Property(x => x.Position).HasColumnName("position");
-        e.Property(x => x.CreatedAt).HasColumnName("created_at");
+        {
+            e.ToTable("questions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.SectionId).HasColumnName("section_id").IsRequired();
+            e.Property(x => x.PassageId).HasColumnName("passage_id"); // Loại bỏ .IsRequired() nếu nullable
+            e.Property(x => x.Qtype).HasColumnName("qtype").HasMaxLength(50).IsRequired(); // Thêm .IsRequired() nếu bắt buộc
+            e.Property(x => x.Stem).HasColumnName("stem").IsRequired(); // Thêm .IsRequired() nếu bắt buộc
+            e.Property(x => x.Position).HasColumnName("position");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-        e.HasOne(q => q.Passage)
-            .WithMany(p => p.Questions)
-            .HasForeignKey(q => q.PassageId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .IsRequired();
+            e.HasOne(q => q.Passage)
+                .WithMany(p => p.Questions)
+                .HasForeignKey(q => q.PassageId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        e.HasMany(q => q.QuestionChoices)
-            .WithOne(c => c.Question)
-            .HasForeignKey(c => c.QuestionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(q => q.QuestionChoices)
+                .WithOne(c => c.Question)
+                .HasForeignKey(c => c.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        e.HasOne(q => q.QuestionAnswerKey)
-            .WithOne(k => k.Question)
-            .HasForeignKey<QuestionAnswerKey>(k => k.QuestionId)
-            .OnDelete(DeleteBehavior.Cascade);
-    });
+            e.HasOne(q => q.QuestionAnswerKey)
+                .WithOne(k => k.Question)
+                .HasForeignKey<QuestionAnswerKey>(k => k.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasMany(q => q.Answers)
+                .WithOne(a => a.Question)
+                .HasForeignKey(a => a.QuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         b.Entity<Exercise>(e =>
         {
@@ -501,10 +502,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
                 .HasForeignKey(sa => sa.TestAttemptId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            e.HasOne(sa => sa.TestSection)
-                .WithMany(ts => ts.SectionAttempts)
-                .HasForeignKey(sa => sa.SectionId)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
+    e.HasOne(sa => sa.TestSection)
+        .WithMany(ts => ts.SectionAttempts)
+        .HasForeignKey(sa => sa.SectionId)
+        .OnDelete(DeleteBehavior.Restrict);
+});
     }
 }
