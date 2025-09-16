@@ -510,3 +510,50 @@ INSERT IGNORE INTO roles(code, name) VALUES
 ('STUDENT','Học viên'),
 ('TEACHER','Giáo viên'),
 ('ADMIN','Quản trị viên');
+
+-- Giá khoá học (đơn vị: VND, lưu bằng INT để tránh lỗi float)
+CREATE TABLE course_prices (
+  course_id   BIGINT PRIMARY KEY,
+  price_vnd   INT NOT NULL CHECK (price_vnd >= 0),
+  is_active   TINYINT(1) NOT NULL DEFAULT 1,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_cp_course FOREIGN KEY (course_id) REFERENCES courses(id)
+) ENGINE=InnoDB;
+
+-- Đơn hàng
+CREATE TABLE orders (
+  id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id      BIGINT NOT NULL,
+  total_vnd    INT NOT NULL,
+  status       ENUM('PENDING','PAID','CANCELLED','REFUNDED') NOT NULL DEFAULT 'PENDING',
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  paid_at      DATETIME NULL,
+  UNIQUE KEY uq_user_open_order (user_id, status), -- tuỳ chọn: tránh mỗi user có nhiều order PENDING
+  CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB;
+
+-- Chi tiết đơn hàng (1 course / order)
+CREATE TABLE order_items (
+  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+  order_id    BIGINT NOT NULL,
+  course_id   BIGINT NOT NULL,
+  unit_vnd    INT NOT NULL,
+  qty         INT NOT NULL DEFAULT 1,
+  UNIQUE KEY uq_order_course (order_id, course_id),
+  CONSTRAINT fk_oi_order FOREIGN KEY (order_id) REFERENCES orders(id),
+  CONSTRAINT fk_oi_course FOREIGN KEY (course_id) REFERENCES courses(id)
+) ENGINE=InnoDB;
+
+-- Thanh toán (ghi nhận phía cổng)
+CREATE TABLE payments (
+  id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+  order_id        BIGINT NOT NULL,
+  provider        ENUM('MOMO','VNPAY','STRIPE') NOT NULL,
+  provider_txn_id VARCHAR(200) NULL,
+  amount_vnd      INT NOT NULL,
+  status          ENUM('INIT','SUCCESS','FAILED') NOT NULL DEFAULT 'INIT',
+  raw_response    JSON,
+  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pay_order FOREIGN KEY (order_id) REFERENCES orders(id)
+) ENGINE=InnoDB;

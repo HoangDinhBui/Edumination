@@ -39,6 +39,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
     public DbSet<UserStats> UserStats => Set<UserStats>();
     public DbSet<BandScale> BandScales { get; set; }
+    public DbSet<CoursePrice> CoursePrices => Set<CoursePrice>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -415,6 +419,40 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
                 .OnDelete(DeleteBehavior.Cascade);
 
             e.HasIndex(bs => new { bs.PaperId, bs.Skill, bs.RawMin }).IsUnique();
+        });
+
+        b.Entity<CoursePrice>(e =>
+        {
+            e.ToTable("course_prices");
+            e.HasKey(x => x.CourseId);
+            e.Property(x => x.PriceVnd).HasColumnName("price_vnd");
+            e.Property(x => x.IsActive).HasColumnName("is_active");
+        });
+
+        b.Entity<Order>(e =>
+        {
+            e.ToTable("orders");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.TotalVnd).HasColumnName("total_vnd");
+            e.Property(x => x.Status).HasMaxLength(20).HasColumnName("status");
+        });
+
+        b.Entity<OrderItem>(e =>
+        {
+            e.ToTable("order_items");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.UnitVnd).HasColumnName("unit_vnd");
+            e.HasOne(x => x.Order).WithMany(o => o.Items).HasForeignKey(x => x.OrderId);
+        });
+
+        b.Entity<Payment>(e =>
+        {
+            e.ToTable("payments");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Provider).HasMaxLength(20).HasColumnName("provider");
+            e.Property(x => x.ProviderTxnId).HasMaxLength(200).HasColumnName("provider_txn_id");
+            e.Property(x => x.AmountVnd).HasColumnName("amount_vnd");
+            e.Property(x => x.Status).HasMaxLength(20).HasColumnName("status");
         });
     }
 }
