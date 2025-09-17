@@ -118,6 +118,43 @@ public class AttemptsController : ControllerBase
         }
     }
 
+    [HttpPost("{aid}/sections/{sid}/submit")]
+    [Authorize]
+    public async Task<IActionResult> SubmitSection(long aid, long sid, [FromBody] SubmitSectionRequest request, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Nhận yêu cầu nộp phần thi, Attempt ID: {Aid}, Section ID: {Sid}, Request: {@Request}", aid, sid, request);
+
+        if (request == null)
+        {
+            _logger.LogWarning("Dữ liệu yêu cầu không hợp lệ để nộp phần thi");
+            return BadRequest("Dữ liệu yêu cầu là bắt buộc.");
+        }
+
+        var userId = GetCurrentUserId();
+        if (userId <= 0)
+        {
+            _logger.LogWarning("Không tìm thấy ID người dùng trong token");
+            return Unauthorized("Không tìm thấy ID người dùng.");
+        }
+
+        try
+        {
+            var response = await _attemptService.SubmitSectionAsync(aid, sid, request, userId, cancellationToken);
+            _logger.LogInformation("Phần thi được nộp thành công cho attempt ID: {Aid}, section ID: {Sid}", aid, sid);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Thất bại khi nộp phần thi cho attempt ID: {Aid}, section ID: {Sid}", aid, sid);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lỗi khi nộp phần thi cho attempt ID: {Aid}, section ID: {Sid}", aid, sid);
+            return StatusCode(500, "Có lỗi xảy ra khi gửi phần thi.");
+        }
+    }
+
     private long GetCurrentUserId()
     {
         var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userid" || c.Type == "sub")?.Value;
