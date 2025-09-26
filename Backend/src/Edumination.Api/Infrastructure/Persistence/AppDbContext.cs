@@ -40,6 +40,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<UserStats> UserStats => Set<UserStats>();
     public DbSet<BandScale> BandScales { get; set; }
     public DbSet<Answer> Answers => Set<Answer>();
+    public DbSet<SpeakingSubmission> SpeakingSubmissions => Set<SpeakingSubmission>();
     
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -124,9 +125,37 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.StorageUrl).HasColumnName("storage_url").HasMaxLength(1000).IsRequired();
             e.Property(x => x.MediaType).HasColumnName("media_type").HasMaxLength(100);
             e.Property(x => x.ByteSize).HasColumnName("byte_size");
+            e.Property(x => x.DurationSec).HasColumnName("duration_sec");
+            e.Property(x => x.Sha256).HasColumnName("sha256").HasMaxLength(64);
+            e.Property(x => x.LanguageCode).HasColumnName("language_code").HasMaxLength(10);
             e.Property(x => x.CreatedBy).HasColumnName("created_by");
             e.Property(x => x.CreatedAt).HasColumnName("created_at");
             e.HasIndex(x => x.CreatedBy).HasDatabaseName("idx_assets_creator");
+        });
+
+        b.Entity<SpeakingSubmission>(e =>
+        {
+            e.ToTable("speaking_submissions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.SectionAttemptId).HasColumnName("section_attempt_id").IsRequired();
+            e.Property(x => x.PromptText).HasColumnName("prompt_text");
+            e.Property(x => x.AudioAssetId).HasColumnName("audio_asset_id").IsRequired();
+            e.Property(x => x.AsrText).HasColumnName("asr_text");
+            e.Property(x => x.WordsCount).HasColumnName("words_count");
+            e.Property(x => x.DurationSec).HasColumnName("duration_sec");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            e.HasOne(s => s.SectionAttempt)
+                .WithOne()
+                .HasForeignKey<SpeakingSubmission>(s => s.SectionAttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(s => s.AudioAsset)
+                .WithMany()
+                .HasForeignKey(s => s.AudioAssetId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasIndex(s => s.SectionAttemptId).IsUnique();
         });
 
         b.Entity<TestPaper>(e =>

@@ -155,6 +155,45 @@ public class AttemptsController : ControllerBase
         }
     }
 
+    [HttpPost("{aid}/sections/{sid}/speaking")]
+    [Authorize]
+    [RequestFormLimits(MultipartBodyLengthLimit = 104857600)] // Giới hạn file 100MB
+    [RequestSizeLimit(104857600)] // Giới hạn kích thước request
+    public async Task<IActionResult> SubmitSpeaking(long aid, long sid, [FromForm] SubmitSpeakingRequest request, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Received request to submit speaking, Attempt ID: {Aid}, Section ID: {Sid}", aid, sid);
+
+        if (request == null || request.AudioFile == null)
+        {
+            _logger.LogWarning("Invalid request data for submitting speaking");
+            return BadRequest("Audio file is required.");
+        }
+
+        var userId = GetCurrentUserId();
+        if (userId <= 0)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized("Không tìm thấy ID người dùng.");
+        }
+
+        try
+        {
+            var response = await _attemptService.SubmitSpeakingAsync(aid, sid, request, userId, cancellationToken);
+            _logger.LogInformation("Speaking submitted successfully for attempt ID: {Aid}, section ID: {Sid}, submission ID: {SubmissionId}", aid, sid, response.SubmissionId);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Failed to submit speaking for attempt ID: {Aid}, section ID: {Sid}", aid, sid);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error submitting speaking for attempt ID: {Aid}, section ID: {Sid}", aid, sid);
+            return StatusCode(500, "Có lỗi xảy ra khi nộp bài thi Speaking.");
+        }
+    }
+
     private long GetCurrentUserId()
     {
         var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userid" || c.Type == "sub")?.Value;

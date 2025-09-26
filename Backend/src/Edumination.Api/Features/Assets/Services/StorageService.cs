@@ -1,8 +1,8 @@
-using Edumination.Services.Interfaces;
 using System.IO;
 using System.Threading.Tasks;
+using Edumination.Services.Interfaces;
 
-namespace Education.Services;
+namespace Edumination.Services;
 
 public class StorageService : IStorageService
 {
@@ -18,18 +18,19 @@ public class StorageService : IStorageService
         }
     }
 
-    public async Task<string> GenerateUploadPathAsync(string mediaType, long byteSize)
+    public async Task<string> GenerateUploadPathAsync(string mediaType, long byteSize, CancellationToken ct = default)
     {
         // Tạo đường dẫn duy nhất dựa trên thời gian và GUID
-        string fileName = $"{Guid.NewGuid()}.{GetFileExtension(mediaType)}";
+        string fileExtension = GetFileExtension(mediaType);
+        string fileName = $"{Guid.NewGuid()}{fileExtension}";
         string dateFolder = DateTime.UtcNow.ToString("yyyy-MM-dd");
-        string fullPath = Path.Combine(_baseStoragePath, dateFolder, fileName);
+        string relativePath = Path.Combine(dateFolder, fileName);
 
         // Trả về đường dẫn tương đối làm storage URL
-        return $"/{dateFolder}/{fileName}";
+        return $"/{relativePath}";
     }
 
-    public async Task<string> SaveFileAsync(string filePath, Stream fileStream)
+    public async Task<string> SaveFileAsync(string filePath, Stream fileStream, CancellationToken ct = default)
     {
         string fullPath = Path.Combine(_baseStoragePath, filePath.TrimStart('/'));
         string? directory = Path.GetDirectoryName(fullPath);
@@ -40,22 +41,34 @@ public class StorageService : IStorageService
 
         using (var fileStreamLocal = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
         {
-            await fileStream.CopyToAsync(fileStreamLocal);
+            await fileStream.CopyToAsync(fileStreamLocal, ct);
         }
 
-        return fullPath;
+        // Trả về đường dẫn tương đối hoặc URL đầy đủ tùy theo yêu cầu
+        return $"/{filePath.TrimStart('/')}";
     }
+
 
     private string GetFileExtension(string mediaType)
     {
         return mediaType switch
         {
-            "application/pdf" => "pdf",
-            "video/mp4" => "mp4",
-            "audio/mpeg" => "mp3",
-            "image/jpeg" => "jpg",
-            "image/png" => "png",
-            _ => "bin" // Mặc định nếu không nhận diện được
+            "application/pdf" => ".pdf",
+            "video/mp4" => ".mp4",
+            "audio/mpeg" => ".mp3",
+            "audio/wav" => ".wav",
+            "audio/mp4" => ".m4a", // Thêm hỗ trợ m4a
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            _ => throw new InvalidOperationException("Unsupported media type.")
         };
     }
+    public async Task<string> UploadAsync(Stream stream, string fileName, string contentType, CancellationToken ct = default)
+    {
+        // Tích hợp GenerateUploadPathAsync và SaveFileAsync
+        string filePath = await GenerateUploadPathAsync(contentType, stream.Length, ct);
+        string storageUrl = await SaveFileAsync(filePath, stream, ct);
+        return storageUrl;
+    }
+
 }

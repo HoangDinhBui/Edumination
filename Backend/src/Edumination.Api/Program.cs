@@ -1,6 +1,5 @@
 using Education.Repositories;
 using Education.Repositories.Interfaces;
-using Education.Services;
 using Edumination.Api.Common.Services;
 using Edumination.Api.Features.Auth;
 using Edumination.Api.Features.Auth.Requests;

@@ -3,14 +3,22 @@ using Edumination.Api.Domain.Entities;
 using Edumination.Api.Features.Attempts.Dtos;
 using Edumination.Api.Infrastructure.Persistence;
 using System.Text.Json;
+using Edumination.Services.Interfaces;
+using Education.Domain.Entities;
 
 namespace Edumination.Api.Features.Attempts.Services;
 
 public class AttemptService : IAttemptService
 {
     private readonly AppDbContext _db;
-
-    public AttemptService(AppDbContext db) => _db = db;
+    private readonly IStorageService _storageService; // Dịch vụ lưu trữ file (S3, GCS, etc.)
+    private readonly IAssetService _assetService; // Dịch vụ quản lý assets
+    public AttemptService(AppDbContext db, IStorageService storageService, IAssetService assetService)
+    {
+        _db = db;
+        _storageService = storageService;
+        _assetService = assetService;
+    }
 
     public async Task<StartAttemptResponse> StartAsync(long userId, StartAttemptRequest req, CancellationToken ct)
     {
@@ -128,7 +136,7 @@ public class AttemptService : IAttemptService
         var userStr = userAnswer?.ToString()?.ToLower();
         return keyStr == userStr;
     }
-    
+
     public async Task<SubmitSectionResponse> SubmitSectionAsync(long attemptId, long sectionId, SubmitSectionRequest request, long userId, CancellationToken ct)
     {
         // Validate request
@@ -197,5 +205,80 @@ public class AttemptService : IAttemptService
         await _db.SaveChangesAsync(ct);
 
         return new SubmitSectionResponse(sectionAttempt.Id, sectionAttempt.RawScore, sectionAttempt.ScaledBand, sectionAttempt.Status);
+    }
+    
+    public async Task<SubmitSpeakingResponse> SubmitSpeakingAsync(long attemptId, long sectionId, SubmitSpeakingRequest request, long userId, CancellationToken ct)
+    {
+        // Validate request
+        if (request == null || request.AudioFile == null || !request.ConfirmSubmission)
+            throw new InvalidOperationException("Audio file and submission confirmation are required.");
+
+        // Kiểm tra TestAttempt
+        var testAttempt = await _db.TestAttempts
+            .FirstOrDefaultAsync(ta => ta.Id == attemptId && ta.UserId == userId && ta.Status != "CANCELLED", ct);
+        if (testAttempt == null)
+            throw new InvalidOperationException("Test attempt not found or not accessible.");
+
+        // Kiểm tra SectionAttempt
+        var sectionAttempt = await _db.SectionAttempts
+            .FirstOrDefaultAsync(sa => sa.TestAttemptId == attemptId && sa.SectionId == sectionId && sa.Status != "CANCELLED", ct);
+        if (sectionAttempt == null)
+            throw new InvalidOperationException("Section attempt not found or not accessible.");
+
+        // Kiểm tra Section là Speaking
+        var section = await _db.TestSections
+            .FirstOrDefaultAsync(s => s.Id == sectionId && s.Skill == "SPEAKING", ct);
+        if (section == null)
+            throw new InvalidOperationException("Section is not a Speaking section.");
+
+        // Upload file audio
+        var fileExtension = Path.GetExtension(request.AudioFile.FileName).ToLower();
+        if (!new[] { ".mp3", ".wav", ".m4a" }.Contains(fileExtension))
+            throw new InvalidOperationException("Unsupported audio format. Only MP3, WAV, and M4A are allowed.");
+
+        var fileName = $"speaking/{userId}/{attemptId}/{sectionId}/{Guid.NewGuid()}{fileExtension}";
+        using var stream = request.AudioFile.OpenReadStream();
+        var storageUrl = await _storageService.UploadAsync(stream, fileName, request.AudioFile.ContentType, ct);
+
+        // Lưu thông tin asset
+        var asset = new Asset
+        {
+            Kind = "AUDIO",
+            StorageUrl = storageUrl,
+            MediaType = request.AudioFile.ContentType,
+            ByteSize = request.AudioFile.Length,
+            CreatedBy = userId,
+            CreatedAt = DateTime.UtcNow,
+            LanguageCode = "en" // Có thể thay đổi dựa trên cấu hình
+        };
+        _db.Assets.Add(asset);
+        await _db.SaveChangesAsync(ct);
+
+        // Lưu Speaking submission
+        var speakingSubmission = new SpeakingSubmission
+        {
+            SectionAttemptId = sectionAttempt.Id,
+            PromptText = request.PromptText,
+            AudioAssetId = asset.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        _db.SpeakingSubmissions.Add(speakingSubmission);
+
+        // Cập nhật trạng thái SectionAttempt
+        sectionAttempt.Status = "SUBMITTED";
+        sectionAttempt.FinishedAt = DateTime.UtcNow;
+
+        // Lưu thay đổi
+        await _db.SaveChangesAsync(ct);
+
+        // TODO: Gọi AI để đánh giá (ASR, pronunciation, etc.) nếu cần
+        // Ví dụ: var evaluation = await _aiService.EvaluateSpeakingAsync(speakingSubmission, ct);
+
+        return new SubmitSpeakingResponse(
+            speakingSubmission.Id,
+            sectionAttempt.Id,
+            asset.Id,
+            sectionAttempt.Status
+        );
     }
 }
