@@ -41,7 +41,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<BandScale> BandScales { get; set; }
     public DbSet<Answer> Answers => Set<Answer>();
     public DbSet<SpeakingSubmission> SpeakingSubmissions => Set<SpeakingSubmission>();
-    
+
+    public DbSet<WritingSubmission> WritingSubmissions => Set<WritingSubmission>();
+
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
@@ -534,5 +536,25 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
 
             e.HasIndex(a => new { a.SectionAttemptId, a.QuestionId }).IsUnique();
         });
+
+        // Cấu hình WritingSubmission
+        b.Entity<WritingSubmission>(e =>
+        {
+            e.ToTable("writing_submissions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.SectionAttemptId).HasColumnName("section_attempt_id").IsRequired();
+            e.Property(x => x.ContentText).HasColumnName("content_text").IsRequired();
+            e.Property(x => x.PromptText).HasColumnName("prompt_text");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            e.HasOne(s => s.SectionAttempt)
+                .WithOne()
+                .HasForeignKey<WritingSubmission>(s => s.SectionAttemptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasIndex(s => s.SectionAttemptId).IsUnique();
+        });
     }
+    
+    
 }

@@ -13,11 +13,13 @@ public class AttemptService : IAttemptService
     private readonly AppDbContext _db;
     private readonly IStorageService _storageService; // Dịch vụ lưu trữ file (S3, GCS, etc.)
     private readonly IAssetService _assetService; // Dịch vụ quản lý assets
-    public AttemptService(AppDbContext db, IStorageService storageService, IAssetService assetService)
+    private readonly ILogger<AttemptService> _logger;
+    public AttemptService(AppDbContext db, IStorageService storageService, IAssetService assetService, ILogger<AttemptService> logger)
     {
         _db = db;
         _storageService = storageService;
         _assetService = assetService;
+        _logger = logger;
     }
 
     public async Task<StartAttemptResponse> StartAsync(long userId, StartAttemptRequest req, CancellationToken ct)
@@ -206,7 +208,7 @@ public class AttemptService : IAttemptService
 
         return new SubmitSectionResponse(sectionAttempt.Id, sectionAttempt.RawScore, sectionAttempt.ScaledBand, sectionAttempt.Status);
     }
-    
+
     public async Task<SubmitSpeakingResponse> SubmitSpeakingAsync(long attemptId, long sectionId, SubmitSpeakingRequest request, long userId, CancellationToken ct)
     {
         // Validate request
@@ -278,6 +280,93 @@ public class AttemptService : IAttemptService
             speakingSubmission.Id,
             sectionAttempt.Id,
             asset.Id,
+            sectionAttempt.Status
+        );
+    }
+
+    public async Task<SubmitWritingResponse> SubmitWritingAsync(long attemptId, long sectionId, SubmitWritingRequest request, long userId, CancellationToken ct)
+    {
+        _logger.LogInformation("Submitting writing for attemptId: {AttemptId}, sectionId: {SectionId}, userId: {UserId}", attemptId, sectionId, userId);
+
+        // Validate request
+        if (request == null || string.IsNullOrWhiteSpace(request.ContentText) || !request.ConfirmSubmission)
+            throw new InvalidOperationException("Text content and submission confirmation are required.");
+
+        // Kiểm tra TestAttempt
+        var testAttempt = await _db.TestAttempts
+            .FirstOrDefaultAsync(ta => ta.Id == attemptId && ta.UserId == userId && ta.Status != "CANCELLED", ct);
+        if (testAttempt == null)
+            throw new InvalidOperationException("Test attempt not found or not accessible.");
+        _logger.LogInformation("TestAttempt found: {TestAttemptId}", testAttempt.Id);
+
+        // Kiểm tra SectionAttempt
+        var sectionAttempt = await _db.SectionAttempts
+            .FirstOrDefaultAsync(sa => sa.TestAttemptId == attemptId && sa.SectionId == sectionId && sa.Status != "CANCELLED", ct);
+        if (sectionAttempt == null)
+            throw new InvalidOperationException("Section attempt not found or not accessible.");
+        _logger.LogInformation("SectionAttempt found: {SectionAttemptId}", sectionAttempt.Id);
+
+        // Kiểm tra Section là Writing
+        var section = await _db.TestSections
+            .FirstOrDefaultAsync(s => s.Id == sectionId && s.Skill == "WRITING", ct);
+        if (section == null)
+            throw new InvalidOperationException("Section is not a Writing section.");
+
+        // Validate file format (nếu có file)
+        long? assetId = null;
+        if (request.File != null)
+        {
+            var fileExtension = Path.GetExtension(request.File.FileName).ToLower();
+            if (!new[] { ".pdf", ".jpg", ".jpeg", ".png" }.Contains(fileExtension))
+                throw new InvalidOperationException("Unsupported file format. Only PDF, JPG, and PNG are allowed.");
+
+            // Generate file path and save file
+            var filePath = await _storageService.GenerateUploadPathAsync(request.File.ContentType, request.File.Length, ct);
+            using var stream = request.File.OpenReadStream();
+            var storageUrl = await _storageService.SaveFileAsync(filePath, stream, ct);
+
+            // Lưu thông tin asset
+            var asset = new Asset
+            {
+                Kind = fileExtension == ".pdf" ? "DOC" : "IMAGE", // Sử dụng DOC cho PDF, IMAGE cho JPG/PNG
+                StorageUrl = storageUrl,
+                MediaType = request.File.ContentType,
+                ByteSize = request.File.Length,
+                CreatedBy = userId,
+                CreatedAt = DateTime.UtcNow,
+                // Thêm các trường khác nếu cần
+                Sha256 = null, // Tính SHA256 nếu cần
+                LanguageCode = null, // Đặt nếu có thông tin ngôn ngữ
+                DurationSec = null // Không áp dụng cho Writing
+            };
+            _db.Assets.Add(asset);
+            await _db.SaveChangesAsync(ct);
+            assetId = asset.Id;
+        }
+
+        // Lưu Writing submission
+        var writingSubmission = new WritingSubmission
+        {
+            SectionAttemptId = sectionAttempt.Id,
+            ContentText = request.ContentText,
+            PromptText = request.PromptText,
+            CreatedAt = DateTime.UtcNow
+        };
+        _db.WritingSubmissions.Add(writingSubmission);
+
+        // Cập nhật trạng thái SectionAttempt
+        sectionAttempt.Status = "SUBMITTED";
+        sectionAttempt.FinishedAt = DateTime.UtcNow;
+
+        // Lưu thay đổi
+        await _db.SaveChangesAsync(ct);
+
+        _logger.LogInformation("Writing submitted successfully: submissionId: {SubmissionId}", writingSubmission.Id);
+
+        return new SubmitWritingResponse(
+            writingSubmission.Id,
+            sectionAttempt.Id,
+            assetId,
             sectionAttempt.Status
         );
     }

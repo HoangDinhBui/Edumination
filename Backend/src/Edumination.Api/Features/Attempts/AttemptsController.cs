@@ -194,6 +194,45 @@ public class AttemptsController : ControllerBase
         }
     }
 
+    [HttpPost("{aid}/sections/{sid}/writing")]
+    [Authorize]
+    [RequestFormLimits(MultipartBodyLengthLimit = 104857600)] // Giới hạn file 100MB
+    [RequestSizeLimit(104857600)] // Giới hạn kích thước request
+    public async Task<IActionResult> SubmitWriting(long aid, long sid, [FromForm] SubmitWritingRequest request, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Received request to submit writing, Attempt ID: {Aid}, Section ID: {Sid}", aid, sid);
+
+        if (request == null || string.IsNullOrWhiteSpace(request.ContentText))
+        {
+            _logger.LogWarning("Invalid request data for submitting writing");
+            return BadRequest("Text content is required.");
+        }
+
+        var userId = GetCurrentUserId();
+        if (userId <= 0)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized("Không tìm thấy ID người dùng.");
+        }
+
+        try
+        {
+            var response = await _attemptService.SubmitWritingAsync(aid, sid, request, userId, cancellationToken);
+            _logger.LogInformation("Writing submitted successfully for attempt ID: {Aid}, section ID: {Sid}, submission ID: {SubmissionId}", aid, sid, response.SubmissionId);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Failed to submit writing for attempt ID: {Aid}, section ID: {Sid}", aid, sid);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error submitting writing for attempt ID: {Aid}, section ID: {Sid}", aid, sid);
+            return StatusCode(500, "Có lỗi xảy ra khi nộp bài thi Writing.");
+        }
+    }
+
     private long GetCurrentUserId()
     {
         var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userid" || c.Type == "sub")?.Value;
