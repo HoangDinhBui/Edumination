@@ -1,4 +1,5 @@
 
+using System.ComponentModel.DataAnnotations.Schema;
 using Edumination.Api.Domain.Enums;
 
 namespace Edumination.Api.Domain.Entities;
@@ -17,5 +18,6 @@ public class UserStats
     public DateTime UpdatedAt { get; set; }
 
     // Navigation
+     [ForeignKey("UserId")]
     public User? User { get; set; }
 }

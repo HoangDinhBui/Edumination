@@ -43,6 +43,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<SpeakingSubmission> SpeakingSubmissions => Set<SpeakingSubmission>();
 
     public DbSet<WritingSubmission> WritingSubmissions => Set<WritingSubmission>();
+    public DbSet<vTestAttemptBand> TestAttemptBands => Set<vTestAttemptBand>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -433,6 +434,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.ToTable("user_stats");
             e.HasKey(x => x.UserId);
             e.Property(x => x.BestBand).HasColumnType("decimal(4,2)");
+            e.Property(e => e.BestSkill)
+                .HasConversion<string>(); // chuyển enum ↔ string
+
+            e.Property(e => e.WorstSkill)
+                .HasConversion<string>();
             e.Property(x => x.TotalTests);
             e.Property(x => x.UpdatedAt);
         });
@@ -553,6 +559,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
                 .OnDelete(DeleteBehavior.Cascade);
 
             e.HasIndex(s => s.SectionAttemptId).IsUnique();
+        });
+
+        b.Entity<vTestAttemptBand>(e =>
+        {
+            e.ToView("v_test_attempt_band").HasNoKey();
+            e.Property(x => x.TestAttemptId).HasColumnName("test_attempt_id");
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.PaperId).HasColumnName("paper_id");
+            e.Property(x => x.OverallBand).HasColumnName("overall_band").HasColumnType("decimal(3,1)");
         });
     }
     

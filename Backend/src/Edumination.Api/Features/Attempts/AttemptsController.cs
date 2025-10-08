@@ -233,6 +233,45 @@ public class AttemptsController : ControllerBase
         }
     }
 
+    [HttpPost("{aid}/submit")]
+    [Authorize]
+    public async Task<IActionResult> SubmitTest(long aid, [FromBody] SubmitTestRequest request, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Received request to submit test attempt ID: {Aid}", aid);
+
+        if (request == null || !request.ConfirmSubmission)
+        {
+            _logger.LogWarning("Invalid request data for submitting test");
+            return BadRequest("Submission confirmation is required.");
+        }
+
+        var userId = GetCurrentUserId();
+        if (userId <= 0)
+        {
+            _logger.LogWarning("User ID not found in token");
+            return Unauthorized("Không tìm thấy ID người dùng.");
+        }
+
+        try
+        {
+            var response = await _attemptService.SubmitTestAsync(aid, request, userId, cancellationToken);
+            _logger.LogInformation("Test submitted successfully for attempt ID: {Aid}, overall band: {OverallBand}", aid, response.OverallBand);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Failed to submit test for attempt ID: {Aid}", aid);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error submitting test for attempt ID: {Aid}", aid);
+            return StatusCode(500, "Có lỗi xảy ra khi nộp bài thi.");
+        }
+    }
+
+    // GetCurrentUserId giữ nguyên
+
     private long GetCurrentUserId()
     {
         var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userid" || c.Type == "sub")?.Value;

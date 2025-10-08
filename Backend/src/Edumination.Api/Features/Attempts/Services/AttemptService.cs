@@ -5,6 +5,8 @@ using Edumination.Api.Infrastructure.Persistence;
 using System.Text.Json;
 using Edumination.Services.Interfaces;
 using Education.Domain.Entities;
+using Edumination.Api.Domain.Entities.Leaderboard;
+using Edumination.Api.Domain.Enums;
 
 namespace Edumination.Api.Features.Attempts.Services;
 
@@ -369,5 +371,137 @@ public class AttemptService : IAttemptService
             assetId,
             sectionAttempt.Status
         );
+    }
+
+    public async Task<SubmitTestResponse> SubmitTestAsync(long attemptId, SubmitTestRequest request, long userId, CancellationToken ct)
+    {
+        _logger.LogInformation("Submitting test attemptId: {AttemptId}, userId: {UserId}", attemptId, userId);
+
+        // Validate request
+        if (!request.ConfirmSubmission)
+            throw new InvalidOperationException("Submission confirmation is required.");
+
+        // Kiểm tra TestAttempt
+        var testAttempt = await _db.TestAttempts
+            .Include(ta => ta.SectionAttempts) // Load sections để kiểm tra
+                .ThenInclude(sa => sa.TestSection)
+            .FirstOrDefaultAsync(ta => ta.Id == attemptId && ta.UserId == userId && ta.Status == "IN_PROGRESS", ct);
+        if (testAttempt == null)
+            throw new InvalidOperationException("Test attempt not found, not owned by user, or not in progress.");
+
+        // Kiểm tra tất cả sections đã được nộp
+        var unsubmittedSections = testAttempt.SectionAttempts
+            .Where(sa => sa.Status != "SUBMITTED" && sa.Status != "GRADED")
+            .ToList();
+        if (unsubmittedSections.Any())
+        {
+            var sectionNames = string.Join(", ", unsubmittedSections.Select(sa => sa.TestSection.Skill));
+            throw new InvalidOperationException($"All sections must be submitted. Pending: {sectionNames}");
+        }
+
+        // Cập nhật TestAttempt status
+        testAttempt.Status = "SUBMITTED";
+        testAttempt.FinishedAt = DateTime.UtcNow;
+
+        // Tính overall band từ view v_test_attempt_band
+        var overallBandResult = await _db.Set<vTestAttemptBand>()
+            .FromSqlRaw("SELECT * FROM v_test_attempt_band WHERE test_attempt_id = {0}", attemptId)
+            .FirstOrDefaultAsync(ct);
+        var overallBand = overallBandResult?.OverallBand ?? 0m;
+
+        // Lấy section bands
+        var sectionBands = await _db.SectionAttempts
+            .Where(sa => sa.TestAttemptId == attemptId)
+            .Include(sa => sa.TestSection)
+            .Select(sa => new SectionBandSummary
+            {
+                Skill = sa.TestSection.Skill,
+                RawScore = sa.RawScore,
+                BandScore = sa.ScaledBand
+            })
+            .ToListAsync(ct);
+
+        // Cập nhật UserStats (best/worst band, avg skills)
+        await UpdateUserStatsAsync(userId, testAttempt.PaperId, overallBand, sectionBands, ct);
+
+        // Cập nhật Leaderboard (nếu là best attempt cho paper này)
+        var isBestAttempt = await UpdateLeaderboardAsync(userId, testAttempt.PaperId, overallBand, ct);
+
+        // Lưu thay đổi
+        await _db.SaveChangesAsync(ct);
+
+        _logger.LogInformation("Test submitted successfully: attemptId: {AttemptId}, overallBand: {OverallBand}", attemptId, overallBand);
+
+        return new SubmitTestResponse(attemptId, overallBand, sectionBands, testAttempt.Status, isBestAttempt);
+    }
+
+    // Helper: Cập nhật UserStats
+    private async Task UpdateUserStatsAsync(long userId, long paperId, decimal overallBand, IEnumerable<SectionBandSummary> sectionBands, CancellationToken ct)
+    {
+        var userStats = await _db.UserStats.FindAsync(userId);
+        if (userStats == null)
+        {
+            userStats = new UserStats { UserId = userId };
+            _db.UserStats.Add(userStats);
+        }
+
+        userStats.TotalTests++;
+        userStats.BestBand = Math.Max(userStats.BestBand ?? 0, overallBand);
+        userStats.WorstBand = userStats.WorstBand == null ? overallBand : Math.Min(userStats.WorstBand.Value, overallBand);
+
+        // Tính avg cho từng skill
+        var listeningBand = sectionBands.FirstOrDefault(s => s.Skill == "LISTENING")?.BandScore ?? 0;
+        var readingBand = sectionBands.FirstOrDefault(s => s.Skill == "READING")?.BandScore ?? 0;
+        var writingBand = sectionBands.FirstOrDefault(s => s.Skill == "WRITING")?.BandScore ?? 0;
+        var speakingBand = sectionBands.FirstOrDefault(s => s.Skill == "SPEAKING")?.BandScore ?? 0;
+
+        userStats.AvgListeningBand = ((userStats.AvgListeningBand * (userStats.TotalTests - 1)) + listeningBand) / userStats.TotalTests;
+        userStats.AvgReadingBand = ((userStats.AvgReadingBand * (userStats.TotalTests - 1)) + readingBand) / userStats.TotalTests;
+        userStats.AvgWritingBand = ((userStats.AvgWritingBand * (userStats.TotalTests - 1)) + writingBand) / userStats.TotalTests;
+        userStats.AvgSpeakingBand = ((userStats.AvgSpeakingBand * (userStats.TotalTests - 1)) + speakingBand) / userStats.TotalTests;
+
+        // Cập nhật best/worst skill (logic đơn giản, có thể phức tạp hơn)
+        var bestSkillStr = sectionBands.OrderByDescending(s => s.BandScore).FirstOrDefault()?.Skill;
+        var worstSkillStr = sectionBands.OrderBy(s => s.BandScore).FirstOrDefault()?.Skill;
+
+        userStats.BestSkill = Enum.TryParse<Skill>(bestSkillStr, out var bestSkill)
+            ? bestSkill
+            : (Skill?)null;
+
+        userStats.WorstSkill = Enum.TryParse<Skill>(worstSkillStr, out var worstSkill)
+            ? worstSkill
+            : (Skill?)null;
+
+
+        userStats.UpdatedAt = DateTime.UtcNow;
+    }
+
+    // Helper: Cập nhật Leaderboard (best attempt cho paper)
+    private async Task<bool> UpdateLeaderboardAsync(long userId, long paperId, decimal overallBand, CancellationToken ct)
+    {
+        var existingEntry = await _db.LeaderboardEntries
+            .FirstOrDefaultAsync(le => le.UserId == userId && le.PaperId == paperId, ct);
+
+        if (existingEntry == null || overallBand > existingEntry.BestOverallBand)
+        {
+            if (existingEntry == null)
+            {
+                existingEntry = new LeaderboardEntry
+                {
+                    UserId = userId,
+                    PaperId = paperId,
+                    BestOverallBand = overallBand,
+                    BestAt = DateTime.UtcNow
+                };
+                _db.LeaderboardEntries.Add(existingEntry);
+            }
+            else
+            {
+                existingEntry.BestOverallBand = overallBand;
+                existingEntry.BestAt = DateTime.UtcNow;
+            }
+            return true; // Đây là best attempt
+        }
+        return false;
     }
 }
