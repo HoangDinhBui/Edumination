@@ -89,7 +89,7 @@ public class CourseService : ICourseService
         var courseExists = await _db.Courses.AnyAsync(c => c.Id == courseId && c.IsPublished, ct);
         if (!courseExists) return false;
 
-        _db.Enrollments.Add(new Domain.Entities.Enrollments { CourseId = courseId, UserId = userId });
+        _db.Enrollments.Add(new Enrollment { CourseId = courseId, UserId = userId });
         await _db.SaveChangesAsync(ct);
         return true;
     }

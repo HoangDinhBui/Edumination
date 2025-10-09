@@ -53,7 +53,7 @@ services:
       ASPNETCORE_URLS: http://0.0.0.0:8080
       App__FrontendBaseUrl: "http://localhost:8081"
       # Kết nối MySQL bên trong mạng compose
-      ConnectionStrings__DefaultConnection: "server=100.127.114.108;port=3307;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
+      ConnectionStrings__DefaultConnection: "server=mysql;port=3306;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
 
       Jwt__Key: "H8w3v7gZ1rQm2Kp9TtB4xY6cV0nJ5uLfD3sA8pRq"
       Jwt__Issuer: "Edumination"
@@ -73,20 +73,25 @@ services:
 
       # Nếu có CORS:
       AllowedHosts: "*"
+      Stripe__SecretKey: ${STRIPE_SECRET_KEY}
+      Stripe__WebhookSecret: ${STRIPE_WEBHOOK_SECRET}
+
+    env_file:
+      - ./.env
     expose:
       - "8080"
     depends_on:
       mysql:
         condition: service_healthy
 
-  frontend:
-    container_name: edu_frontend
-    build:
-      context: ./Frontend
-    expose:
-      - "80"
-    depends_on:
-      - backend
+  # frontend:
+  #   container_name: edu_frontend
+  #   build:
+  #     context: ./Frontend
+  #   expose:
+  #     - "80"
+  #   depends_on:
+  #     - backend
 
   gateway:
     image: nginx:alpine
@@ -97,7 +102,6 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./Frontend/dist:/usr/share/nginx/html:ro
     depends_on:
-      - frontend
       - backend
 
 networks:

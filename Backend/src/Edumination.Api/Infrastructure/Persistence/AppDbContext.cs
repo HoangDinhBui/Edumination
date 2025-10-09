@@ -33,7 +33,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<OAuthStates> OAuthStates => Set<OAuthStates>();
     public DbSet<EduDomain> EduDomains => Set<EduDomain>();
     public DbSet<Course> Courses => Set<Course>();
-    public DbSet<Enrollments> Enrollments => Set<Enrollments>();
+    public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<Module> Modules => Set<Module>();
     public DbSet<Lesson> Lessons => Set<Lesson>();
     public DbSet<LessonCompletion> LessonCompletions => Set<LessonCompletion>();
@@ -41,9 +41,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<BandScale> BandScales { get; set; }
     public DbSet<Answer> Answers => Set<Answer>();
     public DbSet<SpeakingSubmission> SpeakingSubmissions => Set<SpeakingSubmission>();
-
     public DbSet<WritingSubmission> WritingSubmissions => Set<WritingSubmission>();
     public DbSet<vTestAttemptBand> TestAttemptBands => Set<vTestAttemptBand>();
+    public DbSet<CoursePrice> CoursePrices => Set<CoursePrice>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Payment> Payments => Set<Payment>();
+
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -375,7 +379,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
                 .ValueGeneratedOnAddOrUpdate();
         });
 
-        b.Entity<Enrollments>(e =>
+        b.Entity<Enrollment>(e =>
         {
             e.ToTable("enrollments");
             e.HasKey(x => new { x.UserId, x.CourseId });
@@ -569,7 +573,71 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.PaperId).HasColumnName("paper_id");
             e.Property(x => x.OverallBand).HasColumnName("overall_band").HasColumnType("decimal(3,1)");
         });
+
+        b.Entity<CoursePrice>(e =>
+        {
+            e.ToTable("course_prices");
+            e.HasKey(x => x.CourseId);
+            e.Property(x => x.PriceVnd).HasColumnName("price_vnd");
+            e.Property(x => x.IsActive).HasColumnName("is_active");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+            e.HasOne(cp => cp.Course)
+            .WithOne()
+            .HasForeignKey<CoursePrice>(cp => cp.CourseId);
+        });
+
+        b.Entity<Order>(e =>
+        {
+            e.ToTable("orders");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.UserId).HasColumnName("user_id");
+            e.Property(x => x.TotalVnd).HasColumnName("total_vnd");
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasConversion<string>();
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.PaidAt).HasColumnName("paid_at");
+            e.HasMany(x => x.Items)
+                .WithOne(i => i.Order)
+                .HasForeignKey(i => i.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.Payments)
+                .WithOne(p => p.Order)
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<OrderItem>(e =>
+        {
+            e.ToTable("order_items");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.OrderId).HasColumnName("order_id");
+            e.Property(x => x.CourseId).HasColumnName("course_id");
+            e.Property(x => x.UnitVnd).HasColumnName("unit_vnd");
+            e.Property(x => x.Qty).HasColumnName("qty");
+            e.HasIndex(x => new { x.OrderId, x.CourseId })
+            .IsUnique()
+            .HasDatabaseName("uq_order_course");
+        });
+
+        b.Entity<Payment>(e =>
+        {
+            e.ToTable("payments");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.OrderId).HasColumnName("order_id");
+            e.Property(x => x.Provider)
+                .HasColumnName("provider")
+                .HasConversion<string>();
+            e.Property(x => x.Status)
+                .HasColumnName("status")
+                .HasConversion<string>();
+            e.Property(x => x.ProviderTxnId).HasColumnName("provider_txn_id");
+            e.Property(x => x.AmountVnd).HasColumnName("amount_vnd");
+            e.Property(x => x.RawResponse)
+                .HasColumnName("raw_response")
+                .HasColumnType("json");
+            e.Property(x => x.CreatedAt).HasColumnName("created_at");
+            e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+        });
     }
-    
-    
 }

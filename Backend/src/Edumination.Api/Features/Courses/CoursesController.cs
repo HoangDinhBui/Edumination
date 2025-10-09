@@ -7,6 +7,8 @@ using Edumination.Api.Features.Courses.Services;
 using Edumination.Api.Common.Results;
 using FluentValidation;
 using JwtNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
+using Microsoft.EntityFrameworkCore;
+using Edumination.Api.Infrastructure.Persistence;
 
 namespace Edumination.Api.Features.Courses;
 
@@ -20,12 +22,14 @@ public class CoursesController : ControllerBase
     private readonly IValidator<UpdateCourseRequest> _updateValidator;
     private readonly IValidator<CreateModuleRequest> _createModuleValidator;
     private readonly IValidator<CreateLessonRequest> _createLessonRequestValidator;
+    private readonly AppDbContext _db;
     public CoursesController(ICourseService svc,
                             IModuleService moduleService,
                             IValidator<CreateCourseRequest> validator,
                             IValidator<UpdateCourseRequest> updateValidator,
                             IValidator<CreateModuleRequest> createModuleValidator,
-                            IValidator<CreateLessonRequest> createLessonValidator)
+                            IValidator<CreateLessonRequest> createLessonValidator,
+                            AppDbContext db)
     {
         _svc = svc;
         _validator = validator;
@@ -33,6 +37,7 @@ public class CoursesController : ControllerBase
         _createModuleValidator = createModuleValidator;
         _moduleService = moduleService;
         _createLessonRequestValidator = createLessonValidator;
+        _db = db;
     }
 
     // GET /api/v1/courses?published=1&q=&level=&page=1&pageSize=20
@@ -78,8 +83,16 @@ public class CoursesController : ControllerBase
     [ProducesResponseType(typeof(CourseDetailDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> Detail([FromRoute] long id, CancellationToken ct)
     {
+        var userId = GetUserId();
         var dto = await _svc.GetDetailAsync(id, User, ct);
         if (dto is null) return NotFound();
+        var price = await _db.CoursePrices.AsNoTracking()
+              .Where(p => p.CourseId == id && p.IsActive)
+              .Select(p => p.PriceVnd)
+              .FirstOrDefaultAsync(ct);
+        var enrolled = userId != null && await _db.Enrollments
+            .AnyAsync(e => e.UserId == userId && e.CourseId == id, ct);
+        dto.Enrolled = enrolled;
         return Ok(dto);
     }
 
