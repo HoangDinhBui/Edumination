@@ -81,3 +81,5 @@ appsettings.Production.json
 *.env
 
 venv/
+
+.vs/
