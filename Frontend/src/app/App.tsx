@@ -1,18 +1,49 @@
-// 1. "Bỏ" (comment lại) code của react-router-dom
-// import {
-//   createBrowserRouter,
-//   RouterProvider,
-// } from "react-router-dom";
+import React from "react";
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
 
-// 2. Bỏ import trang Home
-// import HomePage from "../pages/Home/HomePage";
+// 1. Import tất cả các trang của bạn
+import HomePage from "../pages/Home/HomePage";
+import SignInPage from "../pages/SignIn/SignInPage"; 
+import SignUpPage from "../pages/SignUp/SignUpPage"; 
+import Answer from "../pages/Answer/Answer";
+import ExamLibrary from "../pages/ExamsLibrary/ExamsLibrary"; // Tên file trang thư viện của bạn
+import QuarterDetailPage from "../pages/ExamsLibrary/QuarterDetailPage"; // Trang chi tiết bạn vừa tạo
 
-// 3. Chỉ import trang bạn muốn xem
-import SignInPage from "../pages/SignIn/SignInPage"; // (Đảm bảo đường dẫn này đúng)
-import SignUpPage from "../pages/SignUp/SignUpPage"; // (Đảm bảo đường dẫn này đúng)
-import Answer from "../pages/Answer/Answer"
+// 2. Định nghĩa các đường dẫn (routes)
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomePage />,
+  },
+  {
+    path: "/signin",
+    element: <SignInPage />,
+  },
+  {
+    path: "/signup",
+    element: <SignUpPage />,
+  },
+  {
+    path: "/library", // Đường dẫn đến trang thư viện
+    element: <ExamLibrary />,
+  },
+  {
+    path: "/answer",
+    element: <Answer />,
+  },
+  {
+    // === ĐƯỜNG DẪN ĐỘNG MỚI ===
+    // :quarterName là một tham số động
+    // Nó sẽ khớp với /quarter/Quarter-1, /quarter/Quarter-2, v.v.
+    path: "/quarter/:quarterName", 
+    element: <QuarterDetailPage />,
+  },
+]);
 
+// 3. Render bộ định tuyến
 export default function App() {
-  // 4. Hiển thị trực tiếp trang đó
-  return <Answer />;
+  return <RouterProvider router={router} />;
 }
