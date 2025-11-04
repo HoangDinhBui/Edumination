@@ -41,12 +41,17 @@ services:
       context: ./Backend/src/Edumination.Api
       dockerfile: Dockerfile
     ports:
-      - "8082:8080"
+      - "8081:8080"   # ✅ BE chạy trên localhost:8081
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080
+<<<<<<< HEAD
       App__FrontendBaseUrl: "http://localhost:8081"
       ConnectionStrings__DefaultConnection: "server=100.127.114.108;port=3306;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
+=======
+      App__FrontendBaseUrl: "http://localhost:8082"
+      ConnectionStrings__DefaultConnection: "server=100.127.114.108;port=3307;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
+>>>>>>> 90023991d19d6ee61e73595077b6c6a852cdf3a8
       Jwt__Key: "H8w3v7gZ1rQm2Kp9TtB4xY6cV0nJ5uLfD3sA8pRq"
       Jwt__Issuer: "Edumination"
       Jwt__Audience: "Edumination"
@@ -58,8 +63,6 @@ services:
       Smtp__From: eduminationielts@gmail.com
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      OAuth__Google__RedirectUri: http://localhost:8081/account/connections/google/callback
-      OAuth__Google__RedirectUriLogin: http://localhost:8081/api/v1/auth/oauth/google/callback
       AllowedHosts: "*"
       Stripe__SecretKey: ${STRIPE_SECRET_KEY}
       Stripe__WebhookSecret: ${STRIPE_WEBHOOK_SECRET}
@@ -79,7 +82,7 @@ services:
       dockerfile: Dockerfile
       target: dev
     ports:
-      - "8081:5173"                # hoặc "8081:3000" tùy framework (React/Vite)
+      - "8082:5173"                # ✅ FE chạy trên localhost:8082
     volumes:
       - ./Frontend:/app            # Mount code FE vào container
       - /app/node_modules          # Giữ node_modules trong container

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // 1. Đảm bảo đường dẫn này CHÍNH XÁC
-// Dựa trên file HomePage, có vẻ bạn cần 2 dấu chấm lùi (../../)
-import signInImage from "../../assets/img/Rectangle 123.png"; // <-- Đổi tên file nếu cần
+import signInImage from "../../assets/img/Rectangle 123.png";
 
 /**
  * Component SVG cho logo Google.
- * Bạn không cần file ảnh riêng cho cái này, chỉ cần copy là đủ.
  */
 const GoogleLogoIcon: React.FC = () => (
   <svg
@@ -39,16 +39,65 @@ const GoogleLogoIcon: React.FC = () => (
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
 
+  // === State cho form ===
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+
+  // === Hàm xử lý submit form ===
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // Ngăn trang reload
+    setLoading(true);
+    setError(null);
+
+    // 2. URL API: Đảm bảo port (ví dụ: 7001) khớp với backend của bạn
+    const apiUrl = "http://localhost:8081/api/v1/auth/login";
+
+    try {
+      // 3. Gọi API
+      const response = await axios.post(apiUrl, {
+        email: email,
+        password: password,
+      });
+
+      // 4. Xử lý thành công
+      setLoading(false);
+      console.log("Đăng nhập thành công:", response.data);
+
+      // Lưu token (từ response.data.token) vào localStorage
+      localStorage.setItem("authToken", response.data.token);
+
+      // 5. Chuyển hướng đến trang chính
+      navigate("/"); // Hoặc "/home"
+        
+    } catch (err: any) {
+      // 6. Xử lý lỗi
+      setLoading(false);
+      if (err.response && err.response.status === 401) {
+        // Lỗi 401 (Unauthorized) từ backend
+        setError("Invalid email or password");
+      } else {
+        // Lỗi 500 hoặc lỗi mạng
+        console.error("Lỗi đăng nhập:", err);
+        setError("An error occurred. Please try again later.");
+      }
+    }
+  };
+
   return (
-    // Container chính: Căn giữa, nền xám nhạt
+    // Container chính
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      {/* Thẻ (Card) đăng nhập: bo tròn, đổ bóng, chia 2 cột */}
+      {/* Thẻ (Card) đăng nhập */}
       <div className="mx-auto w-full max-w-4xl bg-white shadow-2xl rounded-2xl overflow-hidden grid md:grid-cols-2">
+        
         {/* === CỘT BÊN TRÁI (FORM) === */}
         <div className="p-8 md:p-12">
           {/* Link "Back to home" */}
           <a
-            href="/" // Đổi thành "/" hoặc link trang chủ của bạn
+            href="/"
             className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-800"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -58,13 +107,13 @@ export default function SignInPage() {
           <div className="text-center">
             {/* Tiêu đề */}
             <h1 className="mt-6 text-3xl font-bold text-slate-700">
-                Welcome back!
+              Welcome back!
             </h1>
             <p className="mt-2 text-slate-600">Login to your account</p>
-            </div>
+          </div>
 
-          {/* Form */}
-          <form className="mt-8 space-y-6">
+          {/* Form: Thêm onSubmit */}
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {/* Trường Email */}
             <div>
               <label
@@ -81,6 +130,9 @@ export default function SignInPage() {
                 required
                 placeholder="Please enter Username/Email"
                 className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+                // Thêm value và onChange
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
@@ -101,6 +153,9 @@ export default function SignInPage() {
                   required
                   placeholder="Please enter password"
                   className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+                  // Thêm value và onChange
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 {/* Nút ẩn/hiện password */}
                 <button
@@ -121,22 +176,28 @@ export default function SignInPage() {
             {/* Link "Forgot password?" */}
             <div className="text-right">
               <a
-                href="#"
+                href="#" // Đổi sang "/forgot-password"
                 className="text-sm font-medium text-sky-600 hover:underline"
               >
                 Forgot password?
               </a>
             </div>
 
+            {/* === Hiển thị lỗi (nếu có) === */}
+            {error && (
+              <div className="text-sm text-red-600 text-center">{error}</div>
+            )}
+
             {/* Nút "Sign in" */}
             <div>
               <button
                 type="submit"
-                className="w-full py-3 px-4 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                className="w-full py-3 px-4 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50"
+                // Thêm disabled và thay đổi text khi loading
+                disabled={loading}
               >
-                Sign in
+                {loading ? "Signing in..." : "Sign in"}
               </button>
-              {/* Ghi chú: Tôi dùng `bg-slate-500` để khớp nhất với màu xanh-xám trong ảnh của bạn */}
             </div>
 
             {/* Đường kẻ "or" */}
@@ -166,7 +227,10 @@ export default function SignInPage() {
           {/* Link "Register now" */}
           <p className="mt-8 text-center text-sm text-slate-600">
             Don't have an account?{" "}
-            <a href="#" className="font-medium text-sky-600 hover:underline">
+            <a
+              href="#" // Đổi sang "/register"
+              className="font-medium text-sky-600 hover:underline"
+            >
               Register now!
             </a>
           </p>
@@ -176,7 +240,7 @@ export default function SignInPage() {
         <div className="hidden md:block">
           <img
             src={signInImage}
-            alt="Students in a British Council classroom"
+            alt="Students in a classroom"
             className="w-full h-full object-cover"
           />
         </div>
