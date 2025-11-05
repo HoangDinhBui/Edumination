@@ -137,18 +137,33 @@ public class PapersController : ControllerBase
 
     [HttpGet]
     [Authorize] // Yêu cầu login, nhưng không giới hạn role
-    public async Task<IActionResult> ListPapers([FromQuery] string? status = null)
+    public async Task<IActionResult> ListPapers(
+        [FromQuery] string? status = "PUBLISHED", // Mặc định là PUBLISHED
+        [FromQuery] string? skill = null,        // <-- THÊM MỚI
+        [FromQuery] string? search = null,       // <-- THÊM MỚI
+        [FromQuery] string? sort = "latest"      // <-- THÊM MỚI
+    )
     {
         var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
         bool isTeacherOrAdmin = roles.Contains("TEACHER") || roles.Contains("ADMIN");
 
-        if (!isTeacherOrAdmin && !string.IsNullOrEmpty(status))
+        // Student không được xem DRAFT, ép về PUBLISHED
+        if (!isTeacherOrAdmin)
         {
-            return Forbid(); // Student không được filter status
+            status = "PUBLISHED";
         }
+        
+        // Gọi service đã cập nhật với đầy đủ tham số
+        var papersResult = await _paperService.ListAsync(
+            status,
+            skill,
+            search,
+            sort,
+            isTeacherOrAdmin,
+            HttpContext.RequestAborted // Sử dụng CancellationToken từ request
+        );
 
-        var papers = await _paperService.ListAsync(status, isTeacherOrAdmin);
-        return Ok(papers);
+        return Ok(papersResult);
     }
 
     [HttpGet("{id}")]
