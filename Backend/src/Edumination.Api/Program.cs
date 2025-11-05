@@ -146,7 +146,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         var frontendUrl = builder.Configuration["App:FrontendBaseUrl"];
-        policy.WithOrigins(frontendUrl ?? "http://localhost:8081")
+        policy.WithOrigins("http://localhost:8082")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import axios from "axios"; // 1. Import axios
 
-// 1. Dùng lại ảnh từ trang Sign In
-import signUpImage from "../../assets/img/Rectangle 123.png"; // <-- Dùng cùng file ảnh
+// 1. Dùng ảnh placeholder
+import signUpImage from "../../assets/img/Rectangle 123.png";
 
 /**
  * Component SVG cho logo Google (Giữ nguyên)
@@ -14,6 +16,7 @@ const GoogleLogoIcon: React.FC = () => (
     width="18"
     height="18"
   >
+    {/* ... SVG code ... */}
     <path
       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
       fill="#4285F4"
@@ -35,16 +38,91 @@ const GoogleLogoIcon: React.FC = () => (
 );
 
 export default function SignUpPage() {
-  // 2. Cần 2 state riêng biệt cho 2 ô password
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // === 2. Thêm State cho form ===
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+
+  // === 3. Hàm xử lý submit form ===
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    // Kiểm tra password ở frontend
+    if (password !== confirmPassword) {
+      setError("Passwords do not match!");
+      setLoading(false);
+      return;
+    }
+
+    const apiUrl = "http://localhost:8081/api/v1/auth/register";
+
+    // === SỬA LỖI 400 ===
+    // 4. Cập nhật payload để khớp với 'AuthService.cs'
+    // Gửi 'Full_Name' (kết hợp) và viết hoa các trường khác
+    const payload = {
+      Full_Name: `${firstName} ${lastName}`.trim(),
+      Email: email,
+      Password: password,
+      ConfirmPassword: confirmPassword,
+    };
+
+    try {
+      // 5. Gọi API
+      await axios.post(apiUrl, payload);
+
+      setLoading(false);
+      console.log("Đăng ký thành công!");
+
+      // Tự động chuyển đến trang đăng nhập
+      navigate("/signin");
+
+    } catch (err: any) {
+      setLoading(false);
+      if (err.response) {
+        // 400 (Bad Request) hoặc 409 (Conflict)
+        console.error("Lỗi server:", err.response.data);
+        if (err.response.status === 409) {
+          setError("Email already exists.");
+        // Xử lý lỗi validation từ C# (nếu có)
+        } else if (err.response.data && err.response.data.errors) {
+            // Lấy lỗi đầu tiên từ danh sách lỗi
+            const errorMessages = Object.values(err.response.data.errors) as string[][];
+            if (errorMessages.length > 0 && errorMessages[0].length > 0) {
+              setError(errorMessages[0][0]);
+            } else {
+              setError("Registration failed. Please check your data.");
+            }
+        } else if (err.response.data && err.response.data.message) {
+            setError(err.response.data.message); // Lỗi 409 sẽ rơi vào đây
+        } else {
+           setError("Registration failed. Please try again.");
+        }
+      } else {
+        // Lỗi mạng
+        console.error("Lỗi đăng ký:", err);
+        setError("An error occurred. Please try again later.");
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="mx-auto w-full max-w-4xl bg-white shadow-2xl rounded-2xl overflow-hidden grid md:grid-cols-2">
         {/* === CỘT BÊN TRÁI (FORM) === */}
         <div className="p-8 md:p-12">
-          {/* Link "Back to home" (Giữ nguyên) */}
+          {/* Link "Back to home" */}
           <a
             href="/"
             className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-800"
@@ -53,16 +131,58 @@ export default function SignUpPage() {
             Back to home
           </a>
 
-          {/* 3. Thay đổi Tiêu đề */}
-          <div className ="text-center">
+          <div className="text-center">
             <h1 className="mt-6 text-3xl font-bold text-slate-700">
-            Get Started Now!
+              Get Started Now!
             </h1>
             <p className="mt-2 text-slate-600">Create an account</p>
           </div>
 
-          <form className="mt-8 space-y-6">
-            {/* Trường Email (Giữ nguyên) */}
+          {/* 6. Thêm onSubmit vào form */}
+          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+            {/* 7. TRƯỜNG TÊN (FIRST/LAST NAME) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  First Name
+                </label>
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  autoComplete="given-name"
+                  required
+                  placeholder="Your first name"
+                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  Last Name
+                </label>
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  autoComplete="family-name"
+                  required
+                  placeholder="Your last name"
+                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Trường Email */}
             <div>
               <label
                 htmlFor="email"
@@ -78,10 +198,12 @@ export default function SignUpPage() {
                 required
                 placeholder="Please enter Username/Email"
                 className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
-            {/* Trường Password (Giữ nguyên) */}
+            {/* Trường Password */}
             <div>
               <label
                 htmlFor="password"
@@ -94,10 +216,12 @@ export default function SignUpPage() {
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="new-password" // Đổi thành new-password
+                  autoComplete="new-password"
                   required
                   placeholder="Please enter password"
                   className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -114,7 +238,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            {/* 4. Thêm trường "Confirm password" */}
+            {/* Thêm trường "Confirm password" */}
             <div>
               <label
                 htmlFor="confirm-password"
@@ -131,6 +255,8 @@ export default function SignUpPage() {
                   required
                   placeholder="Please enter password once again"
                   className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -147,17 +273,23 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            {/* 5. Nút "Sign up" */}
+            {/* 8. Hiển thị lỗi */}
+            {error && (
+              <div className="text-sm text-red-600 text-center">{error}</div>
+            )}
+
+            {/* Nút "Sign up" */}
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-3 px-4 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                className="w-full py-3 px-4 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50"
+                disabled={loading}
               >
-                Sign up
+                {loading ? "Signing up..." : "Sign up"}
               </button>
             </div>
 
-            {/* Đường kẻ "or" (Giữ nguyên) */}
+            {/* Đường kẻ "or" */}
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-slate-300" />
@@ -167,7 +299,7 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            {/* Nút "Login with Google" (Giữ nguyên) */}
+            {/* Nút "Login with Google" */}
             <div>
               <button
                 type="button"
@@ -181,7 +313,7 @@ export default function SignUpPage() {
             </div>
           </form>
 
-          {/* 6. Thay đổi Link chân trang */}
+          {/* Link chân trang */}
           <p className="mt-8 text-center text-sm text-slate-600">
             Have an account already?{" "}
             <a
@@ -193,7 +325,7 @@ export default function SignUpPage() {
           </p>
         </div>
 
-        {/* === CỘT BÊN PHẢI (ẢNH) === (Giữ nguyên) */}
+        {/* === CỘT BÊN PHẢI (ẢNH) === */}
         <div className="hidden md:block">
           <img
             src={signUpImage}
@@ -205,3 +337,4 @@ export default function SignUpPage() {
     </div>
   );
 }
+
