@@ -161,7 +161,7 @@ export default function SignInPage() {
 
       // 5. Chuyển hướng đến trang chính
 
-      navigate("/library"); 
+      navigate("/ranking"); 
 
         
 
