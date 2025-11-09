@@ -15,7 +15,7 @@ public sealed class LeaderboardService : ILeaderboardService
     {
         var q =
             from lb in _db.LeaderboardEntries.AsNoTracking()
-            join u in _db.Users.AsNoTracking() on lb.UserId equals u.Id
+            join u in _db.UsersEdu.AsNoTracking() on lb.UserId equals u.Id
             where lb.PaperId == paperId && u.IsActive
             orderby lb.BestOverallBand descending, lb.BestAt descending
             select new LeaderboardEntryDto(

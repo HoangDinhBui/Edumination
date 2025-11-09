@@ -11,7 +11,6 @@ import SignUpPage from "../pages/SignUp/SignUpPage";
 import Answer from "../pages/Answer/Answer";
 import ExamLibrary from "../pages/ExamsLibrary/ExamsLibrary"; // Tên file trang thư viện của bạn
 import QuarterDetailPage from "../pages/ExamsLibrary/QuarterDetailPage"; // Trang chi tiết bạn vừa tạo
-import Ranking from "../pages/Ranking/RankingPage";
 
 // 2. Định nghĩa các đường dẫn (routes)
 const router = createBrowserRouter([
@@ -30,10 +29,6 @@ const router = createBrowserRouter([
   {
     path: "/library", // Đường dẫn đến trang thư viện
     element: <ExamLibrary />,
-  },
-  {
-    path: "/ranking", // Đường dẫn đến trang thư viện
-    element: <Ranking />,
   },
   {
     path: "/answer",
