@@ -12,14 +12,14 @@ import {
   MapPin,
   Phone,
 } from "lucide-react";
+// Giả sử bạn đang dùng react-router-dom
+import { Link, useNavigate } from "react-router-dom";
 
 // --- TÁI SỬ DỤNG TỪ HOMEPAGE ---
 import logoImage from "../../assets/img/Rectangle 78.png";
 import macbookImage from "../../assets/img/Laptop_img.png"; // <-- Ảnh laptop của bạn
 
-// --- DỮ LIỆU MẪU (Mock Data) ---
-
-// 1. Dữ liệu cho các nút filter
+// --- DỮ LIỆU CHO CÁC NÚT FILTER ---
 const skillFilters = [
   { name: "All Skills", icon: LayoutGrid },
   { name: "Listening", icon: Headphones },
@@ -28,49 +28,7 @@ const skillFilters = [
   { name: "Speaking", icon: Mic },
 ];
 
-// 2. "Database" giả lập API (ĐÃ CẬP NHẬT)
-const allTestData = {
-  "All Skills": {
-    title: "IELTS Mock Test 2025",
-    items: [
-      { name: "Quarter 1", taken: "951,605" },
-      { name: "Quarter 2", taken: "951,605" },
-      { name: "Quarter 3", taken: "951,605" },
-      { name: "Quarter 4", taken: "951,605" },
-    ],
-  },
-  "Listening": {
-    title: "IELTS Listening Tests",
-    items: [
-      { name: "Quarter 1 Listening Practice Test 1", taken: "120,432" },
-      { name: "Quarter 1 Listening Practice Test 2", taken: "110,222" },
-      { name: "Quarter 2 Listening Practice Test 1", taken: "95,123" },
-      { name: "Quarter 2 Listening Practice Test 2", taken: "88,456" },
-    ],
-  },
-  "Reading": {
-    title: "IELTS Reading Tests",
-    items: [
-      { name: "Academic Reading Test 1", taken: "205,112" },
-      { name: "General Reading Test 1", taken: "190,332" },
-      { name: "Academic Reading Test 2", taken: "150,987" },
-      { name: "General Reading Test 2", taken: "140,123" },
-    ],
-  },
-  "Writing": {
-    title: "IELTS Writing Tasks",
-    items: [], // (Để trống để test trường hợp "No tests found")
-  },
-  "Speaking": {
-    title: "IELTS Speaking Practice",
-    items: [
-      { name: "Speaking Practice Part 1", taken: "50,123" },
-      { name: "Speaking Practice Part 2/3", taken: "45,789" },
-    ],
-  },
-};
-
-// === COMPONENT DROPDOWN (TÁI SỬ DỤNG) ===
+// === COMPONENT DROPDOWN (GIỮ NGUYÊN) ===
 const Dropdown: React.FC<{
   title: string;
   sections: { header?: string; items: string[] }[];
@@ -109,20 +67,19 @@ const Dropdown: React.FC<{
   );
 };
 
-// === COMPONENT NAVBAR (TÁI SỬ DỤNG) ===
+// === COMPONENT NAVBAR (GIỮ NGUYÊN) ===
 const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <a href="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <img src={logoImage} className="h-7 rounded" alt="logo" />
-            <span className="font-bold text-lg text-blue-600">EDM</span>
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <a className="text-slate-700 hover:text-slate-900" href="/">
+            <Link className="text-slate-700 hover:text-slate-900" to="/">
               Home
-            </a>
+            </Link>
             <Dropdown
               title="IELTS Exam Library"
               sections={[
@@ -150,31 +107,31 @@ const Navbar: React.FC = () => {
                 },
               ]}
             />
-            <a className="text-slate-700 hover:text-slate-900" href="#">
+            <Link className="text-slate-700 hover:text-slate-900" to="/ranking">
               Ranking
-            </a>
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <a
-            href="/signin"
+          <Link
+            to="/signin"
             className="text-slate-600 hover:text-slate-900 text-sm"
           >
             Sign in
-          </a>
-          <a
-            href="/signup"
+          </Link>
+          <Link
+            to="/signup"
             className="text-sm font-semibold text-white bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 rounded-full shadow hover:opacity-95"
           >
             Sign up
-          </a>
+          </Link>
         </div>
       </div>
     </header>
   );
 };
 
-// === COMPONENT FOOTER (TÁI SỬ DỤNG) ===
+// === COMPONENT FOOTER (GIỮ NGUYÊN) ===
 const Footer: React.FC = () => (
   <footer className="border-t border-slate-200 py-12">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-10">
@@ -226,41 +183,108 @@ const Footer: React.FC = () => (
   </footer>
 );
 
-// === NỘI DUNG CHÍNH CỦA TRANG NÀY (ĐÃ NÂNG CẤP) ===
+// === NỘI DUNG CHÍNH (ĐÃ CẬP NHẬT LOGIC TOKEN) ===
 const LibraryContent: React.FC = () => {
-  // === 1: Cập nhật State ===
+  // === 1: STATE ===
   const [activeSkill, setActiveSkill] = useState("All Skills");
-  
-  // State mới để giữ title và items một cách riêng biệt
-  const [currentTitle, setCurrentTitle] = useState("IELTS Mock Test 2025");
-  const [currentItems, setCurrentItems] = useState(allTestData["All Skills"].items);
-  
-  const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentTitle, setCurrentTitle] = useState("Loading...");
+  const [currentItems, setCurrentItems] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate(); // <-- Dùng để điều hướng nếu token hết hạn
 
-  // === 2: Cập nhật Effect ===
+  // === 2: CẬP NHẬT LOGIC LẤY TOKEN ===
+  // Tự động đọc token từ localStorage.
+  // Trang SignInPage của bạn lưu token với tên "authToken"
+  const TOKEN = localStorage.getItem("Token");
+
+  // === 3: CẬP NHẬT EFFECT ĐỂ GỌI API ===
   useEffect(() => {
+    // Nếu không có token, lập tức điều hướng về trang đăng nhập
+    if (!TOKEN) {
+      navigate("/signin");
+      return;
+    }
+
     setIsLoading(true);
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-    const timer = setTimeout(() => {
-      // Lấy dữ liệu mới từ "database"
-      const data = (allTestData as any)[activeSkill] || { title: "Error", items: [] };
-      
-      setCurrentTitle(data.title);   // Cập nhật state tiêu đề
-      setCurrentItems(data.items); // Cập nhật state danh sách test
-      setIsLoading(false); // Tắt loading
-    }, 300);
+    const debounceTimer = setTimeout(() => {
+      const params = new URLSearchParams();
+      params.append("skill", activeSkill.toUpperCase());
+      params.append("status", "PUBLISHED");
+      params.append("sort", "latest");
 
-    return () => clearTimeout(timer);
-  }, [activeSkill]); // <-- Chỉ chạy lại khi activeSkill thay đổi
+      if (searchTerm) {
+        params.append("search", searchTerm);
+      }
 
-  // === 3: Cập nhật JSX (Chỉ còn 1 layout) ===
+      //
+      // !!! LƯU Ý QUAN TRỌNG VỀ API URL !!!
+      // Trang SignIn của bạn dùng "http://localhost:8081".
+      // Trang Library của bạn (ở các tin nhắn trước) dùng "/api/v1/papers"
+      //
+      // Nếu bạn đã cấu hình proxy trong (vite.config.js hoặc package.json),
+      // hãy DÙNG: const API_URL = `/api/v1/papers?${params.toString()}`;
+      //
+      // Nếu bạn KHÔNG cấu hình proxy, bạn PHẢI dùng URL đầy đủ:
+      const API_URL = `http://localhost:8081/api/v1/papers?${params.toString()}`;
+
+      fetch(API_URL, {
+        signal,
+        headers: {
+          // Gửi token thật lấy từ localStorage
+          Authorization: `Bearer ${TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => {
+          if (res.status === 401) {
+            // Token hết hạn hoặc không hợp lệ
+            localStorage.removeItem("Token"); // Xóa token cũ
+            navigate("/signin"); // Chuyển về trang đăng nhập
+            throw new Error("Unauthorized");
+          }
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          setCurrentTitle(data.Title || "Test Library"); 
+        setCurrentItems(data.Items || []);
+        })
+        .catch((err) => {
+          if (err.name === "AbortError" || err.message === "Unauthorized") {
+            console.log("Fetch aborted or user unauthorized");
+          } else {
+            console.error("Failed to fetch papers:", err);
+            setCurrentTitle("Error loading tests");
+            setCurrentItems([]);
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }, 300); // 300ms debounce
+
+    return () => {
+      clearTimeout(debounceTimer);
+      controller.abort();
+    };
+    // TOKEN bây giờ là một dependency,
+    // useEffect sẽ chạy lại nếu token thay đổi
+  }, [activeSkill, searchTerm, TOKEN, navigate]);
+
+  // === 4: JSX (ĐÃ CẬP NHẬT LOGIC ĐIỀU HƯỚNG) ===
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-4xl font-bold text-center text-slate-800 mb-10">
         IELTS Test Papers Library
       </h1>
 
-      {/* Bộ lọc Kỹ năng (Giữ nguyên) */}
+      {/* Bộ lọc Kỹ năng */}
       <div className="flex flex-wrap items-center justify-center gap-4">
         {skillFilters.map((filter) => (
           <button
@@ -278,12 +302,14 @@ const LibraryContent: React.FC = () => {
         ))}
       </div>
 
-      {/* Thanh Tìm kiếm & Sắp xếp (Giữ nguyên) */}
+      {/* Thanh Tìm kiếm & Sắp xếp */}
       <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 gap-4">
         <div className="relative w-full md:max-w-3xl">
           <input
             type="search"
             placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -294,7 +320,7 @@ const LibraryContent: React.FC = () => {
         </button>
       </div>
 
-      {/* === PHẦN NỘI DUNG ĐỘNG (Đã đơn giản hóa) === */}
+      {/* === PHẦN NỘI DUNG ĐỘNG === */}
       <div className="min-h-[300px]">
         {/* 1. Trạng thái Loading */}
         {isLoading && (
@@ -306,39 +332,88 @@ const LibraryContent: React.FC = () => {
         {/* 2. Trạng thái không có test */}
         {!isLoading && currentItems.length === 0 && (
           <div className="text-center py-20 text-slate-500 font-medium">
-            No tests found for this skill.
+            No tests found.
           </div>
         )}
 
-        {/* 3. Hiển thị layout (BÂY GIỜ LÀ LAYOUT CHUNG) */}
+        {/* 3. Hiển thị layout */}
         {!isLoading && currentItems.length > 0 && (
           <div className="relative bg-white rounded-3xl shadow-xl overflow-hidden p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
-            <span className="absolute top-5 right-10 text-purple-400 text-4xl">...</span>
-            {/* Cột trái: Ảnh Laptop (Luôn hiển thị) */}
+            <span className="absolute top-5 right-10 text-purple-400 text-4xl">
+              ...
+            </span>
             <div className="w-full max-w-sm md:w-1/3 flex-shrink-0">
-              <img src={macbookImage} alt="IELTS Mock Test" className="w-full h-auto -ml-4" />
+              <img
+                src={macbookImage}
+                alt="IELTS Mock Test"
+                className="w-full h-auto -ml-4"
+              />
             </div>
-            {/* Cột phải: Nội dung động */}
             <div className="flex-1 w-full">
-              {/* Tiêu đề động từ state */}
               <h2 className="text-3xl font-semibold text-slate-800 mb-6">
                 {currentTitle}
               </h2>
-              {/* Lưới 2x2 động từ state */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {currentItems.map((item: any) => (
-                  <div key={item.name} className="bg-slate-50/70 border border-slate-200 rounded-lg p-4 hover:shadow-lg hover:border-slate-300 cursor-pointer transition-shadow">
-                    <h3 className="text-lg font-semibold text-slate-700">{item.name}</h3>
-                    <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-500">
-                      <Zap className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      <span>{item.taken} tests taken</span>
-                    </div>
-                  </div>
-                ))}
+                {/* === CẬP NHẬT LOGIC RENDER ITEM === */}
+                {currentItems.map((item: any) => {
+                  // Nội dung của item (giữ nguyên)
+                  const itemContent = (
+                    <>
+                      <h3 className="text-lg font-semibold text-slate-700">
+                        {item.Name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mt-1 text-sm text-slate-500">
+                        <Zap className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span>{item.Taken.toLocaleString()} tests taken</span>
+                      </div>
+                    </>
+                  );
+
+                  // Class chung cho item
+                  const commonClasses =
+                    "block bg-slate-50/70 border border-slate-200 rounded-lg p-4 hover:shadow-lg hover:border-slate-300 cursor-pointer transition-shadow";
+
+                  // Xử lý điều hướng dựa trên activeSkill
+                  if (activeSkill === "All Skills") {
+                    // Đây là "Quarter". Điều hướng đến /quarter/:quarterName
+                    // Chuyển "Quarter 1 - Set 1" thành "Quarter-1-Set-1"
+                    const quarterName = item.Name.replace(/ /g, "-");
+                    return (
+                      <Link
+                        key={item.id || item.Name}
+                        to={`/quarter/${quarterName}`}
+                        className={commonClasses}
+                        // Gửi ID và Tên qua state để trang QuarterDetailPage sử dụng
+                        state={{
+                          quarterId: item.id,
+                          quarterName: item.Name,
+                        }}
+                      >
+                        {itemContent}
+                      </Link>
+                    );
+                  } else {
+                    // Đây là bài test (Paper). Điều hướng đến /answer
+                    // item.id ở đây là paperId
+                    return (
+                      <Link
+                        key={item.id || item.Name}
+                        to={`/answer`}
+                        className={commonClasses}
+                        // Gửi ID và Tên qua state để trang Answer sử dụng
+                        state={{ paperId: item.id, paperName: item.Name }}
+                      >
+                        {itemContent}
+                      </Link>
+                    );
+                  }
+                })}
               </div>
-              {/* Link xem thêm (tùy chọn) */}
               <div className="text-center mt-8">
-                <a href="#" className="text-blue-600 font-medium flex items-center justify-center gap-1.5 hover:underline">
+                <a
+                  href="#"
+                  className="text-blue-600 font-medium flex items-center justify-center gap-1.5 hover:underline"
+                >
                   <span>View more 2 tests</span>
                   <ChevronDown className="w-4 h-4" />
                 </a>
@@ -351,12 +426,9 @@ const LibraryContent: React.FC = () => {
   );
 };
 
-
-// --- COMPONENT TRANG CHÍNH ---
-
+// --- COMPONENT TRANG CHÍNH (GIỮ NGUYÊN) ---
 export default function TestLibraryPage() {
   return (
-    // Sử dụng màu nền xám nhạt cho toàn trang
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <Navbar />
       <LibraryContent />
