@@ -11,7 +11,8 @@ import SignUpPage from "../pages/SignUp/SignUpPage";
 import Answer from "../pages/Answer/Answer";
 import ExamLibrary from "../pages/ExamsLibrary/ExamsLibrary"; // Tên file trang thư viện của bạn
 import QuarterDetailPage from "../pages/ExamsLibrary/QuarterDetailPage"; // Trang chi tiết bạn vừa tạo
-
+import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
+import EnterOtpPage from "../pages/ForgotPassword/EnterOtpPage";
 // 2. Định nghĩa các đường dẫn (routes)
 const router = createBrowserRouter([
   {
@@ -41,6 +42,14 @@ const router = createBrowserRouter([
     path: "/quarter/:quarterName", 
     element: <QuarterDetailPage />,
   },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/enter-otp",
+    element: <EnterOtpPage />,
+  }
 ]);
 
 // 3. Render bộ định tuyến
