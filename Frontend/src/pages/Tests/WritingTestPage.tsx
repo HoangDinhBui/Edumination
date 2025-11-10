@@ -125,31 +125,18 @@ const WritingTask = ({ data, dividerX, onDragStart }) => {
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-4rem)]">
       {/* LEFT SIDE - Instructions */}
       <div
-        className="overflow-y-auto border-r border-slate-200 bg-white p-10"
+        className="overflow-y-auto border-r border-slate-200 bg-white"
         style={{ width: `${dividerX}%` }}
       >
-        <div className="max-w-2xl">
-          <h2 className="text-[#294563] font-bold text-2xl mb-6 uppercase tracking-wide">
-            {data.title}
-          </h2>
-
-          <div className="space-y-4 text-slate-700 leading-relaxed">
-            {data.instruction.map((line, i) => (
-              <p key={i} className={i === 0 ? "italic text-slate-600" : ""}>
-                {line}
-              </p>
-            ))}
-          </div>
-
-          {/* Diagram Placeholder */}
-          <div className="bg-white p-4 rounded-xl shadow-sm border mt-6">
-            <img
-              src={data.image}
-              alt={data.title}
-              className="w-full h-auto rounded-md"
-            />
-          </div>
-        </div>
+        <div className="h-full bg-white flex items-center justify-center p-4 mb-5">
+              <div className="w-full h-full bg-slate-100 rounded-lg shadow-inner flex items-center justify-center">
+                <div className="text-center">
+                  <FileText className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                  <p className="text-slate-500 text-sm">PDF Document Viewer</p>
+                  <p className="text-slate-400 text-xs mt-2">Cambridge 19 - Reading Test</p>
+                </div>
+              </div>
+            </div>
         <br></br> <br></br> <br></br>
       </div>
 
