@@ -13,6 +13,7 @@ import ExamLibrary from "../pages/ExamsLibrary/ExamsLibrary"; // Tên file trang
 import QuarterDetailPage from "../pages/ExamsLibrary/QuarterDetailPage"; // Trang chi tiết bạn vừa tạo
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import EnterOtpPage from "../pages/ForgotPassword/EnterOtpPage";
+import ResetPasswordPage from "../pages/ForgotPassword/ResetPasswordPage";
 // 2. Định nghĩa các đường dẫn (routes)
 const router = createBrowserRouter([
   {
@@ -49,6 +50,11 @@ const router = createBrowserRouter([
   {
     path: "/enter-otp",
     element: <EnterOtpPage />,
+  },
+
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   }
 ]);
 

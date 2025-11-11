@@ -2,14 +2,29 @@ import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import signInImage from "../../assets/img/Rectangle 123.png";
+
+// === IMPORT ẢNH SLIDE ===
+import slide1 from "../../assets/img/adv.jpg";
+import slide2 from "../../assets/img/adv1.jpg";
+import slide3 from "../../assets/img/adv2.jpg";
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
+
+  const slides = [slide1, slide2, slide3];
+
+  React.useEffect(() => {
+    const timer = setInterval(
+      () => setCurrentSlide((prev) => (prev + 1) % slides.length),
+      4000
+    );
+    return () => clearInterval(timer);
+  }, [slides.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,14 +39,14 @@ const ForgotPasswordPage: React.FC = () => {
     try {
       setLoading(true);
 
-      // ✅ Gọi API Forgot Password
       const apiUrl = "http://localhost:8081/api/v1/auth/password/forgot";
       await axios.post(apiUrl, { email });
 
-      setMessage("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.");
+      setMessage(
+        "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi."
+      );
       setEmail("");
 
-      // ⏳ Chuyển hướng sau 3 giây
       setTimeout(() => {
         navigate("/enter-otp", { state: { email, fromForgot: true } });
       }, 3000);
@@ -48,84 +63,114 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="mx-auto w-full max-w-4xl bg-white shadow-2xl rounded-2xl overflow-hidden grid md:grid-cols-2">
-        {/* Cột trái: Form */}
-        <div className="p-8 md:p-12">
-          <a
-            href="/"
-            className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-800"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to home
-          </a>
+    <>
+      {/* Google Fonts */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Paytone+One&family=Montserrat:wght@300;400;500;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+      `}</style>
 
-          <div className="text-center">
-            <h1 className="mt-6 text-3xl font-bold text-slate-700">
-              Forgot password?
+      <div className="w-screen h-screen flex flex-col md:flex-row overflow-hidden">
+        {/* === FORM === */}
+        <div className="flex flex-col justify-center items-center w-full md:w-[45%] bg-white p-8 md:p-16">
+          <div className="w-full max-w-md">
+            <button
+              onClick={() => navigate("/signin")}
+              className="inline-flex items-center gap-1 text-sm text-[#294563] hover:text-[#23B0EB] mb-6"
+            >
+              <ChevronLeft className="h-4 w-4" />s
+              Back to login
+            </button>
+
+            <h1
+              className="mt-4 text-3xl md:text-4xl font-extrabold text-[#294563] text-center"
+              style={{ fontFamily: "'Paytone One', sans-serif" }}
+            >
+              Forgot Password?
             </h1>
-          </div>
-
-          {/* Form */}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-slate-700"
-              >
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)} // 👈 Gắn state
-                required
-                placeholder="Please enter your email"
-                className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
-              />
-            </div>
-
-            {/* Hiển thị thông báo */}
-            {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
-            )}
-            {message && (
-              <p className="text-sm text-green-600 text-center">{message}</p>
-            )}
-
-            <p className="text-sm text-slate-500 pt-1 text-center">
-              Password reset instructions will be sent to your registered email.
+            <p className="text-center text-[#666666] mb-10 mt-2">
+              Enter your registered email to reset your password
             </p>
 
-            <div>
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-l text-[#294563] font-semibold mb-2"
+                  style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
+                >
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Please enter your email"
+                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500"
+                  style={{ fontFamily: "'Montserrat', sans-serif" }}
+                />
+              </div>
+
+              {error && (
+                <p className="text-sm text-red-500 text-center">{error}</p>
+              )}
+              {message && (
+                <p className="text-sm text-green-600 text-center">{message}</p>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-slate-500 hover:bg-slate-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                className="w-full py-3 bg-[#749BC2] hover:bg-sky-700 text-white text-l font-semibold rounded-full"
+                style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
               >
-                {loading ? "Đang gửi..." : "Submit"}
+                {loading ? "Đang gửi..." : "Send reset link"}
               </button>
-            </div>
 
-            <p className="text-center text-slate-600 hover:text-slate-800 pt-2">
-              <a href="/login" className="font-medium text-sky-600 hover:underline">
-                Login to your account
-              </a>
-            </p>
-          </form>
+              <p className="text-center text-[#666666] pt-2 text-sm">
+                Remember your password?{" "}
+                <a
+                  href="/login"
+                  className="font-semibold text-[#23B0EB] hover:underline"
+                >
+                  Login now!
+                </a>
+              </p>
+            </form>
+          </div>
         </div>
 
-        {/* Cột phải: Ảnh */}
-        <div className="hidden md:block">
-          <img
-            src={signInImage}
-            alt="Students in a British Council classroom"
-            className="w-full h-full object-cover"
-          />
+        {/* === SLIDESHOW === */}
+        <div className="relative w-full md:w-[55%] h-full overflow-hidden rounded-[5px] m-[5px] hidden md:block">
+          {slides.map((slide, index) => (
+            <img
+              key={index}
+              src={slide}
+              alt={`Slide ${index}`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                index === currentSlide ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
+
+          {/* Dots */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`rounded-full transition-all duration-300 ${
+                  index === currentSlide
+                    ? "w-8 h-2 bg-white"
+                    : "w-2 h-2 bg-white/40 hover:bg-white/60"
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
