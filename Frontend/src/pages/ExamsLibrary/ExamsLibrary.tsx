@@ -200,11 +200,6 @@ const LibraryContent: React.FC = () => {
 
   // === 3: CẬP NHẬT EFFECT ĐỂ GỌI API ===
   useEffect(() => {
-    // Nếu không có token, lập tức điều hướng về trang đăng nhập
-    if (!TOKEN) {
-      navigate("/signin");
-      return;
-    }
 
     setIsLoading(true);
     const controller = new AbortController();
@@ -231,13 +226,17 @@ const LibraryContent: React.FC = () => {
       // Nếu bạn KHÔNG cấu hình proxy, bạn PHẢI dùng URL đầy đủ:
       const API_URL = `http://localhost:8081/api/v1/papers?${params.toString()}`;
 
+      // 2. Xây dựng headers động
+        const headers: HeadersInit = {
+            "Content-Type": "application/json",
+        };
+
+        if (TOKEN) {
+            headers["Authorization"] = `Bearer ${TOKEN}`;
+        }
       fetch(API_URL, {
         signal,
-        headers: {
-          // Gửi token thật lấy từ localStorage
-          Authorization: `Bearer ${TOKEN}`,
-          "Content-Type": "application/json",
-        },
+        headers: headers,
       })
         .then((res) => {
           if (res.status === 401) {
@@ -396,15 +395,14 @@ const LibraryContent: React.FC = () => {
                     // Đây là bài test (Paper). Điều hướng đến /answer
                     // item.id ở đây là paperId
                     return (
-                      <Link
-                        key={item.id || item.Name}
-                        to={`/answer`}
-                        className={commonClasses}
-                        // Gửi ID và Tên qua state để trang Answer sử dụng
-                        state={{ paperId: item.id, paperName: item.Name }}
-                      >
-                        {itemContent}
-                      </Link>
+                      <div // <-- THAY BẰNG DIV
+                            key={item.id || item.Name}
+                            onClick={() => handlePaperClick(item)} // <-- GỌI HÀM XỬ LÝ
+                            className={commonClasses} // (class này đã có "cursor-pointer")
+                            // Không cần 'to' hoặc 'state' ở đây nữa
+                        >
+                            {itemContent}
+                      </div>
                     );
                   }
                 })}
@@ -425,6 +423,24 @@ const LibraryContent: React.FC = () => {
     </main>
   );
 };
+
+const handlePaperClick = (item: any) => {
+    if (!TOKEN) {
+      // Nếu không có token, chuyển đến trang đăng nhập
+      // Tùy chọn: Gửi state để sau khi đăng nhập quay lại đúng bài test
+      navigate("/signin", {
+        state: { 
+          from: "/answer", // Báo cho trang signin biết là từ đâu
+          paperState: { paperId: item.id, paperName: item.Name } // Dữ liệu cần
+        }
+      });
+    } else {
+      // Nếu có token, đi tới trang làm bài như bình thường
+      navigate("/answer", { 
+        state: { paperId: item.id, paperName: item.Name } 
+      });
+    }
+  };
 
 // --- COMPONENT TRANG CHÍNH (GIỮ NGUYÊN) ---
 export default function TestLibraryPage() {
