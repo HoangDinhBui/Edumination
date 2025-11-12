@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -18,7 +18,7 @@ const ForgotPasswordPage: React.FC = () => {
 
   const slides = [slide1, slide2, slide3];
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(
       () => setCurrentSlide((prev) => (prev + 1) % slides.length),
       4000
@@ -26,6 +26,7 @@ const ForgotPasswordPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [slides.length]);
 
+  // === API GỬI EMAIL (KHÔNG ĐỔI LOGIC) ===
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -38,13 +39,10 @@ const ForgotPasswordPage: React.FC = () => {
 
     try {
       setLoading(true);
-
       const apiUrl = "http://localhost:8081/api/v1/auth/password/forgot";
       await axios.post(apiUrl, { email });
 
-      setMessage(
-        "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi."
-      );
+      setMessage("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.");
       setEmail("");
 
       setTimeout(() => {
@@ -71,23 +69,15 @@ const ForgotPasswordPage: React.FC = () => {
 
       <div className="w-screen h-screen flex flex-col md:flex-row overflow-hidden">
         {/* === FORM === */}
-        <div className="flex flex-col justify-center items-center w-full md:w-[45%] bg-white p-8 md:p-16">
-          <div className="w-full max-w-md">
-            <button
-              onClick={() => navigate("/signin")}
-              className="inline-flex items-center gap-1 text-sm text-[#294563] hover:text-[#23B0EB] mb-6"
-            >
-              <ChevronLeft className="h-4 w-4" />s
-              Back to login
-            </button>
-
+        <div className="flex flex-col justify-center items-center w-full md:w-[45%] bg-white px-6 md:px-12 py-8">
+          <div className="w-full max-w-sm">
             <h1
-              className="mt-4 text-3xl md:text-4xl font-extrabold text-[#294563] text-center"
+              className="text-3xl md:text-4xl font-extrabold text-[#294563] text-center"
               style={{ fontFamily: "'Paytone One', sans-serif" }}
             >
               Forgot Password?
             </h1>
-            <p className="text-center text-[#666666] mb-10 mt-2">
+            <p className="text-center text-[#666666] mb-8 mt-2">
               Enter your registered email to reset your password
             </p>
 
@@ -95,7 +85,7 @@ const ForgotPasswordPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-l text-[#294563] font-semibold mb-2"
+                  className="block text-sm text-[#294563] font-semibold mb-1"
                   style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
                 >
                   Email
@@ -107,7 +97,7 @@ const ForgotPasswordPage: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="Please enter your email"
-                  className="mt-1 block w-full px-4 py-3 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500"
                   style={{ fontFamily: "'Montserrat', sans-serif" }}
                 />
               </div>
@@ -122,7 +112,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-[#749BC2] hover:bg-sky-700 text-white text-l font-semibold rounded-full"
+                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full"
                 style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
               >
                 {loading ? "Đang gửi..." : "Send reset link"}
@@ -131,8 +121,8 @@ const ForgotPasswordPage: React.FC = () => {
               <p className="text-center text-[#666666] pt-2 text-sm">
                 Remember your password?{" "}
                 <a
-                  href="/login"
-                  className="font-semibold text-[#23B0EB] hover:underline"
+                  href="/signin"
+                  className="font-semibold text-[#749BC2] hover:underline"
                 >
                   Login now!
                 </a>
@@ -142,7 +132,7 @@ const ForgotPasswordPage: React.FC = () => {
         </div>
 
         {/* === SLIDESHOW === */}
-        <div className="relative w-full md:w-[55%] h-full overflow-hidden rounded-[5px] m-[5px] hidden md:block">
+        <div className="relative w-full md:w-[55%] h-full overflow-hidden hidden md:block">
           {slides.map((slide, index) => (
             <img
               key={index}

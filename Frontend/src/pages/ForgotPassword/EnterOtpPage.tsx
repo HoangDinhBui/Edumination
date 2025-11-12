@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ChevronLeft, Mail, Clock, AlertTriangle, Send } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Mail, Clock, AlertTriangle, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import slide1 from "../../assets/img/adv.jpg";
@@ -13,7 +13,7 @@ const EnterOtpPage: React.FC = () => {
 
   const slides = [slide1, slide2, slide3];
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(
       () => setCurrentSlide((prev) => (prev + 1) % slides.length),
       4000
@@ -21,6 +21,7 @@ const EnterOtpPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [slides.length]);
 
+  // === LOGIC OTP (KHÔNG ĐỔI) ===
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) return;
     const newOtp = [...otp];
@@ -48,7 +49,7 @@ const EnterOtpPage: React.FC = () => {
       return;
     }
     console.log("OTP nhập:", code);
-    navigate("/reset-password"); // hoặc API verify OTP tùy bạn
+    navigate("/reset-password");
   };
 
   return (
@@ -59,29 +60,21 @@ const EnterOtpPage: React.FC = () => {
       `}</style>
 
       <div className="w-screen h-screen flex flex-col md:flex-row overflow-hidden">
-        {/* === CỘT FORM === */}
-        <div className="flex flex-col justify-center items-center w-full md:w-[45%] bg-white p-8 md:p-16">
-          <div className="w-full max-w-md">
-            <button
-              onClick={() => navigate("/forgot-password")}
-              className="inline-flex items-center gap-1 text-sm text-[#294563] hover:text-[#23B0EB] mb-6"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back to Forgot Password
-            </button>
-
+        {/* === FORM === */}
+        <div className="flex flex-col justify-center items-center w-full md:w-[45%] bg-white px-6 md:px-12 py-8">
+          <div className="w-full max-w-sm">
             <h1
-              className="mt-4 text-3xl md:text-4xl font-extrabold text-[#294563] text-center"
+              className="text-3xl md:text-4xl font-extrabold text-[#294563] text-center"
               style={{ fontFamily: "'Paytone One', sans-serif" }}
             >
               Enter OTP
             </h1>
-            <p className="text-center text-[#666666] mb-10 mt-2">
+            <p className="text-center text-[#666666] mb-8 mt-2">
               Please enter the 6-digit code sent to your email
             </p>
 
-            {/* FORM OTP */}
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* OTP INPUTS */}
               <div className="flex justify-between gap-2">
                 {otp.map((digit, index) => (
                   <input
@@ -92,7 +85,7 @@ const EnterOtpPage: React.FC = () => {
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-14 text-2xl text-center border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+                    className="w-10 h-12 text-xl text-center border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500"
                     style={{ fontFamily: "'Montserrat', sans-serif" }}
                   />
                 ))}
@@ -100,14 +93,14 @@ const EnterOtpPage: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-[#749BC2] hover:bg-sky-700 text-white text-l font-semibold rounded-full"
+                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full"
                 style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
               >
                 Verify OTP
               </button>
 
-              {/* HƯỚNG DẪN */}
-              <div className="space-y-3 text-[#294563] pt-4 text-sm">
+              {/* THÔNG TIN HƯỚNG DẪN */}
+              <div className="space-y-3 text-[#294563] pt-3 text-sm">
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-[#294563]" />
                   <p>Check your email inbox for a 6-digit code</p>
@@ -139,7 +132,7 @@ const EnterOtpPage: React.FC = () => {
         </div>
 
         {/* === SLIDESHOW === */}
-        <div className="relative w-full md:w-[55%] h-full overflow-hidden rounded-[5px] m-[5px] hidden md:block">
+        <div className="relative w-full md:w-[55%] h-full overflow-hidden hidden md:block">
           {slides.map((slide, index) => (
             <img
               key={index}
