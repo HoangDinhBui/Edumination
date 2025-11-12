@@ -1,47 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Edumination.WinForms.UI.Forms.LoginForm
+namespace Edumination.WinForms.UI.Forms.Login
 {
     public partial class SignInPanel : UserControl
     {
         private bool showPassword = false;
-        private string[] slideImages = { "assets/img/adv.jpg", "assets/img/adv1.jpg", "assets/img/adv2.jpg" };
-        private int currentSlide = 0;
-        private System.Windows.Forms.Timer slideTimer;
+        private readonly Edumination.WinForms.LoginForm _parentForm;
 
-        public SignInPanel()
+        // 🔹 Constructor mới có tham số LoginForm
+        public SignInPanel(Edumination.WinForms.LoginForm parentForm)
         {
             InitializeComponent();
-            InitializeSlides();
+            _parentForm = parentForm ?? throw new ArgumentNullException(nameof(parentForm)); // lưu lại form cha
 
+            // Gán sự kiện
             btnTogglePassword.Click += BtnTogglePassword_Click;
             btnSignIn.Click += BtnSignIn_Click;
             btnGoogleLogin.Click += BtnGoogleLogin_Click;
             lblForgotPassword.Click += LblForgotPassword_Click;
             lblRegister.Click += LblRegister_Click;
+
+            // Căn giữa nội dung khi load và resize
+            this.Load += (s, e) => CenterContent();
+            this.Resize += (s, e) => CenterContent();
         }
 
-        private void InitializeSlides()
-        {
-            if (slideImages.Length == 0) return;
+        // Nếu muốn giữ khả năng khởi tạo trống (design mode, preview, test, v.v.)
+        public SignInPanel() : this(null!) { }
 
-            pictureBoxSlide.Image = Image.FromFile(slideImages[0]);
-            slideTimer = new System.Windows.Forms.Timer { Interval = 4000 };
-            slideTimer.Tick += (s, e) =>
-            {
-                currentSlide = (currentSlide + 1) % slideImages.Length;
-                pictureBoxSlide.Image = Image.FromFile(slideImages[currentSlide]);
-            };
-            slideTimer.Start();
+        private void CenterContent()
+        {
+            int panelHeight = this.Height;
+            int contentHeight = 440; // chiều cao ước lượng nội dung
+            int topMargin = (panelHeight - contentHeight) / 2;
+
+            lblTitle.Top = topMargin;
+            lblSubtitle.Top = lblTitle.Bottom + 10;
+            txtEmail.Top = lblSubtitle.Bottom + 30;
+            txtPassword.Top = txtEmail.Bottom + 25;
+            btnTogglePassword.Top = txtPassword.Top + 2;
+            btnSignIn.Top = txtPassword.Bottom + 35;
+            lblError.Top = btnSignIn.Bottom + 5;
+            btnGoogleLogin.Top = lblError.Bottom + 10;
+            lblForgotPassword.Top = btnGoogleLogin.Bottom + 10;
+            lblRegister.Top = lblForgotPassword.Bottom + 30;
         }
 
         private void BtnTogglePassword_Click(object sender, EventArgs e)
@@ -64,14 +72,13 @@ namespace Edumination.WinForms.UI.Forms.LoginForm
             try
             {
                 var response = await client.PostAsync("http://localhost:8081/api/v1/auth/login", content);
-                if (resp onse.IsSuccessStatusCode)
+
+                if (response.IsSuccessStatusCode)
                 {
                     var respBody = await response.Content.ReadAsStringAsync();
                     var data = JsonSerializer.Deserialize<JsonElement>(respBody);
-                    if (data.TryGetProperty("Token", out var token))
+                    if (data.TryGetProperty("token", out var token))
                     {
-                        //Properties.Settings.Default["Token"] = token.GetString();
-                        //Properties.Settings.Default.Save();
                         MessageBox.Show("Login successful!");
                     }
                     else
@@ -97,8 +104,22 @@ namespace Edumination.WinForms.UI.Forms.LoginForm
             btnSignIn.Text = "Sign In";
         }
 
-        private void BtnGoogleLogin_Click(object sender, EventArgs e) => MessageBox.Show("Google login not implemented.");
-        private void LblForgotPassword_Click(object sender, EventArgs e) => MessageBox.Show("Forgot password clicked.");
-        private void LblRegister_Click(object sender, EventArgs e) => MessageBox.Show("Register clicked.");
-    }
+        private void BtnGoogleLogin_Click(object sender, EventArgs e)
+            => MessageBox.Show("Google login not implemented.");
+
+        // 🔹 Giờ có thể gọi _parentForm.ShowPanel(...)
+        private void LblForgotPassword_Click(object sender, EventArgs e)
+        {
+            if (_parentForm != null)
+                _parentForm.ShowPanel(new ForgotPasswordPanel(_parentForm));
+        }
+
+
+
+        private void LblRegister_Click(object sender, EventArgs e)
+        {
+            if (_parentForm != null)
+                _parentForm.ShowPanel(new SignUpPanel(_parentForm));
+        }
+}
 }
