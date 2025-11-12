@@ -93,7 +93,7 @@ export default function SignInPage() {
       localStorage.setItem("Token", token);
 
       // Chuyển hướng đến trang ranking
-      navigate("/ranking");
+      navigate("/library");
     } catch (err: any) {
       setLoading(false);
 

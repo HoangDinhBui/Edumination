@@ -18,9 +18,9 @@ public class Question
     public string Qtype { get; set; } // Thêm [Required] nếu bắt buộc
 
     [Required]
-    public string Stem { get; set; } // Thêm [Required] nếu bắt buộc
+    public string? Stem { get; set; } // Thêm [Required] nếu bắt buộc
 
-    public string MetaJson { get; set; }
+    public string? MetaJson { get; set; }
     public int Position { get; set; }
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public DateTime CreatedAt { get; set; } // Để database tự gán

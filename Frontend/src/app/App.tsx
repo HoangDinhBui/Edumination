@@ -14,6 +14,7 @@ import QuarterDetailPage from "../pages/ExamsLibrary/QuarterDetailPage"; // Tran
 import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 import EnterOtpPage from "../pages/ForgotPassword/EnterOtpPage";
 import ResetPasswordPage from "../pages/ForgotPassword/ResetPasswordPage";
+import ListeningTestPage from "../pages/Tests/ListeningTestPage";
 // 2. Định nghĩa các đường dẫn (routes)
 const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
   {
     path: "/answer",
     element: <Answer />,
+  },
+  {
+    path: "/listening-test",
+    element: <ListeningTestPage />,
   },
   {
     // === ĐƯỜNG DẪN ĐỘNG MỚI ===
