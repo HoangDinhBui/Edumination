@@ -8,5 +8,6 @@ public record SectionDto
     public int TimeLimitSec { get; set; }
     public long? AudioAssetId { get; set; }
     public bool IsPublished { get; set; }
+    public string? AudioStorageUrl { get; set; }
     public List<PassageDto>? Passages { get; set; }
 }

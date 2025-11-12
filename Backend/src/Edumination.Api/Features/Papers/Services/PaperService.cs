@@ -122,54 +122,58 @@ public class PaperService : IPaperService
     }
 
     public async Task<DetailedPaperDto?> GetDetailedAsync(long id, bool hideAnswers, CancellationToken ct = default)
+{
+    var paper = await _db.TestPapers
+        .AsNoTracking()
+        .AsSplitQuery() // <-- GIỮ LẠI DÒNG QUAN TRỌNG NÀY
+        .Include(p => p.TestSections)
+            .ThenInclude(s => s.Passages)
+                .ThenInclude(pa => pa.Questions)
+                    .ThenInclude(q => q.QuestionChoices) // Tải QuestionChoices
+        .Include(p => p.TestSections)
+            .ThenInclude(s => s.Passages)
+                .ThenInclude(pa => pa.Questions)
+                    .ThenInclude(q => q.QuestionAnswerKey) // Tải QuestionAnswerKey riêng
+        .FirstOrDefaultAsync(p => p.Id == id, ct);
+
+    if (paper == null) return null;
+
+    var dto = new DetailedPaperDto
     {
-        var paper = await _db.TestPapers
-            .AsNoTracking()
-            .Include(p => p.TestSections)
-                .ThenInclude(s => s.Passages)
-                    .ThenInclude(pa => pa.Questions)
-                        .ThenInclude(q => q.QuestionChoices) // Tải QuestionChoices
-            .Include(p => p.TestSections)
-                .ThenInclude(s => s.Passages)
-                    .ThenInclude(pa => pa.Questions)
-                        .ThenInclude(q => q.QuestionAnswerKey) // Tải QuestionAnswerKey riêng
-            .FirstOrDefaultAsync(p => p.Id == id, ct);
-
-        if (paper == null) return null;
-
-        var dto = new DetailedPaperDto
+        Id = paper.Id,
+        Title = paper.Title,
+        Status = paper.Status,
+        CreatedAt = paper.CreatedAt,
+        PdfAssetId = paper.PdfAssetId,
+        // (Đã xóa PdfStorageUrl)
+        Sections = paper.TestSections.Select(s => new SectionDto
         {
-            Id = paper.Id,
-            Title = paper.Title,
-            Status = paper.Status,
-            CreatedAt = paper.CreatedAt,
-            PdfAssetId = paper.PdfAssetId,
-            Sections = paper.TestSections.Select(s => new SectionDto
+            Id = s.Id,
+            Skill = s.Skill,
+            SectionNo = s.SectionNo,
+            TimeLimitSec = s.TimeLimitSec ?? 0,
+            AudioAssetId = s.AudioAssetId,
+            // (Đã xóa AudioStorageUrl)
+            Passages = s.Passages.Select(pa => new PassageDto
             {
-                Id = s.Id,
-                Skill = s.Skill,
-                SectionNo = s.SectionNo,
-                Passages = s.Passages.Select(pa => new PassageDto
+                Id = pa.Id,
+                Title = pa.Title ?? string.Empty,
+                ContentText = pa.ContentText ?? string.Empty,
+                Questions = pa.Questions.Select(q => new QuestionDto
                 {
-                    Id = pa.Id,
-                    Title = pa.Title ?? string.Empty,
-                    ContentText = pa.ContentText ?? string.Empty,
-                    Questions = pa.Questions.Select(q => new QuestionDto
-                    {
-                        Id = q.Id,
-                        Qtype = q.Qtype ?? string.Empty,
-                        Stem = q.Stem ?? string.Empty,
-                        Position = q.Position,
-                        Choices = hideAnswers ? null : (q.QuestionChoices?.Select(c => new ChoiceDto { Content = c.Content ?? string.Empty, IsCorrect = c.IsCorrect }).ToList() ?? new List<ChoiceDto>()),
-                        AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson ?? string.Empty
-                    }).ToList()
+                    Id = q.Id,
+                    Qtype = q.Qtype ?? string.Empty,
+                    Stem = q.Stem ?? string.Empty,
+                    Position = q.Position,
+                    Choices = hideAnswers ? null : (q.QuestionChoices?.Select(c => new ChoiceDto { Content = c.Content ?? string.Empty, IsCorrect = c.IsCorrect }).ToList() ?? new List<ChoiceDto>()),
+                    AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson ?? string.Empty
                 }).ToList()
             }).ToList()
-        };
+        }).ToList()
+    };
 
-        return dto;
-    }
-
+    return dto;
+}
 }
 public static class StringExtensions
     {

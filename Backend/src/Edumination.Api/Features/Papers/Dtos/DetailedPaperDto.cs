@@ -6,6 +6,7 @@ public record DetailedPaperDto
     public string? Title { get; init; }
     public string? Status { get; init; }
     public DateTime CreatedAt { get; init; }
+    public string? PdfStorageUrl { get; set; }
     public long? PdfAssetId { get; init; }
     public List<SectionDto>? Sections { get; init; }
 }
