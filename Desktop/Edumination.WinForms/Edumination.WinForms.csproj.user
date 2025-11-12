@@ -1,10 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Compile Update="UI\Forms\LoginForm\LoginForm.cs">
+    <Compile Update="UI\Forms\Login\EnterOtpPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Login\ForgotPasswordPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Login\LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="UI\Forms\LoginForm\SignInPanel.cs">
+    <Compile Update="UI\Forms\Login\SignInPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Login\SignUpPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
   </ItemGroup>
