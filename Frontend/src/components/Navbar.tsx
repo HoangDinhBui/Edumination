@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-500 ${
           scrolled
             ? "bg-white/95 backdrop-blur-xl shadow-xl"
             : "bg-white/80 backdrop-blur-md shadow-md"

@@ -1,42 +1,29 @@
 import React from "react";
 import {
   // Icons cho Sidebar
-  Library,
-  Lightbulb,
-  BookMarked,
-  LayoutDashboard,
-  History,
-  // Icons cho Header & Result
   Star,
   Calendar,
   CheckSquare,
-  User,
   ListChecks,
   CheckCircle2,
   XCircle,
-  Clock, // Icon mới cho donut
+  Clock,
   // Icons cho Review & Explanation
   Play,
   RotateCcw,
   RotateCw,
   Volume2,
-  Cog,
   MapPin,
   FileText,
+  BookMarked,
 } from "lucide-react";
-import Avatar from "../../assets/img/Ellipse 24.png"
-
-import EPicture from "../../assets/img/Rectangle 111141430.png"
+import Avatar from "../../assets/img/Ellipse 24.png";
+import Navbar from "../../components/Navbar";
+import EPicture from "../../assets/img/Rectangle 111141430.png";
+import { useNavigate } from "react-router-dom"; // 👈 thêm dòng này
+import { Trophy } from "lucide-react"; // 👈 biểu tượng cho nút
 
 // --- DỮ LIỆU MẪU (Mock Data) ---
-
-const navItems = [
-  { name: "IELTS Exam Library", icon: Library, active: true },
-  { name: "IELTS Tips", icon: Lightbulb, active: false },
-  { name: "IELTS Courses", icon: BookMarked, active: false },
-  { name: "My Dashboard", icon: LayoutDashboard, active: false },
-  { name: "Practice Test History", icon: History, active: false },
-];
 
 const sampleAnswers = [
   { id: 1, text: "Keiko:", isCorrect: false },
@@ -58,65 +45,75 @@ const answerKeyData = [
   { title: "Part 4: Question 31 - 40", answers: sampleAnswers.slice(0, 10) },
 ];
 
-// --- COMPONENT: Sidebar ---
-const Sidebar: React.FC = () => (
-  <aside className="w-64 h-screen bg-white shadow-lg p-6 flex flex-col flex-shrink-0">
-    <a href="#" className="text-3xl font-bold text-blue-600">
-      ATY
-    </a>
-    <nav className="mt-10 space-y-2">
-      {navItems.map((item) => (
-        <a
-          key={item.name}
-          href="#"
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium ${
-            item.active
-              ? "bg-blue-100 text-blue-600"
-              : "text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          <item.icon className="w-5 h-5" />
-          <span>{item.name}</span>
-        </a>
-      ))}
-    </nav>
-  </aside>
-);
+// === MOCK DATA ===
+const mockTestHeaderData = {
+  title: "IELTS Mock Test 2025 January",
+  rating: 4.5,
+  votes: 755,
+  postedDate: "06 Jun 2025",
+  testTaken: 1000,
+  category: "IELTS",
+  image: { EPicture },
+};
 
-// --- COMPONENT: TestHeader (Đã cập nhật) ---
-const TestHeader: React.FC = () => (
-  <section className="bg-white p-6 rounded-lg shadow-sm flex items-start gap-6">
-    <img
-      src={EPicture} // <-- THAY THẾ ẢNH NÀY
-      alt="IELTS Mock Test 2025"
-      className="w-24 rounded-md flex-shrink-0"
-    />
-    <div className="flex-1">
-      <h1 className="text-2xl font-bold text-slate-800">
-        IELTS Mock Test 2025 January
-      </h1>
-      <div className="flex items-center mt-2">
-        {[...Array(4)].map((_, i) => (
-          <Star key={i} className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-        ))}
-        <Star className="w-5 h-5 text-yellow-500" />
-        <span className="ml-2 text-sm text-slate-500">(755 vote)</span>
-      </div>
-      <div className="mt-3 text-sm text-slate-600 space-y-2">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-slate-500" />
-          <span>Posted on: 06 Jun 2025</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <CheckSquare className="w-4 h-4 text-slate-500" />
-          <span>Test taken: 1.000</span>
+// --- COMPONENT: TestHeader ---
+const TestHeader: React.FC = () => {
+  const data = mockTestHeaderData;
+  const filledStars = Math.floor(data.rating);
+  const hasHalfStar = data.rating % 1 !== 0;
+
+  return (
+    <section className="w-full p-8 rounded-2xl shadow-md border border-blue-100 flex flex-col md:flex-row items-start gap-8">
+      {/* Hình ảnh minh họa */}
+      <div className="w-full md:w-56 h-40 rounded-xl overflow-hidden shadow-lg flex-shrink-0 relative">
+        <img
+          src={Object.values(data.image)[0]}
+          alt={data.title}
+          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+        />
+        <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-md shadow-md">
+          {data.category}
         </div>
       </div>
-    </div>
-  </section>
-);
 
-// --- COMPONENT: ResultDonut (Đã cập nhật để linh hoạt hơn) ---
+      {/* Nội dung thông tin */}
+      <div className="flex-1">
+        <h1 className="text-3xl font-bold text-slate-800 mb-3">{data.title}</h1>
+
+        {/* Rating */}
+        <div className="flex items-center mb-4">
+          {[...Array(filledStars)].map((_, i) => (
+            <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+          ))}
+          {hasHalfStar && (
+            <Star className="w-5 h-5 text-yellow-400 opacity-60" />
+          )}
+          <span className="ml-2 text-sm text-slate-600 font-medium">
+            ({data.votes} votes)
+          </span>
+        </div>
+
+        {/* Meta info */}
+        <div className="flex flex-wrap gap-6 text-sm text-slate-700">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            <span>
+              <strong>Posted on:</strong> {data.postedDate}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CheckSquare className="w-5 h-5 text-green-600" />
+            <span>
+              <strong>Test taken:</strong> {data.testTaken.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- COMPONENT: ResultDonut ---
 interface ResultDonutProps {
   subText: string;
   borderColorClass: string;
@@ -128,13 +125,13 @@ const ResultDonut: React.FC<ResultDonutProps> = ({
   borderColorClass,
   children,
 }) => (
-  <div className="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-sm">
+  <div className="flex flex-col items-center justify-center bg-gradient-to-br from-white to-slate-50 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
     <div
-      className={`w-32 h-32 rounded-full border-8 ${borderColorClass} flex items-center justify-center`}
+      className={`w-36 h-36 rounded-full border-[10px] ${borderColorClass} flex items-center justify-center shadow-inner bg-white`}
     >
       {children}
     </div>
-    <p className="mt-3 text-sm font-medium text-slate-600 text-center">
+    <p className="mt-4 text-sm font-semibold text-slate-700 text-center">
       {subText}
     </p>
   </div>
@@ -183,7 +180,7 @@ const AnswerKeyPart: React.FC<AnswerKeyPartProps> = ({ title, answers }) => (
 );
 
 // =======================================================
-// === COMPONENT MỚI: Review & Explanation (Bắt đầu) ===
+// === COMPONENT: Review & Explanation ===
 // =======================================================
 
 // --- Helper: Nút bấm nhỏ (Listen, Locate, Explain) ---
@@ -247,54 +244,84 @@ const AudioPlayerMockup: React.FC = () => (
   </div>
 );
 
-// --- Component Review & Explanation chính ---
-const ReviewExplanation: React.FC = () => {
-  // Dữ liệu mẫu cho component này
-  const reviewAnswers = [
+// === MOCK DATA CHO REVIEW & EXPLANATION ===
+const mockReviewExplanationData = {
+  title: "Review & Explanation",
+  partTitle: "Part 1",
+  questionRange: "Questions 1–5",
+  instructionTitle: "The housing officer takes some details from the girl.",
+  instructionNote:
+    "Complete the following form with NO MORE THAN THREE WORDS AND/OR A NUMBER for each answer.",
+  formTitle: "PERSONAL DETAILS FOR HOMESTAY APPLICATION",
+  formData: [
+    { label: "First name", answer: "Keiko" },
+    { label: "Family name", answer: "Yuinichi", number: 1 },
+    { label: "Gender", answer: "Female" },
+    { label: "Age", answer: "28" },
+    { label: "Passport number", answer: "", number: 2 },
+    { label: "Nationality", answer: "Japanese" },
+    { label: "Course enrolled", answer: "", number: 3 },
+    { label: "Length of the course", answer: "", number: 4 },
+    { label: "Homestay time", answer: "", number: 5 },
+  ],
+  reviewAnswers: [
     { number: 1, text: "Keiko" },
     { number: 2, text: "J06337" },
     { number: 3, text: "Advanced English studies" },
-  ];
+  ],
+  audioScript: [
+    "Please turn to section 1 of listening practice test. Listen to the conversation between a Japanese student and a housing officer and complete the form. First you have some time to look at questions 1 to 5. You will see that there is an example which has been done for you. The conversation relating to this will be played first.",
+    "Man: Yes? What can I do for you?",
+    "Girl: My friend is in a homestay and she really enjoys it, so I'd like to join a family as well.",
+    "Man: Okay let me get some details. What's your name?",
+    "Girl: My name is Keiko Yuichini.",
+    "Man: Could you spell your family name for me, please?",
+    "Girl: Yes. It's Yuichini. That's Y U I C H I N I.",
+    "The student's family name is Yuichini. So that has been written on the form. Now we shall begin. You should answer the questions as you listen because you will not hear the recording a second time. Now listen carefully and answer questions 1 to 5.",
+    "Man: Yes? What can I do for you?",
+    "Girl: My friend is in a homestay and she really enjoys it so I'd like to join a family as well.",
+  ],
+};
+
+// --- Component Review & Explanation chính ---
+const ReviewExplanation: React.FC = () => {
+  const data = mockReviewExplanationData;
 
   return (
     <section className="mt-8 bg-white rounded-2xl shadow-lg border-2 border-blue-500 overflow-hidden">
+      {/* HEADER */}
       <div className="flex items-center gap-2 p-4 bg-blue-500 text-white">
         <BookMarked className="w-5 h-5" />
-        <h2 className="text-xl font-bold">Review & Explanation</h2>
+        <h2 className="text-xl font-bold">{data.title}</h2>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-        {/* === CỘT BÊN TRÁI === */}
+        {/* === CỘT TRÁI === */}
         <div>
-          <h3 className="font-semibold text-slate-800">Questions 1-5</h3>
-          <p className="text-sm text-slate-600 mt-1">
-            The housing officer takes some details from the girl.
-          </p>
+          <h3 className="font-semibold text-slate-800">{data.questionRange}</h3>
+          <p className="text-sm text-slate-600 mt-1">{data.instructionTitle}</p>
           <p className="text-sm text-red-600 font-medium my-3">
-            Complete the following form with{" "}
-            <strong>NO MORE THAN THREE WORDS AND/OR A NUMBER</strong> for each
-            answer.
+            {data.instructionNote}
           </p>
 
-          {/* Form */}
+          {/* FORM */}
           <div className="bg-blue-50 text-blue-800 font-semibold p-3 rounded-t-lg text-sm">
-            PERSONAL DETAILS FOR HOMESTAY APPLICATION
+            {data.formTitle}
           </div>
           <div className="bg-white p-4 rounded-b-lg shadow-inner border border-slate-200">
-            <ReviewFormRow label="First name" answer="Keiko" />
-            <ReviewFormRow label="Family name" answer="Yuinichi" number={1} />
-            <ReviewFormRow label="Gender" answer="Female" />
-            <ReviewFormRow label="Age" answer="28" />
-            <ReviewFormRow label="Passport number" answer="" number={2} />
-            <ReviewFormRow label="Nationality" answer="Japanese" />
-            <ReviewFormRow label="Course enrolled" answer="" number={3} />
-            <ReviewFormRow label="Length of the course" answer="" number={4} />
-            <ReviewFormRow label="Homestay time" answer="" number={5} />
+            {data.formData.map((row, i) => (
+              <ReviewFormRow
+                key={i}
+                label={row.label}
+                answer={row.answer}
+                number={row.number}
+              />
+            ))}
           </div>
 
-          {/* Danh sách câu trả lời */}
+          {/* CÂU TRẢ LỜI */}
           <div className="mt-6 space-y-4">
-            {reviewAnswers.map((ans) => (
+            {data.reviewAnswers.map((ans) => (
               <div key={ans.number}>
                 <p className="text-sm text-slate-800">
                   {ans.number}. Answer:{" "}
@@ -310,52 +337,24 @@ const ReviewExplanation: React.FC = () => {
           </div>
         </div>
 
-        {/* === CỘT BÊN PHẢI === */}
+        {/* === CỘT PHẢI === */}
         <div>
           <AudioPlayerMockup />
-          <h3 className="text-xl font-semibold text-slate-800 mt-6">Part 1</h3>
+          <h3 className="text-xl font-semibold text-slate-800 mt-6">
+            {data.partTitle}
+          </h3>
           <div className="mt-4 space-y-3 text-slate-700 text-sm leading-relaxed max-h-96 overflow-y-auto">
-            <p>
-              Please turn to section 1 of listening practice test. Listen to the
-              conversation between a Japanese student and a housing officer and
-              complete the form. First you have some time to look at questions 1
-              to 5. You will see that there is an example which has been done for
-              you. The conversation relating to this will be played first.
-            </p>
-            <p>
-              <strong>Man:</strong> Yes? What can I do for you?
-            </p>
-            <p>
-              <strong>Girl:</strong> My friend is in a homestay and she really
-              enjoys it, so I’d like to join a family as well.
-            </p>
-            <p>
-              <strong>Man:</strong> Okay let me get some details. What’s your
-              name?
-            </p>
-            <p>
-              <strong>Girl:</strong> My name is Keiko Yuichini.
-            </p>
-            <p>
-              <strong>Man:</strong> Could you spell your family name for me,
-              please?
-            </p>
-            <p>
-              <strong>Girl:</strong> Yes. It’s Yuichini. That’s Y U I C H I N I.
-            </p>
-            <p>
-              The student’s family name is Yuichini. So that has been written on
-              the form. Now we shall begin. You should answer the questions as
-              you listen because you will not hear the recording a second time.
-              Now listen carefully and answer questions 1 to 5.
-            </p>
-            <p>
-              <strong>Man:</strong> Yes? What can I do for you?
-            </p>
-            <p>
-              <strong>Girl:</strong> My friend is in a homestay and she really
-              enjoys it so I’d like to join a family as well.
-            </p>
+            {data.audioScript.map((line, i) => (
+              <p key={i}>
+                {line.includes("Man:") || line.includes("Girl:") ? (
+                  <>
+                    <strong>{line.split(":")[0]}:</strong> {line.split(":")[1]}
+                  </>
+                ) : (
+                  line
+                )}
+              </p>
+            ))}
           </div>
         </div>
       </div>
@@ -363,80 +362,135 @@ const ReviewExplanation: React.FC = () => {
   );
 };
 
-// =====================================================
-// === COMPONENT MỚI: Review & Explanation (Kết thúc) ===
-// =====================================================
+// --- COMPONENT: View Ranking Button ---
+const ViewRankingButton: React.FC = () => {
+  const navigate = useNavigate();
 
-// --- COMPONENT TRANG CHÍNH (Đã cập nhật) ---
-
-export default function AnswerPage() {
   return (
-    <div className="min-h-screen flex bg-slate-50">
-      {/* 1. Sidebar */}
-      <Sidebar />
+    <button
+      onClick={() => navigate("/ranking")}
+      className="mt-8 flex items-center gap-2 px-6 py-3 
+                 bg-gradient-to-r from-sky-500 to-indigo-500 
+                 text-white font-semibold rounded-full shadow-lg 
+                 hover:shadow-xl hover:scale-105 transition-all duration-300"
+    >
+      <Trophy className="w-5 h-5 text-white" />
+      <span>View Global Ranking</span>
+    </button>
+  );
+};
 
-      {/* 2. Nội dung chính */}
-      <main className="flex-1 p-8 overflow-y-auto">
+// === MOCK DATA CHO ANSWER PAGE ===
+const mockAnswerPageData = {
+  user: {
+    name: "Tran Dung",
+    avatar: { Avatar },
+  },
+  result: {
+    correctAnswers: "2/40",
+    bandScore: "2",
+    timeCompleted: "32:00",
+  },
+  answerKeys: [
+    {
+      title: "Part 1: Question 1 - 10",
+      answers: [
+        { id: 1, text: "Keiko", isCorrect: true },
+        { id: 2, text: "J06337", isCorrect: false },
+        { id: 3, text: "Advanced English studies", isCorrect: false },
+        { id: 4, text: "5 months", isCorrect: true },
+        { id: 5, text: "About 4 months", isCorrect: false },
+      ],
+    },
+    {
+      title: "Part 2: Question 11 - 20",
+      answers: [
+        { id: 11, text: "B, D: C, D (Correct 1/2)", isCorrect: false },
+        { id: 12, text: "Seafood", isCorrect: true },
+        { id: 13, text: "Tennis", isCorrect: false },
+        { id: 14, text: "Take the train", isCorrect: false },
+        { id: 15, text: "This afternoon", isCorrect: false },
+      ],
+    },
+  ],
+};
+
+// --- COMPONENT TRANG CHÍNH ---
+export default function AnswerPage() {
+  const data = mockAnswerPageData;
+
+  return (
+    <div className="min-h-screen">
+      <Navbar />
+
+      {/* Nội dung chính - Full width với container */}
+      <main className="w-full px-8 py-8 mt-10">
         {/* Header bài test */}
         <TestHeader />
 
-        {/* Khối Avatar và Result (Căn giữa) */}
-        <div className="flex flex-col items-center my-8">
-          <div className="w-20 h-20 rounded-full overflow-hidden shadow-md">
+        {/* Khối Avatar và Result */}
+        <div className="flex flex-col items-center my-12">
+          <div className="w-24 h-24 rounded-full overflow-hidden shadow-xl ring-4 ring-blue-100 bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
             <img
-              src={Avatar} // <-- THAY THẾ ẢNH AVATAR
-              alt="Tran Dung"
+              src={Object.values(data.user.avatar)[0]}
+              alt={data.user.name}
               className="w-full h-full object-cover"
             />
           </div>
-          <span className="mt-3 text-lg font-medium text-slate-800">
-            Tran Dung
+          <span className="mt-4 text-xl font-semibold text-slate-800">
+            {data.user.name}
           </span>
-          <h2 className="text-3xl font-bold text-slate-800 mt-4">Result</h2>
+          <h2 className="text-4xl font-bold text-slate-800 mt-6 mb-2">
+            Result
+          </h2>
+          <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
+
+          <ViewRankingButton />
+
         </div>
 
-        {/* Phần Result Donut (Cập nhật theo ảnh closeup mới) */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Phần Result Donut */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           <ResultDonut
             subText="The correct answer"
-            borderColorClass="border-gray-300"
+            borderColorClass="border-slate-200"
           >
             <div className="flex flex-col items-center">
-              <CheckSquare className="w-8 h-8 text-blue-600" />
-              <span className="text-xl font-bold text-slate-700 mt-1">
-                2/40
+              <CheckSquare className="w-10 h-10 text-blue-600" />
+              <span className="text-2xl font-bold text-slate-700 mt-2">
+                {data.result.correctAnswers}
               </span>
             </div>
           </ResultDonut>
 
-          <ResultDonut
-            subText="Band score"
-            borderColorClass="border-blue-200"
-          >
-            <span className="text-5xl font-bold text-blue-600">2</span>
+          <ResultDonut subText="Band score" borderColorClass="border-blue-300">
+            <span className="text-6xl font-bold text-blue-600">
+              {data.result.bandScore}
+            </span>
           </ResultDonut>
 
           <ResultDonut
             subText="Time to complete the exam"
-            borderColorClass="border-blue-600"
+            borderColorClass="border-blue-500"
           >
             <div className="flex flex-col items-center">
-              <Clock className="w-8 h-8 text-blue-600" />
-              <span className="text-xl font-bold text-slate-700 mt-1">
-                32:00
+              <Clock className="w-10 h-10 text-blue-600" />
+              <span className="text-2xl font-bold text-slate-700 mt-2">
+                {data.result.timeCompleted}
               </span>
             </div>
           </ResultDonut>
         </section>
 
         {/* Phần Answer Keys */}
-        <section className="mt-8 bg-white p-6 rounded-lg shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <ListChecks className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-bold text-slate-800">Answer Keys</h2>
+        <section className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 mb-8">
+          <div className="flex items-center gap-3 mb-8 pb-4 border-b-2 border-blue-100">
+            <ListChecks className="w-7 h-7 text-blue-600" />
+            <h2 className="text-2xl font-bold text-slate-800">Answer Keys</h2>
           </div>
-          <div className="space-y-8">
-            {answerKeyData.map((part) => (
+
+          <div className="space-y-10">
+            {data.answerKeys.map((part) => (
               <AnswerKeyPart
                 key={part.title}
                 title={part.title}
@@ -446,8 +500,7 @@ export default function AnswerPage() {
           </div>
         </section>
 
-        {/* === PHẦN MỚI THÊM === */}
-        {/* Component Review & Explanation được thêm vào đây */}
+        {/* Component Review & Explanation */}
         <ReviewExplanation />
       </main>
     </div>
