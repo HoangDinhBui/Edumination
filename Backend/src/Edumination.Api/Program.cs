@@ -36,8 +36,8 @@ using Edumination.Api.Features.Enrollments.Services;
 using Edumination.Api.Features.Stats.Services;
 using Edumination.Api.Features.Recommendations.Services;
 using Edumination.Api.Features.Attempts.Services;
-using Stripe;  // Add this for StripeClient
-using Microsoft.AspNetCore.Cors;  // For CORS
+using Stripe;
+using Microsoft.AspNetCore.Cors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,13 +73,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
-// Stripe Configuration (NEW: Register IStripeClient with key from config/env)
+// Stripe Configuration
 var stripeKey = builder.Configuration["Stripe:SecretKey"];
 if (string.IsNullOrWhiteSpace(stripeKey))
 {
     throw new InvalidOperationException("Stripe:SecretKey is missing. Check .env or appsettings.");
 }
-builder.Services.AddSingleton<IStripeClient>(new StripeClient(stripeKey));  // Inject IStripeClient in controllers
+builder.Services.AddSingleton<IStripeClient>(new StripeClient(stripeKey));
 
 // Services DI (consolidated)
 builder.Services.AddScoped<IAssetService, AssetsService>();
@@ -112,7 +112,7 @@ builder.Services.AddScoped<ICourseRecommendationService, CourseRecommendationSer
 builder.Services.AddScoped<IMyEnrollmentsService, MyEnrollmentsService>();
 builder.Services.AddScoped<ITestAttemptRepository, TestAttemptRepository>();
 builder.Services.AddScoped<ISectionAttemptRepository, SectionAttemptRepository>();
-builder.Services.AddScoped<IAttemptService, AttemptService>();  // Once only
+builder.Services.AddScoped<IAttemptService, AttemptService>();
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -140,7 +140,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
-// Add CORS (NEW: Allow frontend)
+// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -159,13 +159,19 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IStorageService, StorageService>();  // Already added above; harmless
+builder.Services.AddScoped<IStorageService, StorageService>();
 
-// Email sender
+// Email sender - Sử dụng Mock trong Development, SMTP trong Production
 if (builder.Environment.IsDevelopment())
+{
     builder.Services.AddScoped<IEmailSender, MockEmailSender>();
+    Console.WriteLine("[EMAIL] Using MockEmailSender for Development");
+}
 else
+{
     builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+    Console.WriteLine("[EMAIL] Using SmtpEmailSender for Production");
+}
 
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 
@@ -187,7 +193,7 @@ app.Use(async (context, next) =>
     await next.Invoke();
 });
 
-// CORS (NEW: Enable)
+// CORS
 app.UseCors();
 
 // DB Migrations
@@ -212,40 +218,78 @@ var ep = app.Services.GetRequiredService<EndpointDataSource>();
 foreach (var e in ep.Endpoints.OfType<RouteEndpoint>())
     Console.WriteLine($"[ROUTE] {e.RoutePattern.RawText}");
 
-// Override Google OAuth from env (existing)
+// Override Google OAuth from env
 var envClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
 if (!string.IsNullOrWhiteSpace(envClientId))
+{
     builder.Configuration["OAuth:Google:ClientId"] = envClientId;
+    Console.WriteLine("[GOOGLE] ClientId loaded from env.");
+}
 
 var envClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
 if (!string.IsNullOrWhiteSpace(envClientSecret))
+{
     builder.Configuration["OAuth:Google:ClientSecret"] = envClientSecret;
+    Console.WriteLine("[GOOGLE] ClientSecret loaded from env.");
+}
 
-// NEW: Override Stripe from env (post-build, like Google)
+// Override Stripe from env
 var envStripeKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
 if (!string.IsNullOrWhiteSpace(envStripeKey))
 {
-    // Reload config or use directly—since singleton already registered, restart app or use IOptionsSnapshot
-    // For simplicity, assume restart after env change; or inject IConfiguration in services
     Console.WriteLine("[STRIPE] Key loaded from env.");
 }
 
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }));
 app.Run();
 
-// MockEmailSender và AppOptions (existing)
+// MockEmailSender - Để test trong Development
 public class MockEmailSender : IEmailSender
 {
+    private readonly ILogger<MockEmailSender> _logger;
+
+    public MockEmailSender(ILogger<MockEmailSender> logger)
+    {
+        _logger = logger;
+    }
+
     public Task SendAsync(string to, string subject, string htmlBody, CancellationToken ct = default)
     {
-        Console.WriteLine($"[MOCK EMAIL] To:{to} | Subject:{subject}\n{htmlBody}");
+        _logger.LogInformation("========== MOCK EMAIL ==========");
+        _logger.LogInformation("To: {To}", to);
+        _logger.LogInformation("Subject: {Subject}", subject);
+        _logger.LogInformation("Body:\n{Body}", htmlBody);
+        _logger.LogInformation("================================");
+
+        // Trong development, có thể lưu vào file để xem
+        var emailsDir = Path.Combine(Directory.GetCurrentDirectory(), "mock_emails");
+        Directory.CreateDirectory(emailsDir);
+
+        var fileName = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{subject.Replace(" ", "_")}.html";
+        var filePath = Path.Combine(emailsDir, fileName);
+
+        System.IO.File.WriteAllText(filePath, $@"
+<!DOCTYPE html>
+<html>
+<head><meta charset='UTF-8'><title>{subject}</title></head>
+<body>
+    <h3>Mock Email Preview</h3>
+    <p><strong>To:</strong> {to}</p>
+    <p><strong>Subject:</strong> {subject}</p>
+    <hr>
+    {htmlBody}
+</body>
+</html>");
+
+        _logger.LogInformation("Email saved to: {FilePath}", filePath);
         return Task.CompletedTask;
     }
 }
 
+// AppOptions - Cấu hình ứng dụng
 public sealed class AppOptions
 {
     public string FrontendBaseUrl { get; set; } = "";

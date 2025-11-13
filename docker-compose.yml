@@ -47,7 +47,7 @@ services:
     ports:
       - "8081:8080" # BE chạy trên localhost:8081
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://0.0.0.0:8080
       App__FrontendBaseUrl: "http://localhost:8082"
       ConnectionStrings__DefaultConnection: "server=mysql;port=3306;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"

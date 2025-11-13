@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Edumination.WinForms.Services;
+using System;
 using System.Drawing;
 using System.Net.Http;
 using System.Text;
@@ -12,12 +13,14 @@ namespace Edumination.WinForms.UI.Forms.Login
     {
         private bool showPassword = false;
         private readonly Edumination.WinForms.LoginForm _parentForm;
+        private readonly ApiService _api;
 
         // 🔹 Constructor mới có tham số LoginForm
         public SignInPanel(Edumination.WinForms.LoginForm parentForm)
         {
             InitializeComponent();
             _parentForm = parentForm ?? throw new ArgumentNullException(nameof(parentForm)); // lưu lại form cha
+            _api = new ApiService();
 
             // Gán sự kiện
             btnTogglePassword.Click += BtnTogglePassword_Click;
