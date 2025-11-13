@@ -6,8 +6,8 @@ public class Asset
 {
     public long Id { get; set; }
     public string Kind { get; set; } = string.Empty;
-    public string StorageUrl { get; set; } = string.Empty;
-    public string MediaType { get; set; } = string.Empty;
+    public string? StorageUrl { get; set; } = string.Empty;
+    public string? MediaType { get; set; } = string.Empty;
     public long ByteSize { get; set; }
     public int? DurationSec { get; set; } 
     public string? Sha256 { get; set; } 

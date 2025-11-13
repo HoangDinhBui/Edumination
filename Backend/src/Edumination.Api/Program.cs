@@ -66,6 +66,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = null;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -145,7 +146,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         var frontendUrl = builder.Configuration["App:FrontendBaseUrl"];
-        policy.WithOrigins(frontendUrl ?? "http://localhost:8081")
+        policy.WithOrigins("http://localhost:8082")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();

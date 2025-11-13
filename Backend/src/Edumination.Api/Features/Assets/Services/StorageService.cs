@@ -1,6 +1,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using Edumination.Services.Interfaces;
+using Microsoft.Extensions.Configuration; // Giữ lại
+using Microsoft.AspNetCore.Hosting; // <-- THÊM MỚI
 
 namespace Edumination.Services;
 
@@ -8,16 +10,20 @@ public class StorageService : IStorageService
 {
     private readonly string _baseStoragePath;
 
-    public StorageService(IConfiguration configuration)
+    // === BƯỚC 1: SỬA CONSTRUCTOR ===
+    // Sửa IConfiguration thành IWebHostEnvironment
+    public StorageService(IWebHostEnvironment env)
     {
-        // Lấy đường dẫn lưu trữ từ cấu hình (ví dụ: appsettings.json)
-        _baseStoragePath = configuration.GetValue<string>("Storage:BasePath") ?? "uploads";
+        _baseStoragePath = Path.Combine(env.ContentRootPath, "uploads");
+
+        // Tạo thư mục này nếu nó chưa tồn tại
         if (!Directory.Exists(_baseStoragePath))
         {
             Directory.CreateDirectory(_baseStoragePath);
         }
     }
 
+    // === BƯỚC 2: HÀM NÀY GIỮ NGUYÊN ===
     public async Task<string> GenerateUploadPathAsync(string mediaType, long byteSize, CancellationToken ct = default)
     {
         // Tạo đường dẫn duy nhất dựa trên thời gian và GUID
@@ -30,6 +36,8 @@ public class StorageService : IStorageService
         return $"/{relativePath}";
     }
 
+    // === BƯỚC 3: HÀM NÀY GIỮ NGUYÊN ===
+    // (Giờ nó sẽ lưu file vào /app/2025-11-12/...mp3)
     public async Task<string> SaveFileAsync(string filePath, Stream fileStream, CancellationToken ct = default)
     {
         string fullPath = Path.Combine(_baseStoragePath, filePath.TrimStart('/'));
@@ -44,11 +52,11 @@ public class StorageService : IStorageService
             await fileStream.CopyToAsync(fileStreamLocal, ct);
         }
 
-        // Trả về đường dẫn tương đối hoặc URL đầy đủ tùy theo yêu cầu
+        // Trả về đường dẫn tương đối
         return $"/{filePath.TrimStart('/')}";
     }
 
-
+    // === BƯỚC 4: HÀM NÀY GIỮ NGUYÊN ===
     private string GetFileExtension(string mediaType)
     {
         return mediaType switch
@@ -63,6 +71,8 @@ public class StorageService : IStorageService
             _ => throw new InvalidOperationException("Unsupported media type.")
         };
     }
+
+    // === BƯỚC 5: HÀM NÀY GIỮ NGUYÊN ===
     public async Task<string> UploadAsync(Stream stream, string fileName, string contentType, CancellationToken ct = default)
     {
         // Tích hợp GenerateUploadPathAsync và SaveFileAsync
@@ -70,5 +80,4 @@ public class StorageService : IStorageService
         string storageUrl = await SaveFileAsync(filePath, stream, ct);
         return storageUrl;
     }
-
 }

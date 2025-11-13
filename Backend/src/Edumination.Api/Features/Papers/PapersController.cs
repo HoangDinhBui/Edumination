@@ -136,19 +136,41 @@ public class PapersController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize] // Yêu cầu login, nhưng không giới hạn role
-    public async Task<IActionResult> ListPapers([FromQuery] string? status = null)
+    public async Task<IActionResult> ListPapers(
+        [FromQuery] string? status = "PUBLISHED", 
+        [FromQuery] string? skill = null,        
+        [FromQuery] string? search = null,       
+        [FromQuery] string? sort = "latest"      
+    )
     {
-        var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
-        bool isTeacherOrAdmin = roles.Contains("TEACHER") || roles.Contains("ADMIN");
+        bool isTeacherOrAdmin = false; // Mặc định là false (cho anonymous)
 
-        if (!isTeacherOrAdmin && !string.IsNullOrEmpty(status))
+        // Chỉ kiểm tra role nếu user ĐÃ ĐĂNG NHẬP
+        if (User.Identity != null && User.Identity.IsAuthenticated)
         {
-            return Forbid(); // Student không được filter status
+            var roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            isTeacherOrAdmin = roles.Contains("TEACHER") || roles.Contains("ADMIN");
         }
 
-        var papers = await _paperService.ListAsync(status, isTeacherOrAdmin);
-        return Ok(papers);
+        // Logic này giờ an toàn: 
+        // Nếu là admin/teacher -> có thể xem DRAFT
+        // Nếu là student/anonymous -> bị ép về PUBLISHED
+        if (!isTeacherOrAdmin)
+        {
+            status = "PUBLISHED";
+        }
+        
+        // Gọi service đã cập nhật với đầy đủ tham số
+        var papersResult = await _paperService.ListAsync(
+            status,
+            skill,
+            search,
+            sort,
+            isTeacherOrAdmin,
+            HttpContext.RequestAborted 
+        );
+
+        return Ok(papersResult);
     }
 
     [HttpGet("{id}")]
