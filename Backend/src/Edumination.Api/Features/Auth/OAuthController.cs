@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Edumination.Api.Features.Auth.Responses;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Options;
 
 namespace Edumination.Api.Features.Auth;
 
@@ -23,13 +24,13 @@ public class OAuthController : ControllerBase
         IOAuthService oauth,
         IMemoryCache cache,
         IHttpClientFactory http,
-        OAuthOptions opt,
+        IOptions<OAuthOptions> opt,
         AppDbContext db)
     {
         _oauth = oauth;
         _cache = cache;
         _http = http;
-        _opt = opt;
+        _opt = opt.Value;
         _db = db;
     }
 
