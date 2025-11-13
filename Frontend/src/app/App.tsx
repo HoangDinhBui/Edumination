@@ -16,6 +16,7 @@ import EnterOtpPage from "../pages/ForgotPassword/EnterOtpPage";
 import ResetPasswordPage from "../pages/ForgotPassword/ResetPasswordPage";
 import ListeningTestPage from "../pages/Tests/ListeningTestPage";
 import WrintingTestPage from "../pages/Tests/WritingTestPage";
+import ReadingTestPage from "../pages/Tests/ReadingTestPage";
 // 2. Định nghĩa các đường dẫn (routes)
 const router = createBrowserRouter([
   {
@@ -45,6 +46,10 @@ const router = createBrowserRouter([
   {
     path: "/writing-test",
     element: <WrintingTestPage />,
+  },
+   {
+    path: "/reading-test",
+    element: <ReadingTestPage />,
   },
   {
     // === ĐƯỜNG DẪN ĐỘNG MỚI ===
