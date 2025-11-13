@@ -16,7 +16,7 @@ import {
   Mic, // Speaking
   Key, // Icon chì khóa
   LayoutGrid, // Icon Full Test
-  Play, // Icon Start
+  Play, // Icon Startc
   ChevronLeft, // Icon Back
 } from "lucide-react";
 

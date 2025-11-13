@@ -72,12 +72,12 @@ namespace Edumination.WinForms.UI.Forms.Login
             try
             {
                 var response = await client.PostAsync("http://localhost:8081/api/v1/auth/login", content);
-
                 if (response.IsSuccessStatusCode)
                 {
                     var respBody = await response.Content.ReadAsStringAsync();
                     var data = JsonSerializer.Deserialize<JsonElement>(respBody);
-                    if (data.TryGetProperty("token", out var token))
+                    Console.WriteLine(respBody);
+                    if (data.TryGetProperty("Token", out var token))
                     {
                         MessageBox.Show("Login successful!");
                     }
