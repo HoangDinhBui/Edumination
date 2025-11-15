@@ -26,26 +26,14 @@ const ResetPasswordPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  // Chuẩn hoá token lưu trong localStorage (hỗ trợ plain string, JSON string hoặc object-like)
-  const normalizeToken = (raw: string | null): string | null => {
-    if (!raw) return null;
-    let s = raw.trim();
-    
-    // Nếu là JSON string, parse nó
-    if ((s.startsWith("{") || s.startsWith("[")) && (s.endsWith("}") || s.endsWith("]"))) {
-      try {
-        const parsed = JSON.parse(s);
-        const candidate =
-          (parsed && (parsed.token ?? parsed.resetToken ?? parsed.otp)) ?? parsed;
-        if (candidate != null) return String(candidate).trim();
-      } catch {
-        // ignore parse error
-      }
+  // Kiểm tra có OTP đã verify chưa
+  useEffect(() => {
+    const otp = localStorage.getItem("otp");
+    if (!otp) {
+      alert("Vui lòng xác thực OTP trước!");
+      navigate("/enter-otp");
     }
-    
-    // Nếu là plain string (OTP), trả về nguyên vẹn (không tìm số đầu tiên)
-    return s;
-  };
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,10 +63,10 @@ const ResetPasswordPage: React.FC = () => {
       return;
     }
 
-    // ✅ Lấy OTP (6 chữ số) từ localStorage - đơn giản, không cần extract
-    const token = localStorage.getItem("otp");
+    // ✅ Lấy OTP đã được lưu (6 chữ số)
+    const otp = localStorage.getItem("otp");
 
-    if (!token) {
+    if (!otp) {
       setError("Không tìm thấy mã OTP. Vui lòng quay lại trang Enter OTP.");
       setTimeout(() => navigate("/enter-otp"), 2000);
       return;
@@ -87,18 +75,24 @@ const ResetPasswordPage: React.FC = () => {
     try {
       setLoading(true);
       const apiUrl = "http://localhost:8081/api/v1/auth/password/reset";
-      const payload = { token: token, newPassword: password };
-      console.debug("Reset payload:", payload);
+
+      // ✅ Payload theo format API của bạn: { token, newPassword }
+      const payload = {
+        token: otp, // token chính là OTP 6 số
+        newPassword: password,
+      };
+
+      console.log("Reset Password Payload:", payload);
 
       const response = await axios.post(apiUrl, payload, {
         headers: { "Content-Type": "application/json" },
       });
 
+      console.log("Reset Password Response:", response.data);
+
       if (response.data?.Success) {
-        // Clean up
+        // ✅ Thành công - Clean up
         localStorage.removeItem("otp");
-        localStorage.removeItem("resetToken");
-        localStorage.removeItem("token");
         sessionStorage.removeItem("resetEmail");
 
         alert("Mật khẩu đã được thay đổi thành công!");
@@ -117,7 +111,7 @@ const ResetPasswordPage: React.FC = () => {
         setError(
           err.response.data?.Message ||
             err.response.data?.Error ||
-            "Không thể đặt lại mật khẩu. Vui lòng thử lại."
+            "Không thể đặt lại mật khẩu. OTP có thể đã hết hạn."
         );
       } else {
         setError("Lỗi mạng. Vui lòng kiểm tra kết nối Internet.");
@@ -162,7 +156,9 @@ const ResetPasswordPage: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter new password"
-                    className="w-full px-4 py-2.5 border border-[#D0D0D0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#749BC2]"
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 border border-[#D0D0D0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#749BC2] disabled:opacity-50"
                     style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
                   />
                   <button
@@ -170,11 +166,7 @@ const ResetPasswordPage: React.FC = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666666]"
                   >
-                    {showPassword ? (
-                      <EyeOff size={20} />
-                    ) : (
-                      <Eye size={20} />
-                    )}
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
               </div>
@@ -194,7 +186,9 @@ const ResetPasswordPage: React.FC = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm password"
-                    className="w-full px-4 py-2.5 border border-[#D0D0D0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#749BC2]"
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 border border-[#D0D0D0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#749BC2] disabled:opacity-50"
                     style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
                   />
                   <button

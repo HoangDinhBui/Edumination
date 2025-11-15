@@ -19,32 +19,36 @@ const Dropdown: React.FC<{
     >
       <button
         onClick={onClick}
-        className={`inline-flex items-center gap-1.5 transition-all duration-300 group px-4 py-2 rounded-full ${isOpen
-          ? "bg-white text-[#749BC2] shadow-md"
-          : "bg-white text-[#666666] hover:text-gray-900 hover:shadow-md"
-          }`}
+        className={`inline-flex items-center gap-1.5 transition-all duration-300 group px-4 py-2 rounded-full ${
+          isOpen
+            ? "bg-white text-[#749BC2] shadow-md"
+            : "bg-white text-[#666666] hover:text-gray-900 hover:shadow-md"
+        }`}
       >
         {title}
         <ChevronDown
-          className={`h-4 w-4 transition-all duration-300 ${isOpen ? "rotate-180 text-[#2986B7]" : ""
-            }`}
+          className={`h-4 w-4 transition-all duration-300 ${
+            isOpen ? "rotate-180 text-[#2986B7]" : ""
+          }`}
         />
       </button>
 
       {/* DROPDOWN CONTENT */}
       <div
-        className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-300 ${isOpen
-          ? "opacity-100 visible translate-y-0"
-          : "opacity-0 invisible -translate-y-2"
-          }`}
+        className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-300 ${
+          isOpen
+            ? "opacity-100 visible translate-y-0"
+            : "opacity-0 invisible -translate-y-2"
+        }`}
         style={{ zIndex: 100 }}
       >
         <div className="flex gap-4">
           {sections.map((sec, i) => (
             <div
               key={i}
-              className={`bg-white shadow-2xl rounded-2xl p-5 w-60 border border-gray-100 transition-all duration-300 ${isOpen ? "scale-100" : "scale-95"
-                }`}
+              className={`bg-white shadow-2xl rounded-2xl p-5 w-60 border border-gray-100 transition-all duration-300 ${
+                isOpen ? "scale-100" : "scale-95"
+              }`}
               style={{
                 transitionDelay: `${i * 50}ms`,
               }}
@@ -84,6 +88,7 @@ const Dropdown: React.FC<{
 // ====================== NAVBAR ======================
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -94,18 +99,72 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    // Kiểm tra token khi component mount
+    const checkAuth = () => {
+      // Thử nhiều tên key có thể có
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("Token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        sessionStorage.getItem("token") ||
+        sessionStorage.getItem("Token");
+
+      setIsLoggedIn(!!token);
+    };
+
+    checkAuth();
+
+    // Lắng nghe sự thay đổi localStorage (khi đăng nhập/đăng xuất ở tab khác)
+    const handleStorageChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Custom event để cập nhật ngay lập tức trong cùng tab
+    window.addEventListener("authChange", checkAuth);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("authChange", checkAuth);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    // Xóa token
+    localStorage.removeItem("Token");
+    sessionStorage.removeItem("token");
+
+    // Xóa thêm các thông tin khác nếu có
+    localStorage.removeItem("UserId");
+    localStorage.removeItem("email");
+
+    // Cập nhật state
+    setIsLoggedIn(false);
+
+    // Thông báo cho các component khác
+    window.dispatchEvent(new Event("authChange"));
+
+    // Redirect về trang chủ
+    navigate("/");
+  };
+
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-500 ${scrolled
-          ? "bg-white/95 backdrop-blur-xl shadow-xl"
-          : "bg-white/80 backdrop-blur-md shadow-md"
-          }`}
+        className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-500 ${
+          scrolled
+            ? "bg-white/95 backdrop-blur-xl shadow-xl"
+            : "bg-white/80 backdrop-blur-md shadow-md"
+        }`}
       >
         <div className="max-w-[1400px] mx-auto px-8">
           <div
-            className={`flex items-center justify-between transition-all duration-500 ${scrolled ? "h-14" : "h-16"
-              }`}
+            className={`flex items-center justify-between transition-all duration-500 ${
+              scrolled ? "h-14" : "h-16"
+            }`}
           >
             {/* LEFT: Logo */}
             <a href="#" className="flex items-center gap-3 group relative">
@@ -122,7 +181,8 @@ const Navbar: React.FC = () => {
                 {[
                   { label: "Home", href: "/" },
                   {
-                    label: "IELTS Exam Library", onClick: () => navigate("/library"),
+                    label: "IELTS Exam Library",
+                    onClick: () => navigate("/library"),
                     dropdown: [
                       {
                         items: [
@@ -153,7 +213,11 @@ const Navbar: React.FC = () => {
                 ].map((item) => (
                   <li key={item.label} className="relative group">
                     {item.dropdown ? (
-                      <Dropdown title={item.label} sections={item.dropdown} onClick={item.onClick} />
+                      <Dropdown
+                        title={item.label}
+                        sections={item.dropdown}
+                        onClick={item.onClick}
+                      />
                     ) : (
                       <a
                         href={item.href}
@@ -168,30 +232,43 @@ const Navbar: React.FC = () => {
               </ul>
             </nav>
 
-            {/* RIGHT: Auth Buttons */}
+            {/* RIGHT: Auth Buttons hoặc User Menu */}
             <div className="flex items-center gap-3">
-              <a
-                href="/signin"
-                className="text-gray-700 hover:text-gray-900 text-sm font-semibold transition-all duration-300 px-5 py-2 rounded-full hover:bg-gray-100"
-              >
-                Sign in
-              </a>
-              <a
-                href="/signup"
-                className="relative inline-flex items-center justify-center px-7 py-2.5 rounded-full overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-2xl font-montserrat font-bold text-white"
-              >
-                {/* Hai lớp gradient nền */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#4AB8A1] to-[#2986B7] transition-all duration-300"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#2986B7] to-[#4AB8A1] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              {(() => {
+                return !isLoggedIn ? (
+                  <>
+                    <a
+                      href="/signin"
+                      className="text-gray-700 hover:text-gray-900 text-sm font-semibold transition-all duration-300 px-5 py-2 rounded-full hover:bg-gray-100"
+                    >
+                      Sign in
+                    </a>
+                    <a
+                      href="/signup"
+                      className="relative inline-flex items-center justify-center px-7 py-2.5 rounded-full overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-2xl font-montserrat font-bold text-white"
+                    >
+                      {/* Hai lớp gradient nền */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#4AB8A1] to-[#2986B7] transition-all duration-300"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#2986B7] to-[#4AB8A1] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                {/* Nội dung chữ */}
-                <span className="relative z-10 flex items-center gap-2 text-white">
-                  Sign up
-                  <span className="inline-block group-hover:translate-x-1 transition-transform duration-300">
-                    →
-                  </span>
-                </span>
-              </a>
+                      {/* Nội dung chữ */}
+                      <span className="relative z-10 flex items-center gap-2 text-white">
+                        Sign up
+                        <span className="inline-block group-hover:translate-x-1 transition-transform duration-300">
+                          →
+                        </span>
+                      </span>
+                    </a>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleLogout}
+                    className="text-gray-700 hover:text-red-600 text-sm font-semibold transition-all duration-300 px-5 py-2 rounded-full hover:bg-red-50"
+                  >
+                    Logout
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Mail, Clock, AlertTriangle, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import slide1 from "../../assets/img/adv.jpg";
 import slide2 from "../../assets/img/adv1.jpg";
@@ -9,6 +10,8 @@ import slide3 from "../../assets/img/adv2.jpg";
 const EnterOtpPage: React.FC = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const slides = [slide1, slide2, slide3];
@@ -21,7 +24,7 @@ const EnterOtpPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  // === LOGIC OTP (KHÔNG ĐỔI) ===
+  // === LOGIC OTP ===
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) return;
     const newOtp = [...otp];
@@ -41,15 +44,64 @@ const EnterOtpPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // === LƯU OTP VÀ CHUYỂN TRANG (KHÔNG GỌI API VERIFY) ===
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
     const code = otp.join("");
     if (code.length < 6) {
-      alert("Vui lòng nhập đầy đủ 6 chữ số OTP!");
+      setError("Vui lòng nhập đầy đủ 6 chữ số OTP!");
       return;
     }
-    console.log("OTP nhập:", code);
+
+    // Kiểm tra có email không
+    const email = sessionStorage.getItem("resetEmail");
+    if (!email) {
+      setError(
+        "Không tìm thấy email. Vui lòng quay lại trang Forgot Password."
+      );
+      setTimeout(() => navigate("/forgot-password"), 2000);
+      return;
+    }
+
+    // ✅ Lưu OTP vào localStorage (API sẽ verify khi reset password)
+    localStorage.setItem("otp", code);
+
+    console.log("✅ OTP saved:", code);
+
+    // Chuyển sang trang Reset Password
     navigate("/reset-password");
+  };
+
+  // === RESEND OTP ===
+  const handleResendOtp = async () => {
+    const email = sessionStorage.getItem("resetEmail");
+    if (!email) {
+      setError(
+        "Không tìm thấy email. Vui lòng quay lại trang Forgot Password."
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const apiUrl = "http://localhost:8081/api/v1/auth/password/forgot";
+      const response = await axios.post(apiUrl, { email });
+
+      if (response.data.Success) {
+        alert("Mã OTP mới đã được gửi đến email của bạn!");
+        setOtp(["", "", "", "", "", ""]);
+        document.getElementById("otp-input-0")?.focus();
+      }
+    } catch (err: any) {
+      console.error("Lỗi Resend OTP:", err);
+      setError("Không thể gửi lại OTP. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -85,18 +137,26 @@ const EnterOtpPage: React.FC = () => {
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-10 h-12 text-xl text-center border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500"
+                    disabled={loading}
+                    className="w-10 h-12 text-xl text-center border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 disabled:opacity-50"
                     style={{ fontFamily: "'Montserrat', sans-serif" }}
                   />
                 ))}
               </div>
 
+              {error && (
+                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full"
+                disabled={loading}
+                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
               >
-                Verify OTP
+                {loading ? "Đang xác thực..." : "Verify OTP"}
               </button>
 
               {/* THÔNG TIN HƯỚNG DẪN */}
@@ -116,11 +176,12 @@ const EnterOtpPage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <Send className="w-5 h-5 text-[#294563]" />
                   <p>
-                    Didn’t receive the code?
+                    Didn't receive the code?
                     <button
                       type="button"
-                      onClick={() => alert("Resend OTP!")}
-                      className="font-semibold text-[#23B0EB] hover:underline ml-1"
+                      onClick={handleResendOtp}
+                      disabled={loading}
+                      className="font-semibold text-[#23B0EB] hover:underline ml-1 disabled:opacity-50"
                     >
                       Resend now
                     </button>
