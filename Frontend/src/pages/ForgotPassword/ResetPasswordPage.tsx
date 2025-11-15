@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-// === SLIDE HÌNH ẢNH ===
+import axios from "axios";
 import slide1 from "../../assets/img/adv.jpg";
 import slide2 from "../../assets/img/adv1.jpg";
 import slide3 from "../../assets/img/adv2.jpg";
@@ -10,6 +9,10 @@ import slide3 from "../../assets/img/adv2.jpg";
 const ResetPasswordPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
@@ -23,22 +26,114 @@ const ResetPasswordPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  // === GIỮ NGUYÊN LOGIC CỦA BẠN ===
-  const handleSubmit = (e: React.FormEvent) => {
+  // Chuẩn hoá token lưu trong localStorage (hỗ trợ plain string, JSON string hoặc object-like)
+  const normalizeToken = (raw: string | null): string | null => {
+    if (!raw) return null;
+    let s = raw.trim();
+    
+    // Nếu là JSON string, parse nó
+    if ((s.startsWith("{") || s.startsWith("[")) && (s.endsWith("}") || s.endsWith("]"))) {
+      try {
+        const parsed = JSON.parse(s);
+        const candidate =
+          (parsed && (parsed.token ?? parsed.resetToken ?? parsed.otp)) ?? parsed;
+        if (candidate != null) return String(candidate).trim();
+      } catch {
+        // ignore parse error
+      }
+    }
+    
+    // Nếu là plain string (OTP), trả về nguyên vẹn (không tìm số đầu tiên)
+    return s;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Password changed successfully!");
-    navigate("/login");
+    setError(null);
+
+    // Validate password match
+    if (password !== confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp!");
+      return;
+    }
+
+    // Validate password strength
+    if (password.length < 8) {
+      setError("Mật khẩu phải có ít nhất 8 ký tự!");
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError("Mật khẩu phải chứa ít nhất 1 chữ hoa (A-Z)!");
+      return;
+    }
+    if (!/[a-z]/.test(password)) {
+      setError("Mật khẩu phải chứa ít nhất 1 chữ thường (a-z)!");
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setError("Mật khẩu phải chứa ít nhất 1 chữ số (0-9)!");
+      return;
+    }
+
+    // ✅ Lấy OTP (6 chữ số) từ localStorage - đơn giản, không cần extract
+    const token = localStorage.getItem("otp");
+
+    if (!token) {
+      setError("Không tìm thấy mã OTP. Vui lòng quay lại trang Enter OTP.");
+      setTimeout(() => navigate("/enter-otp"), 2000);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const apiUrl = "http://localhost:8081/api/v1/auth/password/reset";
+      const payload = { token: token, newPassword: password };
+      console.debug("Reset payload:", payload);
+
+      const response = await axios.post(apiUrl, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.data?.Success) {
+        // Clean up
+        localStorage.removeItem("otp");
+        localStorage.removeItem("resetToken");
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("resetEmail");
+
+        alert("Mật khẩu đã được thay đổi thành công!");
+        navigate("/signin");
+      } else {
+        setError(
+          response.data?.Message ??
+            response.data?.Error ??
+            "Không thể đặt lại mật khẩu. Vui lòng thử lại."
+        );
+      }
+    } catch (err: any) {
+      console.error("Lỗi Reset Password:", err);
+      if (axios.isAxiosError(err) && err.response) {
+        console.error("Response data:", err.response.data);
+        setError(
+          err.response.data?.Message ||
+            err.response.data?.Error ||
+            "Không thể đặt lại mật khẩu. Vui lòng thử lại."
+        );
+      } else {
+        setError("Lỗi mạng. Vui lòng kiểm tra kết nối Internet.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      {/* GOOGLE FONT */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Paytone+One&family=Montserrat:wght@300;400;500;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
       `}</style>
 
       <div className="w-screen h-screen flex flex-col md:flex-row overflow-hidden">
-        {/* === CỘT FORM === */}
         <div className="flex flex-col justify-center items-center w-full md:w-[45%] bg-white px-6 md:px-12 py-8">
           <div className="w-full max-w-sm">
             <h1
@@ -52,11 +147,10 @@ const ResetPasswordPage: React.FC = () => {
             </p>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* New Password */}
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm text-[#294563] font-semibold mb-1"
+                  className="block text-sm font-semibold text-[#294563] mb-2"
                   style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
                 >
                   New Password
@@ -65,81 +159,87 @@ const ResetPasswordPage: React.FC = () => {
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter new password"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500"
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
+                    className="w-full px-4 py-2.5 border border-[#D0D0D0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#749BC2]"
+                    style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 bg-transparent"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666666]"
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff size={20} />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye size={20} />
                     )}
                   </button>
                 </div>
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label
-                  htmlFor="confirm-password"
-                  className="block text-sm text-[#294563] font-semibold mb-1"
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-semibold text-[#294563] mb-2"
                   style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
                 >
                   Confirm Password
                 </label>
                 <div className="relative">
                   <input
-                    id="confirm-password"
+                    id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    required
-                    placeholder="Re-enter new password"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500"
-                    style={{ fontFamily: "'Montserrat', sans-serif" }}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm password"
+                    className="w-full px-4 py-2.5 border border-[#D0D0D0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#749BC2]"
+                    style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
                   />
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 bg-transparent"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666666]"
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff size={20} />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye size={20} />
                     )}
                   </button>
                 </div>
               </div>
 
-              {/* Submit */}
+              {error && (
+                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full"
+                disabled={loading}
+                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
               >
-                Change Password
+                {loading ? "Đang xử lý..." : "Reset Password"}
               </button>
 
-              <p className="text-center text-sm text-[#666666] pt-2">
-                <a
-                  href="/signin"
-                  className="font-semibold text-[#749BC2] hover:underline"
+              <p className="text-center text-sm text-[#666666]">
+                Quay lại{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/signin")}
+                  className="text-[#749BC2] font-semibold hover:underline"
                 >
-                  Back to login
-                </a>
+                  Sign In
+                </button>
               </p>
             </form>
           </div>
         </div>
 
-        {/* === SLIDESHOW === */}
         <div className="relative w-full md:w-[55%] h-full overflow-hidden hidden md:block">
           {slides.map((slide, index) => (
             <img
