@@ -24,6 +24,7 @@ import {
 import logoImage from "../../assets/img/Rectangle 78.png";
 // --- ẢNH MỚI CHO TRANG NÀY ---
 import ipadImage from "../../assets/img/IpadImg.png"; // <-- (Nhớ thay tên ảnh)
+import Navbar from "../../components/Navbar";
 
 // === COMPONENT DROPDOWN (TÁI SỬ DỤNG) ===
 const Dropdown: React.FC<{
@@ -65,71 +66,71 @@ const Dropdown: React.FC<{
   );
 };
 
-// === COMPONENT NAVBAR (TÁI SỬ DỤNG) ===
-const Navbar: React.FC = () => {
-  /* ... (code component Navbar y hệt) ... */
-  return (
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <a href="/" className="flex items-center gap-2">
-            <img src={logoImage} className="h-7 rounded" alt="logo" />
-            <span className="font-bold text-lg text-blue-600">EDM</span>
-          </a>
-          <nav className="hidden md:flex items-center gap-6">
-            <a className="text-slate-700 hover:text-slate-900" href="/">
-              Home
-            </a>
-            <Dropdown
-              title="IELTS Exam Library"
-              sections={[
-                {
-                  items: [
-                    "IELTS Listening Test",
-                    "IELTS Reading Test",
-                    "IELTS Writing Test",
-                    "IELTS Speaking Test",
-                    "IELTS Test Collection",
-                  ],
-                },
-              ]}
-            />
-            <Dropdown
-              title="IELTS Course"
-              sections={[
-                {
-                  header: "IELTS Foundation (0.0–5.0)",
-                  items: [
-                    "IELTS 5.5–6.0 Booster",
-                    "IELTS 6.0–7.5 Intensive",
-                    "IELTS 7.5–9.0 Mastery",
-                  ],
-                },
-              ]}
-            />
-            <a className="text-slate-700 hover:text-slate-900" href="#">
-              Ranking
-            </a>
-          </nav>
-        </div>
-        <div className="flex items-center gap-3">
-          <a
-            href="/signin"
-            className="text-slate-600 hover:text-slate-900 text-sm"
-          >
-            Sign in
-          </a>
-          <a
-            href="/signup"
-            className="text-sm font-semibold text-white bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 rounded-full shadow hover:opacity-95"
-          >
-            Sign up
-          </a>
-        </div>
-      </div>
-    </header>
-  );
-};
+// // === COMPONENT NAVBAR (TÁI SỬ DỤNG) ===
+// const Navbar: React.FC = () => {
+//   /* ... (code component Navbar y hệt) ... */
+//   return (
+//     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+//       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+//         <div className="flex items-center gap-8">
+//           <a href="/" className="flex items-center gap-2">
+//             <img src={logoImage} className="h-7 rounded" alt="logo" />
+//             <span className="font-bold text-lg text-blue-600">EDM</span>
+//           </a>
+//           <nav className="hidden md:flex items-center gap-6">
+//             <a className="text-slate-700 hover:text-slate-900" href="/">
+//               Home
+//             </a>
+//             <Dropdown
+//               title="IELTS Exam Library"
+//               sections={[
+//                 {
+//                   items: [
+//                     "IELTS Listening Test",
+//                     "IELTS Reading Test",
+//                     "IELTS Writing Test",
+//                     "IELTS Speaking Test",
+//                     "IELTS Test Collection",
+//                   ],
+//                 },
+//               ]}
+//             />
+//             <Dropdown
+//               title="IELTS Course"
+//               sections={[
+//                 {
+//                   header: "IELTS Foundation (0.0–5.0)",
+//                   items: [
+//                     "IELTS 5.5–6.0 Booster",
+//                     "IELTS 6.0–7.5 Intensive",
+//                     "IELTS 7.5–9.0 Mastery",
+//                   ],
+//                 },
+//               ]}
+//             />
+//             <a className="text-slate-700 hover:text-slate-900" href="#">
+//               Ranking
+//             </a>
+//           </nav>
+//         </div>
+//         <div className="flex items-center gap-3">
+//           <a
+//             href="/signin"
+//             className="text-slate-600 hover:text-slate-900 text-sm"
+//           >
+//             Sign in
+//           </a>
+//           <a
+//             href="/signup"
+//             className="text-sm font-semibold text-white bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 rounded-full shadow hover:opacity-95"
+//           >
+//             Sign up
+//           </a>
+//         </div>
+//       </div>
+//     </header>
+//   );
+// };
 
 // === COMPONENT FOOTER (TÁI SỬ DỤNG) ===
 const Footer: React.FC = () => {
@@ -360,7 +361,7 @@ export default function QuarterDetailPage() {
     : "Quarter 1"; // Tên mặc định
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="min-h-screen text-slate-800">
       <Navbar />
       <QuarterDetailContent quarterName={formattedName} />
       <Footer />

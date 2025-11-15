@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import Navbar from "../../components/Navbar";
 import {
 
   ChevronDown,
@@ -140,129 +140,129 @@ const Dropdown: React.FC<{
 
 // === COMPONENT NAVBAR (GIỮ NGUYÊN) ===
 
-const Navbar: React.FC = () => {
+// const Navbar: React.FC = () => {
 
-  return (
+//   return (
 
-    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+//     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+//       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
-        <div className="flex items-center gap-8">
+//         <div className="flex items-center gap-8">
 
-          <Link to="/" className="flex items-center gap-2">
+//           <Link to="/" className="flex items-center gap-2">
 
-            <img src={logoImage} className="h-7 rounded" alt="logo" />
+//             <img src={logoImage} className="h-7 rounded" alt="logo" />
 
-          </Link>
+//           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
+//           <nav className="hidden md:flex items-center gap-6">
 
-            <Link className="text-slate-700 hover:text-slate-900" to="/">
+//             <Link className="text-slate-700 hover:text-slate-900" to="/">
 
-              Home
+//               Home
 
-            </Link>
+//             </Link>
 
-            <Dropdown
+//             <Dropdown
 
-              title="IELTS Exam Library"
+//               title="IELTS Exam Library"
 
-              sections={[
+//               sections={[
 
-                {
+//                 {
 
-                  items: [
+//                   items: [
 
-                    "IELTS Listening Test",
+//                     "IELTS Listening Test",
 
-                    "IELTS Reading Test",
+//                     "IELTS Reading Test",
 
-                    "IELTS Writing Test",
+//                     "IELTS Writing Test",
 
-                    "IELTS Speaking Test",
+//                     "IELTS Speaking Test",
 
-                    "IELTS Test Collection",
+//                     "IELTS Test Collection",
 
-                  ],
+//                   ],
 
-                },
+//                 },
 
-              ]}
+//               ]}
 
-            />
+//             />
 
-            <Dropdown
+//             <Dropdown
 
-              title="IELTS Course"
+//               title="IELTS Course"
 
-              sections={[
+//               sections={[
 
-                {
+//                 {
 
-                  header: "IELTS Foundation (0.0–5.0)",
+//                   header: "IELTS Foundation (0.0–5.0)",
 
-                  items: [
+//                   items: [
 
-                    "IELTS 5.5–6.0 Booster",
+//                     "IELTS 5.5–6.0 Booster",
 
-                    "IELTS 6.0–7.5 Intensive",
+//                     "IELTS 6.0–7.5 Intensive",
 
-                    "IELTS 7.5–9.0 Mastery",
+//                     "IELTS 7.5–9.0 Mastery",
 
-                  ],
+//                   ],
 
-                },
+//                 },
 
-              ]}
+//               ]}
 
-            />
+//             />
 
-            <Link className="text-slate-700 hover:text-slate-900" to="/ranking">
+//             <Link className="text-slate-700 hover:text-slate-900" to="/ranking">
 
-              Ranking
+//               Ranking
 
-            </Link>
+//             </Link>
 
-          </nav>
+//           </nav>
 
-        </div>
+//         </div>
 
-        <div className="flex items-center gap-3">
+//         <div className="flex items-center gap-3">
 
-          <Link
+//           <Link
 
-            to="/signin"
+//             to="/signin"
 
-            className="text-slate-600 hover:text-slate-900 text-sm"
+//             className="text-slate-600 hover:text-slate-900 text-sm"
 
-          >
+//           >
 
-            Sign in
+//             Sign in
 
-          </Link>
+//           </Link>
 
-          <Link
+//           <Link
 
-            to="/signup"
+//             to="/signup"
 
-            className="text-sm font-semibold text-white bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 rounded-full shadow hover:opacity-95"
+//             className="text-sm font-semibold text-white bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 rounded-full shadow hover:opacity-95"
 
-          >
+//           >
 
-            Sign up
+//             Sign up
 
-          </Link>
+//           </Link>
 
-        </div>
+//         </div>
 
-      </div>
+//       </div>
 
-    </header>
+//     </header>
 
-  );
+//   );
 
-};
+// };
 
 
 
@@ -618,7 +618,7 @@ const LibraryContent: React.FC = () => {
 
   return (
 
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 mt-10">
 
       <h1 className="text-4xl font-bold text-center text-slate-800 mb-10">
 
@@ -882,7 +882,7 @@ export default function TestLibraryPage() {
 
   return (
 
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="min-h-screen text-slate-800">
 
       <Navbar />
 

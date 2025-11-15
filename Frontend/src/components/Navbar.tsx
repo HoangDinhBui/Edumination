@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import edmLogo from "../assets/img/edm-logo.png";
+import { useNavigate } from "react-router-dom";
 
 // ====================== DROPDOWN ======================
 const Dropdown: React.FC<{
   title: string;
   sections: { header?: string; items: string[] }[];
-}> = ({ title, sections }) => {
+  onClick?: () => void;
+}> = ({ title, sections, onClick }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -16,36 +18,33 @@ const Dropdown: React.FC<{
       onMouseLeave={() => setIsOpen(false)}
     >
       <button
-        className={`inline-flex items-center gap-1.5 transition-all duration-300 group px-4 py-2 rounded-full ${
-          isOpen
-            ? "bg-white text-[#749BC2] shadow-md"
-            : "bg-white text-[#666666] hover:text-gray-900 hover:shadow-md"
-        }`}
+        onClick={onClick}
+        className={`inline-flex items-center gap-1.5 transition-all duration-300 group px-4 py-2 rounded-full ${isOpen
+          ? "bg-white text-[#749BC2] shadow-md"
+          : "bg-white text-[#666666] hover:text-gray-900 hover:shadow-md"
+          }`}
       >
         {title}
         <ChevronDown
-          className={`h-4 w-4 transition-all duration-300 ${
-            isOpen ? "rotate-180 text-[#2986B7]" : ""
-          }`}
+          className={`h-4 w-4 transition-all duration-300 ${isOpen ? "rotate-180 text-[#2986B7]" : ""
+            }`}
         />
       </button>
 
       {/* DROPDOWN CONTENT */}
       <div
-        className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-300 ${
-          isOpen
-            ? "opacity-100 visible translate-y-0"
-            : "opacity-0 invisible -translate-y-2"
-        }`}
+        className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-300 ${isOpen
+          ? "opacity-100 visible translate-y-0"
+          : "opacity-0 invisible -translate-y-2"
+          }`}
         style={{ zIndex: 100 }}
       >
         <div className="flex gap-4">
           {sections.map((sec, i) => (
             <div
               key={i}
-              className={`bg-white shadow-2xl rounded-2xl p-5 w-60 border border-gray-100 transition-all duration-300 ${
-                isOpen ? "scale-100" : "scale-95"
-              }`}
+              className={`bg-white shadow-2xl rounded-2xl p-5 w-60 border border-gray-100 transition-all duration-300 ${isOpen ? "scale-100" : "scale-95"
+                }`}
               style={{
                 transitionDelay: `${i * 50}ms`,
               }}
@@ -85,6 +84,7 @@ const Dropdown: React.FC<{
 // ====================== NAVBAR ======================
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,17 +97,15 @@ const Navbar: React.FC = () => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-500 ${
-          scrolled
-            ? "bg-white/95 backdrop-blur-xl shadow-xl"
-            : "bg-white/80 backdrop-blur-md shadow-md"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-500 ${scrolled
+          ? "bg-white/95 backdrop-blur-xl shadow-xl"
+          : "bg-white/80 backdrop-blur-md shadow-md"
+          }`}
       >
         <div className="max-w-[1400px] mx-auto px-8">
           <div
-            className={`flex items-center justify-between transition-all duration-500 ${
-              scrolled ? "h-14" : "h-16"
-            }`}
+            className={`flex items-center justify-between transition-all duration-500 ${scrolled ? "h-14" : "h-16"
+              }`}
           >
             {/* LEFT: Logo */}
             <a href="#" className="flex items-center gap-3 group relative">
@@ -122,9 +120,9 @@ const Navbar: React.FC = () => {
             <nav>
               <ul className="flex items-center justify-center gap-8 text-[15px] font-semibold">
                 {[
-                  { label: "Home", href: "#" },
+                  { label: "Home", href: "/" },
                   {
-                    label: "IELTS Exam Library",
+                    label: "IELTS Exam Library", onClick: () => navigate("/library"),
                     dropdown: [
                       {
                         items: [
@@ -155,7 +153,7 @@ const Navbar: React.FC = () => {
                 ].map((item) => (
                   <li key={item.label} className="relative group">
                     {item.dropdown ? (
-                      <Dropdown title={item.label} sections={item.dropdown} />
+                      <Dropdown title={item.label} sections={item.dropdown} onClick={item.onClick} />
                     ) : (
                       <a
                         href={item.href}
