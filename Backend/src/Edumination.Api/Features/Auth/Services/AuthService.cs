@@ -72,26 +72,25 @@ public class AuthService : IAuthService
             await _db.SaveChangesAsync(ct);
         }
 
-        // Tạo token xác thực email
-        var rawToken = GenerateSecureToken();
-        var tokenHash = rawToken.Sha256Hex();
+        // Tạo OTP 6 digits
+        var otp = GenerateOTP();
+        var otpHash = otp.Sha256Hex();
         _db.EmailVerifications.Add(new EmailVerification
         {
             UserId = user.Id,
-            TokenHash = tokenHash,
+            TokenHash = otpHash,
             ExpiresAt = DateTime.UtcNow.AddMinutes(_authOpt.VerifyEmailTokenMinutes)
         });
         await _db.SaveChangesAsync(ct);
 
-        // Gửi email xác thực (không chặn flow nếu fail)
+        // Gửi email OTP
         try
         {
-            await SendVerificationEmailAsync(user, rawToken, ct);
+            await SendVerificationEmailAsync(user, otp, ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send verification email to {Email}", user.Email);
-            // Không throw - vẫn cho đăng ký thành công, user có thể resend sau
         }
 
         await _audit.LogAsync(user.Id, "REGISTER", "USER", user.Id, new { user.Email }, ct);
@@ -101,45 +100,42 @@ public class AuthService : IAuthService
             UserId = user.Id,
             Email = user.Email,
             EmailVerified = false,
-            FullName = user.FullName,
-            // Không trả về token trong response vì lý do bảo mật
-            // User sẽ nhận token qua email
+            FullName = user.FullName
         }, null);
     }
 
-    private async Task SendVerificationEmailAsync(User user, string rawToken, CancellationToken ct)
+    private async Task SendVerificationEmailAsync(User user, string otp, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(_appOpt.FrontendBaseUrl))
-            throw new InvalidOperationException("Missing App:FrontendBaseUrl");
-
-        var verifyUrl = $"{_appOpt.FrontendBaseUrl.TrimEnd('/')}/verify-email?token={Uri.EscapeDataString(rawToken)}";
-
         var html = BuildEmailTemplate(
             title: "Xác thực email của bạn",
             greeting: $"Chào {System.Net.WebUtility.HtmlEncode(user.FullName)},",
             content: $@"
                 <p>Cảm ơn bạn đã đăng ký tài khoản Edumination!</p>
-                <p>Vui lòng xác thực địa chỉ email của bạn bằng cách nhấp vào nút bên dưới:</p>
+                <p>Mã OTP xác thực email của bạn là:</p>
                 <div style='text-align: center; margin: 30px 0;'>
-                    <a href='{verifyUrl}' 
-                       style='background-color: #4F46E5; color: white; padding: 12px 30px; 
-                              text-decoration: none; border-radius: 6px; display: inline-block;
-                              font-weight: 600;'>
-                        Xác thực Email
-                    </a>
+                    <div style='background-color: #F3F4F6; padding: 20px; border-radius: 8px; 
+                                display: inline-block; border: 2px dashed #4F46E5;'>
+                        <span style='font-size: 32px; font-weight: 700; letter-spacing: 8px; 
+                                     color: #4F46E5; font-family: monospace;'>
+                            {otp}
+                        </span>
+                    </div>
                 </div>
-                <p style='color: #6B7280; font-size: 14px;'>
-                    Hoặc copy link này vào trình duyệt:<br>
-                    <a href='{verifyUrl}' style='color: #4F46E5; word-break: break-all;'>{verifyUrl}</a>
+                <p style='color: #6B7280; font-size: 14px; text-align: center;'>
+                    Vui lòng nhập mã này vào trang xác thực email.
                 </p>
-                <p style='color: #6B7280; font-size: 14px;'>
-                    Link này sẽ hết hạn sau {_authOpt.VerifyEmailTokenMinutes} phút.
+                <p style='color: #EF4444; font-size: 14px; text-align: center; font-weight: 600;'>
+                    Mã OTP này sẽ hết hạn sau {_authOpt.VerifyEmailTokenMinutes} phút.
+                </p>
+                <p style='background-color: #FEF3C7; padding: 12px; border-radius: 6px; 
+                          border-left: 4px solid #F59E0B; color: #92400E; font-size: 14px;'>
+                    <strong>⚠️ Lưu ý bảo mật:</strong> Không chia sẻ mã OTP này với bất kỳ ai.
                 </p>
             ",
             footer: "Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua email này."
         );
 
-        await _email.SendAsync(user.Email, "Xác thực email - Edumination", html, ct);
+        await _email.SendAsync(user.Email, "Mã OTP xác thực email - Edumination", html, ct);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken ct)
@@ -187,11 +183,11 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string rawToken, CancellationToken ct)
+    public async Task<ApiResult<VerifyEmailResponse>> VerifyEmailAsync(string otp, CancellationToken ct)
     {
-        var normalized = NormalizeRawToken(rawToken);
-        if (string.IsNullOrWhiteSpace(normalized))
-            return new ApiResult<VerifyEmailResponse>(false, null, "Invalid token.");
+        var normalized = NormalizeOTP(otp);
+        if (string.IsNullOrWhiteSpace(normalized) || normalized.Length != 6)
+            return new ApiResult<VerifyEmailResponse>(false, null, "Mã OTP không hợp lệ.");
 
         var hash = normalized.Sha256Hex();
 
@@ -200,10 +196,10 @@ public class AuthService : IAuthService
             .SingleOrDefaultAsync(x => x.TokenHash == hash, ct);
 
         if (ev == null)
-            return new ApiResult<VerifyEmailResponse>(false, null, "Token không hợp lệ.");
+            return new ApiResult<VerifyEmailResponse>(false, null, "Mã OTP không hợp lệ.");
 
         if (ev.ExpiresAt < DateTime.UtcNow)
-            return new ApiResult<VerifyEmailResponse>(false, null, "Token đã hết hạn. Vui lòng yêu cầu gửi lại email xác thực.");
+            return new ApiResult<VerifyEmailResponse>(false, null, "Mã OTP đã hết hạn. Vui lòng yêu cầu gửi lại mã mới.");
 
         if (ev.UsedAt != null)
         {
@@ -218,14 +214,14 @@ public class AuthService : IAuthService
                 }, null);
             }
 
-            return new ApiResult<VerifyEmailResponse>(false, null, "Token đã được sử dụng.");
+            return new ApiResult<VerifyEmailResponse>(false, null, "Mã OTP đã được sử dụng.");
         }
 
         // Đánh dấu verified
         ev.User.EmailVerified = true;
         ev.UsedAt = DateTime.UtcNow;
 
-        // Vô hiệu hóa các token cũ khác
+        // Vô hiệu hóa các OTP cũ khác
         var others = await _db.EmailVerifications
             .Where(x => x.UserId == ev.UserId && x.Id != ev.Id && x.UsedAt == null)
             .ToListAsync(ct);
@@ -262,7 +258,7 @@ public class AuthService : IAuthService
             return new(true, okResp, null);
         }
 
-        // Vô hiệu hóa các token reset cũ chưa dùng
+        // Vô hiệu hóa các OTP reset cũ chưa dùng
         var oldTokens = await _db.PasswordResets
             .Where(x => x.UserId == user.Id && x.UsedAt == null && x.ExpiresAt > DateTime.UtcNow)
             .ToListAsync(ct);
@@ -273,28 +269,27 @@ public class AuthService : IAuthService
             await _db.SaveChangesAsync(ct);
         }
 
-        // Tạo token mới
-        var rawToken = GenerateSecureToken();
-        var tokenHash = rawToken.Sha256Hex();
+        // Tạo OTP 6 digits
+        var otp = GenerateOTP();
+        var otpHash = otp.Sha256Hex();
 
         var pr = new PasswordReset
         {
             UserId = user.Id,
-            TokenHash = tokenHash,
+            TokenHash = otpHash,
             ExpiresAt = DateTime.UtcNow.AddMinutes(_authOpt.ResetPasswordTokenMinutes)
         };
         _db.PasswordResets.Add(pr);
         await _db.SaveChangesAsync(ct);
 
-        // Gửi email (không chặn flow nếu fail)
+        // Gửi email OTP
         try
         {
-            await SendResetPasswordEmailAsync(user, rawToken, ct);
+            await SendResetPasswordEmailAsync(user, otp, ct);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send password reset email to {Email}", user.Email);
-            // Vẫn trả về success để không lộ lỗi
         }
 
         await _audit.LogAsync(user.Id, "PASSWORD_FORGOT_REQUEST", "USER", user.Id, new { user.Email }, ct);
@@ -302,67 +297,63 @@ public class AuthService : IAuthService
         return new(true, okResp, null);
     }
 
-    private async Task SendResetPasswordEmailAsync(User user, string rawToken, CancellationToken ct)
+    private async Task SendResetPasswordEmailAsync(User user, string otp, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(_appOpt.FrontendBaseUrl))
-            throw new InvalidOperationException("Missing App:FrontendBaseUrl");
-
-        var resetUrl = $"{_appOpt.FrontendBaseUrl.TrimEnd('/')}/reset-password?token={Uri.EscapeDataString(rawToken)}";
-
         var html = BuildEmailTemplate(
             title: "Đặt lại mật khẩu",
             greeting: $"Chào {System.Net.WebUtility.HtmlEncode(user.FullName)},",
             content: $@"
                 <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
-                <p>Nhấp vào nút bên dưới để tạo mật khẩu mới:</p>
+                <p>Mã OTP để đặt lại mật khẩu của bạn là:</p>
                 <div style='text-align: center; margin: 30px 0;'>
-                    <a href='{resetUrl}' 
-                       style='background-color: #DC2626; color: white; padding: 12px 30px; 
-                              text-decoration: none; border-radius: 6px; display: inline-block;
-                              font-weight: 600;'>
-                        Đặt lại mật khẩu
-                    </a>
+                    <div style='background-color: #FEF2F2; padding: 20px; border-radius: 8px; 
+                                display: inline-block; border: 2px dashed #DC2626;'>
+                        <span style='font-size: 32px; font-weight: 700; letter-spacing: 8px; 
+                                     color: #DC2626; font-family: monospace;'>
+                            {otp}
+                        </span>
+                    </div>
                 </div>
-                <p style='color: #6B7280; font-size: 14px;'>
-                    Hoặc copy link này vào trình duyệt:<br>
-                    <a href='{resetUrl}' style='color: #DC2626; word-break: break-all;'>{resetUrl}</a>
+                <p style='color: #6B7280; font-size: 14px; text-align: center;'>
+                    Vui lòng nhập mã này vào trang đặt lại mật khẩu.
                 </p>
-                <p style='color: #6B7280; font-size: 14px;'>
-                    Link này sẽ hết hạn sau {_authOpt.ResetPasswordTokenMinutes} phút.
+                <p style='color: #EF4444; font-size: 14px; text-align: center; font-weight: 600;'>
+                    Mã OTP này sẽ hết hạn sau {_authOpt.ResetPasswordTokenMinutes} phút.
                 </p>
                 <p style='background-color: #FEF3C7; padding: 12px; border-radius: 6px; 
                           border-left: 4px solid #F59E0B; color: #92400E; font-size: 14px;'>
                     <strong>⚠️ Lưu ý bảo mật:</strong> Nếu bạn không yêu cầu đặt lại mật khẩu, 
-                    vui lòng bỏ qua email này và kiểm tra bảo mật tài khoản của bạn.
+                    vui lòng bỏ qua email này và kiểm tra bảo mật tài khoản của bạn. 
+                    Không chia sẻ mã OTP này với bất kỳ ai.
                 </p>
             ",
             footer: "Email này được gửi tự động, vui lòng không trả lời."
         );
 
-        await _email.SendAsync(user.Email, "Đặt lại mật khẩu - Edumination", html, ct);
+        await _email.SendAsync(user.Email, "Mã OTP đặt lại mật khẩu - Edumination", html, ct);
     }
 
     public async Task<ApiResult<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest req, CancellationToken ct)
     {
-        var raw = NormalizeRawToken(req.Token);
-        if (string.IsNullOrWhiteSpace(raw))
-            return new(false, null, "Token không hợp lệ.");
+        var otp = NormalizeOTP(req.Token);
+        if (string.IsNullOrWhiteSpace(otp) || otp.Length != 6)
+            return new(false, null, "Mã OTP không hợp lệ.");
 
-        var tokenHash = raw.Sha256Hex();
+        var otpHash = otp.Sha256Hex();
 
         var pr = await _db.PasswordResets
             .Include(x => x.User)
             .OrderByDescending(x => x.Id)
-            .SingleOrDefaultAsync(x => x.TokenHash == tokenHash, ct);
+            .SingleOrDefaultAsync(x => x.TokenHash == otpHash, ct);
 
         if (pr == null)
-            return new(false, null, "Token không hợp lệ.");
+            return new(false, null, "Mã OTP không hợp lệ.");
 
         if (pr.ExpiresAt < DateTime.UtcNow)
-            return new(false, null, "Token đã hết hạn. Vui lòng yêu cầu đặt lại mật khẩu mới.");
+            return new(false, null, "Mã OTP đã hết hạn. Vui lòng yêu cầu đặt lại mật khẩu mới.");
 
         if (pr.UsedAt != null)
-            return new(false, null, "Token đã được sử dụng.");
+            return new(false, null, "Mã OTP đã được sử dụng.");
 
         // Validate password strength
         if (string.IsNullOrWhiteSpace(req.NewPassword) || req.NewPassword.Length < 8)
@@ -375,7 +366,7 @@ public class AuthService : IAuthService
         await _db.SaveChangesAsync(ct);
         await _audit.LogAsync(pr.UserId, "PASSWORD_RESET", "USER", pr.UserId, new { pr.User.Email }, ct);
 
-        // Gửi email thông báo đổi mật khẩu thành công (optional nhưng nên có)
+        // Gửi email thông báo đổi mật khẩu thành công
         try
         {
             await SendPasswordChangedNotificationAsync(pr.User, ct);
@@ -395,6 +386,14 @@ public class AuthService : IAuthService
             greeting: $"Chào {System.Net.WebUtility.HtmlEncode(user.FullName)},",
             content: @"
                 <p>Mật khẩu tài khoản của bạn đã được thay đổi thành công.</p>
+                <div style='text-align: center; margin: 20px 0;'>
+                    <div style='background-color: #F0FDF4; padding: 15px; border-radius: 8px; 
+                                display: inline-block; border-left: 4px solid #10B981;'>
+                        <span style='color: #059669; font-size: 16px; font-weight: 600;'>
+                            ✓ Thay đổi thành công
+                        </span>
+                    </div>
+                </div>
                 <p>Thời gian: <strong>" + DateTime.UtcNow.ToString("dd/MM/yyyy HH:mm:ss") + @" UTC</strong></p>
                 <p style='background-color: #FEF3C7; padding: 12px; border-radius: 6px; 
                           border-left: 4px solid #F59E0B; color: #92400E; font-size: 14px;'>
@@ -494,33 +493,18 @@ public class AuthService : IAuthService
 
     // ============ HELPER METHODS ============
 
-    private static string NormalizeRawToken(string? token)
+    private static string NormalizeOTP(string? otp)
     {
-        if (string.IsNullOrWhiteSpace(token)) return string.Empty;
+        if (string.IsNullOrWhiteSpace(otp)) return string.Empty;
 
-        string t = token.Trim().Replace(' ', '+');
-
-        // Decode URL encoding (tối đa 2 lần)
-        for (int i = 0; i < 2; i++)
-        {
-            if (t.Contains('%'))
-            {
-                t = Uri.UnescapeDataString(t);
-                t = t.Replace(' ', '+');
-            }
-            else break;
-        }
-
-        return t;
+        // Loại bỏ spaces, dashes và chỉ giữ lại số
+        return new string(otp.Where(char.IsDigit).ToArray());
     }
 
-    private static string GenerateSecureToken()
+    private static string GenerateOTP()
     {
-        // Tạo token an toàn hơn: 32 bytes random + timestamp
-        var randomBytes = new byte[32];
-        System.Security.Cryptography.RandomNumberGenerator.Fill(randomBytes);
-        var timestamp = DateTime.UtcNow.Ticks;
-        return Convert.ToBase64String(randomBytes) + timestamp.ToString("X");
+        // Tạo OTP 6 chữ số ngẫu nhiên
+        return Random.Shared.Next(100000, 999999).ToString();
     }
 
     private static string BuildEmailTemplate(string title, string greeting, string content, string footer)
