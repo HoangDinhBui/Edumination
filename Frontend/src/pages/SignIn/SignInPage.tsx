@@ -111,6 +111,42 @@ export default function SignInPage() {
     }
   };
 
+  // === GOOGLE OAUTH LOGIN ===
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Thử POST thay vì GET (vì lỗi 405)
+      const response = await axios.post(
+        "http://localhost:8081/api/v1/auth/oauth/google/start"
+      );
+
+      const { authUrl, state } = response.data;
+
+      // Lưu state để verify sau khi callback
+      sessionStorage.setItem("oauth_state", state);
+
+      // Chuyển hướng người dùng đến trang đăng nhập Google
+      window.location.href = authUrl;
+    } catch (err: any) {
+      setLoading(false);
+
+      // Hiển thị chi tiết lỗi
+      if (err.response) {
+        console.error("Response data:", err.response.data);
+        console.error("Response status:", err.response.status);
+        setError(
+          `Lỗi ${err.response.status}: ${
+            err.response.data || "Không thể kết nối với Google"
+          }`
+        );
+      } else {
+        setError("Không thể kết nối với Google. Vui lòng thử lại.");
+      }
+    }
+  };
+
   return (
     <>
       {/* Import Google Fonts */}
@@ -213,13 +249,16 @@ export default function SignInPage() {
                 <span className="w-full border-t border-slate-300"></span>
               </div>
 
+              {/* === NÚT GOOGLE LOGIN VỚI onClick ===  */}
               <button
                 type="button"
-                className="w-full py-3 flex justify-center items-center gap-3 bg-white border border-slate-300 rounded-full shadow-sm hover:bg-slate-50"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full py-3 flex justify-center items-center gap-3 bg-white border border-slate-300 rounded-full shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <GoogleLogoIcon />
                 <span className="text-sm font-medium text-slate-700">
-                  Login with Google
+                  {loading ? "Connecting to Google..." : "Login with Google"}
                 </span>
               </button>
 

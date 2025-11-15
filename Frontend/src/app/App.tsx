@@ -1,13 +1,10 @@
 import React from "react";
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 // 1. Import tất cả các trang của bạn
 import HomePage from "../pages/Home/HomePage";
-import SignInPage from "../pages/SignIn/SignInPage"; 
-import SignUpPage from "../pages/SignUp/SignUpPage"; 
+import SignInPage from "../pages/SignIn/SignInPage";
+import SignUpPage from "../pages/SignUp/SignUpPage";
 import Answer from "../pages/Answer/Answer";
 import ExamLibrary from "../pages/ExamsLibrary/ExamsLibrary"; // Tên file trang thư viện của bạn
 import QuarterDetailPage from "../pages/ExamsLibrary/QuarterDetailPage"; // Trang chi tiết bạn vừa tạo
@@ -18,6 +15,7 @@ import ListeningTestPage from "../pages/Tests/ListeningTestPage";
 import WrintingTestPage from "../pages/Tests/WritingTestPage";
 import ReadingTestPage from "../pages/Tests/ReadingTestPage";
 import SpeakingTestPage from "../pages/Tests/SpeakingTestPage";
+import GoogleCallback from "../pages/GoogleCallback";
 // 2. Định nghĩa các đường dẫn (routes)
 const router = createBrowserRouter([
   {
@@ -48,7 +46,7 @@ const router = createBrowserRouter([
     path: "/writing-test",
     element: <WrintingTestPage />,
   },
-   {
+  {
     path: "/reading-test",
     element: <ReadingTestPage />,
   },
@@ -60,7 +58,7 @@ const router = createBrowserRouter([
     // === ĐƯỜNG DẪN ĐỘNG MỚI ===
     // :quarterName là một tham số động
     // Nó sẽ khớp với /quarter/Quarter-1, /quarter/Quarter-2, v.v.
-    path: "/quarter/:quarterName", 
+    path: "/quarter/:quarterName",
     element: <QuarterDetailPage />,
   },
   {
@@ -75,7 +73,11 @@ const router = createBrowserRouter([
   {
     path: "/reset-password",
     element: <ResetPasswordPage />,
-  }
+  },
+  {
+    path: "/google-callback",
+    element: <GoogleCallback />,
+  },
 ]);
 
 // 3. Render bộ định tuyến

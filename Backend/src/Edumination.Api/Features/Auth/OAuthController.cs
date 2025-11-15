@@ -56,7 +56,8 @@ public class OAuthController : ControllerBase
         };
 
         var resp = await _oauth.HandleCallbackAsync(provider, req, ct);
-        return Ok(resp);
+        var frontendUrl = $"http://localhost:8082/google-callback?token={resp.Token}&userId={resp.UserId}";
+        return Redirect(frontendUrl);
     }
 
     // POST /api/v1/auth/me/link-oauth/{provider}
