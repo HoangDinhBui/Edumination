@@ -531,6 +531,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(a => a.SectionAttemptId).IsRequired();
             e.Property(a => a.QuestionId).IsRequired();
             e.Property(a => a.AnswerJson).IsRequired();
+            e.Property(a => a.AnswerJson).HasColumnType("json");
             e.Property(a => a.IsCorrect);
             e.Property(a => a.EarnedScore).HasColumnType("decimal(6,2)");
             e.Property(a => a.CheckedAt);
