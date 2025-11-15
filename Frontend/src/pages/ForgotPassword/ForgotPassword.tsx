@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -26,7 +25,7 @@ const ForgotPasswordPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  // === API GỬI EMAIL (KHÔNG ĐỔI LOGIC) ===
+  // === API GỬI EMAIL ===
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -40,18 +39,22 @@ const ForgotPasswordPage: React.FC = () => {
     try {
       setLoading(true);
       const apiUrl = "http://localhost:8081/api/v1/auth/password/forgot";
-      await axios.post(apiUrl, { email });
+      const response = await axios.post(apiUrl, { email });
 
-      setMessage("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.");
-      setEmail("");
-
-      setTimeout(() => {
-        navigate("/enter-otp", { state: { email, fromForgot: true } });
-      }, 3000);
+      if (response.data.Success) {
+        setMessage(response.data.Data.Message || "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.");
+        
+        // Lưu email để sử dụng ở trang Enter OTP
+        sessionStorage.setItem("resetEmail", email);
+        
+        setTimeout(() => {
+          navigate("/enter-otp");
+        }, 2000);
+      }
     } catch (err: any) {
       console.error("Lỗi Forgot Password:", err);
       if (axios.isAxiosError(err) && err.response) {
-        setError("Máy chủ gặp lỗi. Vui lòng thử lại sau.");
+        setError(err.response.data?.Message || "Máy chủ gặp lỗi. Vui lòng thử lại sau.");
       } else {
         setError("Lỗi mạng. Vui lòng kiểm tra kết nối Internet.");
       }
@@ -112,7 +115,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full"
+                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
               >
                 {loading ? "Đang gửi..." : "Send reset link"}

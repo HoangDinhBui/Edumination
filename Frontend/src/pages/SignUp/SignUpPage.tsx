@@ -52,6 +52,7 @@ export default function SignUpPage() {
 
   const slides = [slide1, slide2, slide3];
   const [currentSlide, setCurrentSlide] = useState(0);
+  
   useEffect(() => {
     const timer = setInterval(() => setCurrentSlide((prev) => (prev + 1) % slides.length), 4000);
     return () => clearInterval(timer);
@@ -92,6 +93,20 @@ export default function SignUpPage() {
           setError(err.response.data?.message || "Registration failed.");
         }
       } else setError("An error occurred. Please try again later.");
+    }
+  };
+
+  // === GOOGLE OAUTH2 HANDLER ===
+  const handleGoogleSignUp = async () => {
+    try {
+      const apiUrl = "http://localhost:8081/api/v1/auth/oauth/google/start";
+      console.log("Starting Google OAuth...");
+      
+      // Chuyển hướng trực tiếp đến URL OAuth của Google
+      window.location.href = apiUrl;
+    } catch (err: any) {
+      console.error("Google OAuth Error:", err);
+      setError("Failed to start Google authentication. Please try again.");
     }
   };
 
@@ -202,7 +217,7 @@ export default function SignUpPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center text-slate-400 hover:text-slate-600 bg-transparent"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 bg-transparent"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -232,7 +247,7 @@ export default function SignUpPage() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center text-slate-400 hover:text-slate-600 bg-transparent"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 bg-transparent"
                   >
                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -244,7 +259,7 @@ export default function SignUpPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full"
+                className="w-full py-2.5 bg-[#749BC2] hover:bg-sky-700 text-white text-base font-semibold rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}
               >
                 {loading ? "Signing up..." : "Sign up"}
@@ -256,9 +271,11 @@ export default function SignUpPage() {
                 <span className="w-full border-t border-slate-300"></span>
               </div>
 
+              {/* GOOGLE OAUTH BUTTON */}
               <button
                 type="button"
-                className="w-full py-2.5 flex justify-center items-center gap-3 bg-white border border-slate-300 rounded-full shadow-sm hover:bg-slate-50"
+                onClick={handleGoogleSignUp}
+                className="w-full py-2.5 flex justify-center items-center gap-3 bg-white border border-slate-300 rounded-full shadow-sm hover:bg-slate-50 transition-colors"
               >
                 <GoogleLogoIcon />
                 <span className="text-sm font-medium text-slate-700">

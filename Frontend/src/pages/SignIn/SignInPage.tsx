@@ -93,7 +93,7 @@ export default function SignInPage() {
       localStorage.setItem("Token", token);
 
       // Chuyển hướng đến trang ranking
-      navigate("/library");
+      navigate("/");
     } catch (err: any) {
       setLoading(false);
 
@@ -187,7 +187,7 @@ export default function SignInPage() {
 
               <div className="text-right">
                 <a
-                  href="#"
+                  href="/forgot-password"
                   className="text-sm font-medium text-[#23B0EB] hover:underline"
                 >
                   Forgot password?
@@ -226,7 +226,7 @@ export default function SignInPage() {
               <p className="mt-6 text-center text-sm text-[#666666]">
                 Don't have an account?{" "}
                 <a
-                  href="#"
+                  href="/signup"
                   className="font-semibold text-[#749BC2] hover:underline"
                 >
                   Register now!
