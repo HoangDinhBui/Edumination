@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             pnlNavBar = new Panel();
-            panel1 = new Panel();
+            pnlContent = new Panel();
             SuspendLayout();
             // 
             // pnlNavBar
@@ -39,19 +39,19 @@
             pnlNavBar.Size = new Size(250, 1020);
             pnlNavBar.TabIndex = 0;
             // 
-            // panel1
+            // pnlContent
             // 
-            panel1.Location = new Point(250, 1);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(1730, 1020);
-            panel1.TabIndex = 1;
+            pnlContent.Location = new Point(250, 1);
+            pnlContent.Name = "pnlContent";
+            pnlContent.Size = new Size(1730, 1020);
+            pnlContent.TabIndex = 1;
             // 
             // AdminMainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1902, 973);
-            Controls.Add(panel1);
+            Controls.Add(pnlContent);
             Controls.Add(pnlNavBar);
             Name = "AdminMainForm";
             Text = "AdminMainForm";
@@ -61,6 +61,6 @@
         #endregion
 
         private Panel pnlNavBar;
-        private Panel panel1;
+        private Panel pnlContent;
     }
 }
