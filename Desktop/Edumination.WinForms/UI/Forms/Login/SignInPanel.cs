@@ -121,5 +121,5 @@ namespace Edumination.WinForms.UI.Forms.Login
             if (_parentForm != null)
                 _parentForm.ShowPanel(new SignUpPanel(_parentForm));
         }
-}
+    }
 }
