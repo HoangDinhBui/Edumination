@@ -7,6 +7,18 @@
     <Compile Update="UI\Admin\AdminNavBarPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\Forms\Home\Home.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Home\IeltsTestCardPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Home\LessonCardPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Home\UserNavbarPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Forms\Login\EnterOtpPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -21,6 +33,15 @@
     </Compile>
     <Compile Update="UI\Forms\Login\SignUpPanel.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestLibrary\MockTestContainerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestLibrary\MockTestItemPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestLibrary\TestLibrary.cs">
+      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
 </Project>

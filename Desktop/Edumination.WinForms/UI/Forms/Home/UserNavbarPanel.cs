@@ -8,18 +8,23 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Edumination.WinForms.UI.Admin
+namespace Edumination.WinForms.UI.Forms.Home
 {
-    public partial class AdminNavBarPanel : UserControl
+    public partial class UserNavbarPanel : UserControl
     {
-        public AdminNavBarPanel()
+        public UserNavbarPanel()
         {
             InitializeComponent();
         }
 
-        private void flowMenu_Paint(object sender, PaintEventArgs e)
+        private void UserNavbarPanel_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnLogout_Click(object sender, EventArgs e)
+        {
+            
         }
     }
 }
