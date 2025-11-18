@@ -16,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="ReaLTaiizor" Version="3.8.1.4" />
     <PackageReference Include="SunnyUI" Version="3.8.9" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   </ItemGroup>
 
   <ItemGroup>
