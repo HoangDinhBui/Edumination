@@ -83,3 +83,6 @@ appsettings.Production.json
 venv/
 
 .vs/
+**/db/mongo_data/
+**/db/data/
+*.wt
