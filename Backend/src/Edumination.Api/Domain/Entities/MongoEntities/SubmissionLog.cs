@@ -23,7 +23,7 @@ public class SubmissionLog
 public class StudentAnswerLog
 {
     public long QuestionId { get; set; }
-    public object? AnswerJson { get; set; } // Lưu nguyên cục JSON câu trả lời
+    public BsonDocument? AnswerJson { get; set; } // Lưu nguyên cục JSON câu trả lời
     public bool? IsCorrect { get; set; }
     public decimal? EarnedScore { get; set; }
     public DateTime AnsweredAt { get; set; }

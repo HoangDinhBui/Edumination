@@ -84,94 +84,138 @@ public class AttemptService : IAttemptService
     }
 
     public async Task<SubmitAnswerResponse> SubmitAnswerAsync(long attemptId, long sectionId, SubmitAnswerRequest request, long userId, CancellationToken ct)
+{
+    // 1. Kiểm tra TestAttempt (Quyền sở hữu và trạng thái)
+    var testAttempt = await _db.TestAttempts
+        .FirstOrDefaultAsync(ta => ta.Id == attemptId && ta.UserId == userId && ta.Status != "CANCELLED", ct);
+    if (testAttempt == null)
+        throw new InvalidOperationException("Test attempt not found or not accessible.");
+
+    // 2. Kiểm tra SectionAttempt
+    var sectionAttempt = await _db.SectionAttempts
+        .Include(sa => sa.TestAttempt)
+        .FirstOrDefaultAsync(sa => sa.TestAttemptId == attemptId && sa.SectionId == sectionId && sa.Status != "CANCELLED", ct);
+    if (sectionAttempt == null)
+        throw new InvalidOperationException("Section attempt not found or not accessible.");
+
+    // 3. Kiểm tra Question
+    var question = await _db.Questions
+        .FirstOrDefaultAsync(q => q.Id == request.QuestionId && q.SectionId == sectionId, ct);
+    if (question == null)
+        throw new InvalidOperationException("Question not found.");
+
+    // --- KHỞI TẠO BIẾN CHẤM ĐIỂM ---
+    bool? isCorrect = null;
+    decimal? earnedScore = null;
+
+    // 4. Lấy dữ liệu đáp án đúng từ Database (Cả 2 bảng)
+    // Bảng 1: Dành cho MCQ (Trắc nghiệm)
+    var mcqCorrectChoice = await _db.QuestionChoices
+        .FirstOrDefaultAsync(c => c.QuestionId == request.QuestionId && c.IsCorrect, ct);
+
+    // Bảng 2: Dành cho Fill Blank (Điền từ)
+    var answerKey = await _db.QuestionAnswerKeys
+        .FirstOrDefaultAsync(ak => ak.QuestionId == request.QuestionId, ct);
+
+    // --- LOGIC CHẤM ĐIỂM ---
+
+    // TRƯỜNG HỢP A: Chấm điểm Trắc nghiệm (MCQ)
+    if (mcqCorrectChoice != null)
     {
-        // Kiểm tra TestAttempt
-        var testAttempt = await _db.TestAttempts
-            .FirstOrDefaultAsync(ta => ta.Id == attemptId && ta.UserId == userId && ta.Status != "CANCELLED", ct);
-        if (testAttempt == null)
-            throw new InvalidOperationException("Test attempt not found or not accessible.");
-
-        // Kiểm tra SectionAttempt
-        var sectionAttempt = await _db.SectionAttempts
-            .Include(sa => sa.TestAttempt)
-            .FirstOrDefaultAsync(sa => sa.TestAttemptId == attemptId && sa.SectionId == sectionId && sa.Status != "CANCELLED", ct);
-        if (sectionAttempt == null)
-            throw new InvalidOperationException("Section attempt not found or not accessible.");
-
-        // Kiểm tra Question
-        var question = await _db.Questions
-            .FirstOrDefaultAsync(q => q.Id == request.QuestionId && q.SectionId == sectionId, ct);
-        if (question == null)
-            throw new InvalidOperationException("Question not found.");
-
-        // Tính điểm (Logic chấm điểm vẫn dùng dữ liệu MySQL - Source of Truth)
-        bool? isCorrect = null;
-        decimal? earnedScore = null;
-
-        var answerKey = await _db.QuestionAnswerKeys
-            .FirstOrDefaultAsync(ak => ak.QuestionId == request.QuestionId, ct);
-
-        if (answerKey != null)
+        try
         {
-            var keyJson = JsonSerializer.Deserialize<object>(answerKey.KeyJson);
-            var userAnswer = request.AnswerJson;
-            isCorrect = IsAnswerCorrect(keyJson, userAnswer);
-
-            if (isCorrect == true)
+            // Parse JSON người dùng gửi lên để lấy choice_id
+            using var doc = JsonDocument.Parse(request.AnswerJson.ToString());
+            if (doc.RootElement.TryGetProperty("choice_id", out var choiceIdElement))
             {
-                try
-                {
-                    earnedScore = question.MetaJson != null
-                        ? JsonSerializer.Deserialize<Dictionary<string, object>>(question.MetaJson)?
-                            .GetValueOrDefault("max_score") as decimal? ?? 1.0m
-                        : 1.0m;
-                }
-                catch { earnedScore = 1.0m; }
-            }
-            else
-            {
-                earnedScore = 0.0m;
+                long userChoiceId = choiceIdElement.GetInt64();
+                // So sánh ID: Đúng nếu ID trùng nhau
+                isCorrect = (userChoiceId == mcqCorrectChoice.Id);
             }
         }
-
-        // --- LƯU VÀO MONGODB ---
-        var bsonAnswer = BsonDocument.Parse(request.AnswerJson.ToString());
-        // Tạo Object AnswerLog
-        var answerLog = new StudentAnswerLog
+        catch
         {
-            QuestionId = request.QuestionId,
-            AnswerJson = bsonAnswer,
-            IsCorrect = isCorrect,
-            EarnedScore = earnedScore,
-            AnsweredAt = DateTime.UtcNow
-        };
-
-        var filter = Builders<SubmissionLog>.Filter.Eq(s => s.SectionAttemptId, sectionAttempt.Id);
-        
-        // 1. Đảm bảo Document tồn tại (Upsert init fields)
-        var updateInit = Builders<SubmissionLog>.Update
-            .SetOnInsert(s => s.UserId, userId)
-            .SetOnInsert(s => s.PaperId, sectionAttempt.TestAttempt.PaperId)
-            .SetOnInsert(s => s.SectionId, sectionId)
-            .Set(s => s.LastUpdatedAt, DateTime.UtcNow);
-
-        await _submissionLogs.UpdateOneAsync(filter, updateInit, new UpdateOptions { IsUpsert = true }, ct);
-
-        // 2. Xóa answer cũ của câu hỏi này (nếu có) để tránh trùng lặp
-        var updatePull = Builders<SubmissionLog>.Update
-            .PullFilter(s => s.Answers, a => a.QuestionId == request.QuestionId);
-        await _submissionLogs.UpdateOneAsync(filter, updatePull, cancellationToken: ct);
-
-        // 3. Thêm answer mới vào mảng
-        var updatePush = Builders<SubmissionLog>.Update
-            .Push(s => s.Answers, answerLog);
-        await _submissionLogs.UpdateOneAsync(filter, updatePush, cancellationToken: ct);
-
-        // Lưu ý: Không còn lưu vào _db.Answers nữa
-        
-        // Return dummy ID (vì Mongo dùng ObjectId string) hoặc ID=0
-        return new SubmitAnswerResponse(0, request.QuestionId, isCorrect, earnedScore);
+            // Nếu JSON lỗi hoặc không có choice_id -> Sai
+            isCorrect = false;
+        }
     }
+    // TRƯỜNG HỢP B: Chấm điểm Điền từ (Fill Blank)
+    else if (answerKey != null)
+    {
+        var keyJson = JsonSerializer.Deserialize<object>(answerKey.KeyJson);
+        var userAnswer = request.AnswerJson; // Cái này là text_answer
+        isCorrect = IsAnswerCorrect(keyJson, userAnswer);
+    }
+
+    // --- TÍNH ĐIỂM SỐ (FIX LỖI NULL SCORE) ---
+    if (isCorrect == true)
+    {
+        // Nếu đúng: Lấy điểm max từ cấu hình câu hỏi, nếu không có mặc định là 1.0
+        try
+        {
+            earnedScore = 1.0m; // Mặc định
+
+            if (!string.IsNullOrEmpty(question.MetaJson))
+            {
+                var meta = JsonSerializer.Deserialize<Dictionary<string, object>>(question.MetaJson);
+                if (meta != null && meta.TryGetValue("max_score", out var maxScoreObj))
+                {
+                    // Cố gắng parse max_score từ meta
+                    if (decimal.TryParse(maxScoreObj.ToString(), out decimal parsedScore))
+                    {
+                        earnedScore = parsedScore;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            earnedScore = 1.0m; // Fallback an toàn
+        }
+    }
+    else
+    {
+        // Nếu sai hoặc chưa chấm được -> 0 điểm
+        earnedScore = 0.0m;
+    }
+
+    // --- LƯU VÀO MONGODB ---
+    
+    // Chuyển đổi object sang BsonDocument (Fix lỗi _t, _v)
+    var bsonAnswer = BsonDocument.Parse(request.AnswerJson.ToString());
+
+    var answerLog = new StudentAnswerLog
+    {
+        QuestionId = request.QuestionId,
+        AnswerJson = bsonAnswer,
+        IsCorrect = isCorrect,
+        EarnedScore = earnedScore, // Bây giờ cái này chắc chắn có giá trị (0 hoặc 1)
+        AnsweredAt = DateTime.UtcNow
+    };
+
+    var filter = Builders<SubmissionLog>.Filter.Eq(s => s.SectionAttemptId, sectionAttempt.Id);
+
+    // 1. Đảm bảo Document tồn tại (Upsert)
+    var updateInit = Builders<SubmissionLog>.Update
+        .SetOnInsert(s => s.UserId, userId)
+        .SetOnInsert(s => s.PaperId, sectionAttempt.TestAttempt.PaperId)
+        .SetOnInsert(s => s.SectionId, sectionId)
+        .Set(s => s.LastUpdatedAt, DateTime.UtcNow);
+
+    await _submissionLogs.UpdateOneAsync(filter, updateInit, new UpdateOptions { IsUpsert = true }, ct);
+
+    // 2. Xóa câu trả lời cũ của câu hỏi này (nếu có)
+    var updatePull = Builders<SubmissionLog>.Update
+        .PullFilter(s => s.Answers, a => a.QuestionId == request.QuestionId);
+    await _submissionLogs.UpdateOneAsync(filter, updatePull, cancellationToken: ct);
+
+    // 3. Thêm câu trả lời mới
+    var updatePush = Builders<SubmissionLog>.Update
+        .Push(s => s.Answers, answerLog);
+    await _submissionLogs.UpdateOneAsync(filter, updatePush, cancellationToken: ct);
+
+    return new SubmitAnswerResponse(0, request.QuestionId, isCorrect, earnedScore);
+}
 
     private bool IsAnswerCorrect(object keyJson, object userAnswer)
     {
