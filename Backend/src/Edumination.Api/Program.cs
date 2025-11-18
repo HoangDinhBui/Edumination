@@ -38,8 +38,13 @@ using Edumination.Api.Features.Recommendations.Services;
 using Edumination.Api.Features.Attempts.Services;
 using Stripe;
 using Microsoft.AspNetCore.Cors;
+using MongoDB.Driver;
+using Edumination.Api.Domain.MongoEntities;
 
 var builder = WebApplication.CreateBuilder(args);
+var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDbConnection");
+var mongoDbName = builder.Configuration["MongoDbSettings:DatabaseName"];
+var collectionName = builder.Configuration["MongoDbSettings:CollectionName"];
 
 // EF Core MySQL (consolidated to one call)
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -53,7 +58,16 @@ builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth")
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<OAuthOptions>(builder.Configuration.GetSection("OAuth"));
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IMongoClient>(sp => 
+    new MongoClient(mongoConnectionString));
 
+// 3. Đăng ký MongoCollection
+builder.Services.AddScoped<IMongoCollection<SubmissionLog>>(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    var database = client.GetDatabase(mongoDbName);
+    return database.GetCollection<SubmissionLog>(collectionName);
+});
 builder.Services
     .AddOptions<AppOptions>()
     .Bind(builder.Configuration.GetSection("App"))
