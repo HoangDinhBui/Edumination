@@ -42,11 +42,13 @@ using MongoDB.Driver;
 using Edumination.Api.Domain.MongoEntities;
 
 var builder = WebApplication.CreateBuilder(args);
-var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDbConnection");
-var mongoDbName = builder.Configuration["MongoDbSettings:DatabaseName"];
-var collectionName = builder.Configuration["MongoDbSettings:CollectionName"];
 
-// EF Core MySQL (consolidated to one call)
+// --- CẤU HÌNH MONGODB ---
+var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDbConnection");
+// Mặc định là english_learning_logs nếu không tìm thấy trong config
+var mongoDbName = builder.Configuration["MongoDbSettings:DatabaseName"] ?? "english_learning_logs";
+
+// --- CẤU HÌNH MYSQL ---
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 36));
 builder.Services.AddDbContext<AppDbContext>(opt =>
@@ -58,16 +60,20 @@ builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth")
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<OAuthOptions>(builder.Configuration.GetSection("OAuth"));
 builder.Services.AddMemoryCache();
+
+// --- ĐĂNG KÝ DỊCH VỤ MONGODB ---
+// 1. Đăng ký Client
 builder.Services.AddSingleton<IMongoClient>(sp => 
     new MongoClient(mongoConnectionString));
 
-// 3. Đăng ký MongoCollection
-builder.Services.AddScoped<IMongoCollection<SubmissionLog>>(sp =>
+// 2. Đăng ký Database (THAY ĐỔI QUAN TRỌNG Ở ĐÂY)
+// Inject IMongoDatabase để Service có thể linh động chọn Collection (Reading/Listening)
+builder.Services.AddScoped<IMongoDatabase>(sp =>
 {
     var client = sp.GetRequiredService<IMongoClient>();
-    var database = client.GetDatabase(mongoDbName);
-    return database.GetCollection<SubmissionLog>(collectionName);
+    return client.GetDatabase(mongoDbName);
 });
+
 builder.Services
     .AddOptions<AppOptions>()
     .Bind(builder.Configuration.GetSection("App"))
@@ -91,11 +97,15 @@ builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>()
 var stripeKey = builder.Configuration["Stripe:SecretKey"];
 if (string.IsNullOrWhiteSpace(stripeKey))
 {
-    throw new InvalidOperationException("Stripe:SecretKey is missing. Check .env or appsettings.");
+    // Warning thay vì Throw để dev không có key vẫn chạy được (tùy chọn)
+    Console.WriteLine("WARNING: Stripe:SecretKey is missing.");
 }
-builder.Services.AddSingleton<IStripeClient>(new StripeClient(stripeKey));
+else 
+{
+    builder.Services.AddSingleton<IStripeClient>(new StripeClient(stripeKey));
+}
 
-// Services DI (consolidated)
+// Services DI
 builder.Services.AddScoped<IAssetService, AssetsService>();
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 builder.Services.AddScoped<IStorageService, StorageService>();
@@ -160,7 +170,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         var frontendUrl = builder.Configuration["App:FrontendBaseUrl"];
-        policy.WithOrigins("http://localhost:8082")
+        policy.WithOrigins("http://localhost:8082", frontendUrl ?? "")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -173,9 +183,9 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IStorageService, StorageService>();
+// builder.Services.AddScoped<IStorageService, StorageService>(); // Đã add ở trên rồi
 
-// Email sender - Sử dụng Mock trong Development, SMTP trong Production
+// Email sender
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IEmailSender, MockEmailSender>();
@@ -223,14 +233,14 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
     catch (Exception ex)
     {
         Console.Error.WriteLine($"[DB] Migration failed: {ex.Message}");
-        throw;
+        // throw; // Có thể comment throw để không crash app nếu migration lỗi
     }
 }
 
 // Log routes
 var ep = app.Services.GetRequiredService<EndpointDataSource>();
-foreach (var e in ep.Endpoints.OfType<RouteEndpoint>())
-    Console.WriteLine($"[ROUTE] {e.RoutePattern.RawText}");
+// foreach (var e in ep.Endpoints.OfType<RouteEndpoint>())
+//    Console.WriteLine($"[ROUTE] {e.RoutePattern.RawText}");
 
 // Override Google OAuth from env
 var envClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
@@ -260,7 +270,7 @@ app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestamp = DateTime.UtcNow }));
 app.Run();
 
-// MockEmailSender - Để test trong Development
+// MockEmailSender
 public class MockEmailSender : IEmailSender
 {
     private readonly ILogger<MockEmailSender> _logger;
@@ -275,10 +285,9 @@ public class MockEmailSender : IEmailSender
         _logger.LogInformation("========== MOCK EMAIL ==========");
         _logger.LogInformation("To: {To}", to);
         _logger.LogInformation("Subject: {Subject}", subject);
-        _logger.LogInformation("Body:\n{Body}", htmlBody);
+        // _logger.LogInformation("Body:\n{Body}", htmlBody); // Comment bớt body cho đỡ rác log
         _logger.LogInformation("================================");
 
-        // Trong development, có thể lưu vào file để xem
         var emailsDir = Path.Combine(Directory.GetCurrentDirectory(), "mock_emails");
         Directory.CreateDirectory(emailsDir);
 
@@ -303,7 +312,7 @@ public class MockEmailSender : IEmailSender
     }
 }
 
-// AppOptions - Cấu hình ứng dụng
+// AppOptions
 public sealed class AppOptions
 {
     public string FrontendBaseUrl { get; set; } = "";

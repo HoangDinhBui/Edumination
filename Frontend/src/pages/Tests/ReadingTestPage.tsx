@@ -393,7 +393,7 @@ const ReadingTestPage = () => {
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
-    const confirmSubmit = window.confirm("Bạn có chắc chắn muốn nộp bài không? Bạn sẽ không thể sửa lại.");
+    const confirmSubmit = window.confirm("Submit test?");
     if (!confirmSubmit) {
       return;
     }
@@ -421,8 +421,8 @@ const ReadingTestPage = () => {
       }
 
       const result = await submitSectionResponse.json();
-      console.log("Nộp bài thành công:", result);
-      alert(`Nộp bài thành công! Điểm của bạn: ${result.RawScore}`);
+      console.log(" Submitted!", result);
+      alert(`Score: ${result.RawScore}`);
       
       // Chuyển hướng
       navigate('/library'); 
