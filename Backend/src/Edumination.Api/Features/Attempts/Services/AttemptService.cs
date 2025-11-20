@@ -607,4 +607,98 @@ public class AttemptService : IAttemptService
         }
         return false;
     }
+
+    public async Task<SectionResultDto> GetSectionResultAsync(long attemptId, long sectionId, long userId, CancellationToken ct)
+{
+    // 1. Lấy thông tin từ MySQL (Kèm đáp án đúng)
+    var sectionAttempt = await _db.SectionAttempts
+        .AsNoTracking()
+        .Include(sa => sa.TestAttempt).ThenInclude(ta => ta.User)
+        .Include(sa => sa.TestAttempt).ThenInclude(ta => ta.TestPaper)
+        .Include(sa => sa.TestSection).ThenInclude(ts => ts.Passages).ThenInclude(p => p.Questions).ThenInclude(q => q.QuestionChoices)
+        .Include(sa => sa.TestSection).ThenInclude(ts => ts.Passages).ThenInclude(p => p.Questions).ThenInclude(q => q.QuestionAnswerKey)
+        .FirstOrDefaultAsync(sa => sa.TestAttemptId == attemptId && sa.SectionId == sectionId, ct);
+
+    if (sectionAttempt == null) throw new InvalidOperationException("Không tìm thấy bài làm.");
+
+    // 2. Lấy bài làm từ MongoDB
+    var targetCollection = GetCollectionBySkill(sectionAttempt.TestSection.Skill);
+    var log = await targetCollection.Find(s => s.SectionAttemptId == sectionAttempt.Id).FirstOrDefaultAsync(ct);
+    var userAnswers = log?.Answers ?? new List<StudentAnswerLog>();
+
+    // 3. Tính toán thời gian làm bài
+    var timeSpan = (sectionAttempt.FinishedAt - sectionAttempt.StartedAt) ?? TimeSpan.Zero;
+    string timeTaken = $"{(int)timeSpan.TotalMinutes}:{timeSpan.Seconds:D2}";
+
+    // 4. Tổng hợp câu hỏi
+    var questionsResult = new List<QuestionResultDto>();
+    int totalQuestions = 0;
+
+    foreach (var passage in sectionAttempt.TestSection.Passages)
+    {
+        foreach (var q in passage.Questions)
+        {
+            totalQuestions++;
+            var qDto = new QuestionResultDto
+            {
+                Id = q.Id,
+                Position = q.Position,
+                PartTitle = passage.Title ?? "Unknown Part", // Dùng Title của Passage làm tên Part
+                IsCorrect = false,
+                UserAnswerText = "Not Answered",
+                CorrectAnswerText = ""
+            };
+
+            // --- LẤY ĐÁP ÁN ĐÚNG ---
+            if (q.Qtype == "MCQ" && q.QuestionChoices != null)
+            {
+                var correct = q.QuestionChoices.FirstOrDefault(c => c.IsCorrect);
+                qDto.CorrectAnswerText = correct?.Content ?? "N/A";
+            }
+            else if (q.QuestionAnswerKey != null)
+            {
+                 // Parse JSON lấy text_answer
+                 try {
+                    using var doc = JsonDocument.Parse(q.QuestionAnswerKey.KeyJson);
+                    if(doc.RootElement.TryGetProperty("text_answer", out var val)) qDto.CorrectAnswerText = val.ToString();
+                 } catch {}
+            }
+
+            // --- LẤY ĐÁP ÁN USER (TỪ MONGO) ---
+            var userLog = userAnswers.FirstOrDefault(ua => ua.QuestionId == q.Id);
+            if (userLog != null)
+            {
+                qDto.IsCorrect = userLog.IsCorrect ?? false;
+                
+                // Parse Bson lấy text hiển thị
+                try {
+                    using var doc = JsonDocument.Parse(userLog.AnswerJson.ToString());
+                    if (doc.RootElement.TryGetProperty("choice_id", out var cid))
+                    {
+                        // Nếu là MCQ, map ID sang Content
+                        var choice = q.QuestionChoices.FirstOrDefault(c => c.Id == cid.GetInt64());
+                        qDto.UserAnswerText = choice?.Content ?? "Unknown";
+                    }
+                    else if (doc.RootElement.TryGetProperty("text_answer", out var txt))
+                    {
+                        qDto.UserAnswerText = txt.ToString();
+                    }
+                } catch {}
+            }
+
+            questionsResult.Add(qDto);
+        }
+    }
+
+    return new SectionResultDto
+    {
+        PaperTitle = sectionAttempt.TestAttempt.TestPaper.Title,
+        CandidateName = sectionAttempt.TestAttempt.User.FullName,
+        AvatarUrl = sectionAttempt.TestAttempt.User.AvatarUrl,
+        BandScore = sectionAttempt.ScaledBand?.ToString("0.0") ?? "0.0",
+        RawScore = $"{(int)(sectionAttempt.RawScore ?? 0)}/{totalQuestions}",
+        TimeTaken = timeTaken,
+        Questions = questionsResult.OrderBy(q => q.Position).ToList()
+    };
+}
 }

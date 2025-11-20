@@ -424,8 +424,13 @@ const ReadingTestPage = () => {
       console.log(" Submitted!", result);
       alert(`Score: ${result.RawScore}`);
       
-      // Chuyển hướng
-      navigate('/library'); 
+      navigate('/answer', { 
+        state: { 
+            attemptId: attemptId, 
+            sectionId: sectionId,
+            paperName: paperName 
+        } 
+    }); 
 
     } catch (err) {
       console.error("Lỗi khi nộp bài:", err);
