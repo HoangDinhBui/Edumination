@@ -165,7 +165,7 @@ public class PaperService : IPaperService
                     Qtype = q.Qtype ?? string.Empty,
                     Stem = q.Stem ?? string.Empty,
                     Position = q.Position,
-                    Choices = hideAnswers ? null : (q.QuestionChoices?.Select(c => new ChoiceDto { Content = c.Content ?? string.Empty, IsCorrect = c.IsCorrect }).ToList() ?? new List<ChoiceDto>()),
+                    Choices = hideAnswers ? null : (q.QuestionChoices?.Select(c => new ChoiceDto { Id = c.Id,Content = c.Content ?? string.Empty, IsCorrect = c.IsCorrect }).ToList() ?? new List<ChoiceDto>()),
                     AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson ?? string.Empty
                 }).ToList()
             }).ToList()
@@ -174,6 +174,44 @@ public class PaperService : IPaperService
 
     return dto;
 }
+
+        public async Task<List<MockTestLibraryResponseDto>> GetMockTestsAsync(CancellationToken ct)
+        {
+            var mockTests = await _db.MockTests
+                .AsNoTracking()
+                .Where(mt => mt.Status == "PUBLISHED")
+                .OrderByDescending(mt => mt.Year)
+                .ToListAsync(ct);
+
+            var response = new List<MockTestLibraryResponseDto>();
+
+            foreach (var mt in mockTests)
+            {
+                var quarters = await _db.MockTestQuarters
+                    .AsNoTracking()
+                    .Where(q => q.MockTestId == mt.Id && q.Status == "PUBLISHED")
+                    .OrderBy(q => q.Quarter)
+                    .ToListAsync(ct);
+
+                var items = quarters
+                    .Select(q => new PaperLibraryItemDto
+                    {
+                        Id = q.Id,
+                        Name = $"Quarter {q.Quarter} - Set {q.SetNumber}",
+                        Taken = 0 // TODO: nếu cần tính thật thì SUM từ attempts
+                    })
+                    .ToList();
+
+                response.Add(new MockTestLibraryResponseDto
+                {
+                    Title = mt.Title,
+                    Items = items
+                });
+            }
+
+            return response;
+    }
+
 }
 public static class StringExtensions
     {

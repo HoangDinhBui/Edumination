@@ -1,4 +1,4 @@
-﻿using Edumination.WinForms.Services;
+﻿
 using System;
 using System.Drawing;
 using System.Net.Http;
@@ -6,6 +6,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Edumination.WinForms.UI.Admin;
 
 namespace Edumination.WinForms.UI.Forms.Login
 {
@@ -13,14 +16,12 @@ namespace Edumination.WinForms.UI.Forms.Login
     {
         private bool showPassword = false;
         private readonly Edumination.WinForms.LoginForm _parentForm;
-        private readonly ApiService _api;
 
         // 🔹 Constructor mới có tham số LoginForm
         public SignInPanel(Edumination.WinForms.LoginForm parentForm)
         {
             InitializeComponent();
             _parentForm = parentForm ?? throw new ArgumentNullException(nameof(parentForm)); // lưu lại form cha
-            _api = new ApiService();
 
             // Gán sự kiện
             btnTogglePassword.Click += BtnTogglePassword_Click;
@@ -28,7 +29,8 @@ namespace Edumination.WinForms.UI.Forms.Login
             btnGoogleLogin.Click += BtnGoogleLogin_Click;
             lblForgotPassword.Click += LblForgotPassword_Click;
             lblRegister.Click += LblRegister_Click;
-
+            txtEmail.Text = "eduminationielts@gmail.com";
+            txtPassword.Text ="Admin123!";
             // Căn giữa nội dung khi load và resize
             this.Load += (s, e) => CenterContent();
             this.Resize += (s, e) => CenterContent();
@@ -75,14 +77,48 @@ namespace Edumination.WinForms.UI.Forms.Login
             try
             {
                 var response = await client.PostAsync("http://localhost:8081/api/v1/auth/login", content);
-
                 if (response.IsSuccessStatusCode)
                 {
                     var respBody = await response.Content.ReadAsStringAsync();
                     var data = JsonSerializer.Deserialize<JsonElement>(respBody);
-                    if (data.TryGetProperty("token", out var token))
+                    Console.WriteLine(respBody);
+                    if (data.TryGetProperty("Token", out var token))
                     {
-                        MessageBox.Show("Login successful!");
+                        var tokenString = token.GetString();
+
+                        // --- Gọi phương thức giải mã để lấy Role ---
+                        var userRole = DecodeAndGetRole(tokenString);
+                        //MessageBox.Show($"Login Success!\nUser Role: {userRole}");
+                        SessionManager.JwtToken = tokenString;
+                        //MessageBox.Show("Token: " + tokenString);
+                        //Console.WriteLine("Token: "+ tokenString);
+                        SessionManager.UserRole = userRole;
+                        Form nextForm = null;
+
+                        switch (userRole.ToUpper()) // Chuyển sang chữ hoa để so sánh không phân biệt chữ hoa/thường
+                        {
+                            case "ADMIN":
+                                nextForm = new AdminMainForm(_parentForm, tokenString);
+                                _parentForm.Hide();
+                                nextForm.Show();
+                                break;
+
+                            case "TEACHER":
+                                //nextForm = new TeacherForm(); // Giả sử tên Form của bạn là TeacherForm
+                                _parentForm.Hide();
+                                nextForm.Show();
+                                break;
+
+                            case "STUDENT":
+                                //nextForm = new Home(); 
+                                _parentForm.Hide();
+                                nextForm.Show();
+                                break;
+
+                            default:
+                                lblError.Text = $"Role '{userRole}' is not recognized.";
+                                break;
+                        }
                     }
                     else
                     {
@@ -124,5 +160,37 @@ namespace Edumination.WinForms.UI.Forms.Login
             if (_parentForm != null)
                 _parentForm.ShowPanel(new SignUpPanel(_parentForm));
         }
-}
+
+        private string DecodeAndGetRole(string token)
+        {
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
+
+                if (jwtToken != null)
+                {
+                    // Tên claim cho Role trong JWT của bạn (dựa trên hình ảnh)
+                    var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+
+                    if (roleClaim != null)
+                    {
+                        return roleClaim.Value;
+                    }
+                }
+
+                return "Role not found";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error decoding token: " + ex.Message);
+                return "Decode failed";
+            }
+        }
+
+        private void SignInPanel_Load(object sender, EventArgs e)
+        {
+            // Nếu chưa cần xử lý gì, để trống cũng được
+        }
+    }
 }

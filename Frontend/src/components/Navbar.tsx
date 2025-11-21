@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
 import edmLogo from "../assets/img/edm-logo.png";
+import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // ====================== DROPDOWN ======================
 const Dropdown: React.FC<{
   title: string;
   sections: { header?: string; items: string[] }[];
-  onClick?: () => void;
-}> = ({ title, sections, onClick }) => {
+  onSelectCourse: (course: string) => void;
+  onTitleClick?: () => void; // Add optional onClick prop
+}> = ({ title, sections, onSelectCourse, onTitleClick }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -18,19 +20,18 @@ const Dropdown: React.FC<{
       onMouseLeave={() => setIsOpen(false)}
     >
       <button
-        onClick={onClick}
         className={`inline-flex items-center gap-1.5 transition-all duration-300 group px-4 py-2 rounded-full ${
           isOpen
             ? "bg-white text-[#749BC2] shadow-md"
             : "bg-white text-[#666666] hover:text-gray-900 hover:shadow-md"
         }`}
+        onClick={(e) => {
+          if (onTitleClick) {
+            onTitleClick();
+          }
+        }}
       >
         {title}
-        <ChevronDown
-          className={`h-4 w-4 transition-all duration-300 ${
-            isOpen ? "rotate-180 text-[#2986B7]" : ""
-          }`}
-        />
       </button>
 
       {/* DROPDOWN CONTENT */}
@@ -46,34 +47,21 @@ const Dropdown: React.FC<{
           {sections.map((sec, i) => (
             <div
               key={i}
-              className={`bg-white shadow-2xl rounded-2xl p-5 w-60 border border-gray-100 transition-all duration-300 ${
-                isOpen ? "scale-100" : "scale-95"
-              }`}
-              style={{
-                transitionDelay: `${i * 50}ms`,
-              }}
+              className="bg-white shadow-2xl rounded-2xl p-5 w-60 border border-gray-100"
             >
               {sec.header && (
-                <div className="text-xs font-bold text-[#2986B7] mb-3 uppercase tracking-wider flex items-center gap-2">
-                  <div className="w-1 h-4 bg-gradient-to-b from-[#4AB8A1] to-[#2986B7] rounded-full"></div>
+                <div className="text-xs font-bold text-[#2986B7] mb-3 uppercase tracking-wider">
                   {sec.header}
                 </div>
               )}
               <ul className="space-y-1">
-                {sec.items.map((it, idx) => (
+                {sec.items.map((item, idx) => (
                   <li
-                    key={it}
-                    className="text-gray-600 hover:text-gray-900 cursor-pointer transition-all duration-200 py-2.5 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50 hover:translate-x-1 group/item"
-                    style={{
-                      transitionDelay: `${idx * 30}ms`,
-                    }}
+                    key={idx}
+                    className="text-gray-600 hover:text-gray-900 cursor-pointer transition-all duration-200 py-2.5 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-teal-50"
+                    onClick={() => onSelectCourse(item)}
                   >
-                    <span className="flex items-center justify-between text-sm font-medium">
-                      {it}
-                      <span className="opacity-0 group-hover/item:opacity-100 transition-opacity text-[#2986B7]">
-                        →
-                      </span>
-                    </span>
+                    {item}
                   </li>
                 ))}
               </ul>
@@ -89,6 +77,7 @@ const Dropdown: React.FC<{
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -151,6 +140,35 @@ const Navbar: React.FC = () => {
     navigate("/");
   };
 
+  const handleBuyCourse = async (course: string) => {
+    try {
+      const response = await axios.post(
+        `/api/v1/checkout/courses/${course}`,
+        { provider: "STRIPE" },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("Token")}` },
+        }
+      );
+      alert("Mua khóa học thành công!");
+      console.log(response.data);
+    } catch (error) {
+      console.error("Lỗi khi mua khóa học:", error);
+      alert("Không thể mua khóa học. Vui lòng thử lại.");
+    }
+  };
+
+  const handleNavigateToCourse = (course: string) => {
+    const courseRoutes: Record<string, string> = {
+      "Foundation (0.0–5.0)": "/foundation",
+      "Booster (5.5–6.0)": "/booster",
+      "Intensive (6.0–7.5)": "/intensive",
+      "Mastery (7.5–9.0)": "/mastery",
+    };
+
+    const route = courseRoutes[course];
+    if (route) navigate(route);
+  };
+
   return (
     <>
       <header
@@ -197,6 +215,7 @@ const Navbar: React.FC = () => {
                   },
                   {
                     label: "IELTS Course",
+                    onClick: () => navigate("/overview"), // Ensure navigation works
                     dropdown: [
                       {
                         header: "Our Courses",
@@ -216,7 +235,8 @@ const Navbar: React.FC = () => {
                       <Dropdown
                         title={item.label}
                         sections={item.dropdown}
-                        onClick={item.onClick}
+                        onSelectCourse={handleNavigateToCourse}
+                        onTitleClick={item.onClick}
                       />
                     ) : (
                       <a
@@ -273,6 +293,31 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* COURSE DETAILS */}
+      {selectedCourse && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-xl font-bold mb-4">{selectedCourse}</h2>
+            <p className="text-gray-600 mb-4">
+              Đây là khóa học {selectedCourse}. Bạn có thể mua ngay để bắt đầu
+              học.
+            </p>
+            <button
+              onClick={() => handleBuyCourse(selectedCourse)}
+              className="px-4 py-2 bg-green-500 text-white rounded"
+            >
+              Mua khóa học
+            </button>
+            <button
+              onClick={() => setSelectedCourse(null)}
+              className="ml-4 px-4 py-2 bg-gray-300 text-gray-700 rounded"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes gradient-x {

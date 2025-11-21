@@ -21,22 +21,30 @@ document.head.appendChild(fontLink);
 
 // =================== COUNTDOWN HOOK ===================
 function useCountdown(initialSeconds) {
+  // Nếu initialSeconds là null thì state cũng là null
   const [timeLeft, setTimeLeft] = useState(initialSeconds);
 
   useEffect(() => {
-    setTimeLeft(initialSeconds);
+    // Chỉ cập nhật nếu initialSeconds có giá trị hợp lệ
+    if (initialSeconds !== null) {
+      setTimeLeft(initialSeconds);
+    }
   }, [initialSeconds]);
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    // Nếu null hoặc <= 0 thì không đếm ngược
+    if (initialSeconds === null || timeLeft === null || timeLeft <= 0) return;
+    
     const timer = setInterval(() => {
       setTimeLeft((prev) => Math.max(prev - 1, 0));
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, initialSeconds]);
 
-  const mins = Math.floor(timeLeft / 60);
-  const secs = timeLeft % 60;
+  // Xử lý hiển thị để không bị lỗi NaN khi null
+  const safeTime = timeLeft || 0;
+  const mins = Math.floor(safeTime / 60);
+  const secs = safeTime % 60;
   const isWarning = mins < 5;
 
   return { mins, secs, isWarning, timeLeft };
@@ -48,16 +56,17 @@ const TopNavbar = ({
   timeProps, 
   onMiniMenuClick, 
   onSubmitClick, // Thêm prop cho submit
-  isSubmitting  // Thêm prop để hiện loading
+  isSubmitting,
+  isLoading  // Thêm prop để hiện loading
 }) => {
   const { mins, secs, isWarning, timeLeft } = timeProps;
 
   useEffect(() => {
-    if (timeLeft === 0) {
+    if (!isLoading && timeLeft !== null && timeLeft === 0) {
       alert("Time's up! Your test will be submitted automatically.");
       onSubmitClick(); // Tự động nộp bài khi hết giờ
     }
-  }, [timeLeft, onSubmitClick]);
+  }, [timeLeft, onSubmitClick, isLoading]);
 
   return (
     <nav className="w-full bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
@@ -142,27 +151,53 @@ const MaterialViewer = ({ paperData }) => {
 };
 
 // =================== RENDER QUESTION (SỬA LẠI) ===================
-const QuestionRenderer = ({ question, answer, onAnswerChange }) => {
-  const { Id, Qtype, Choices, Position } = question;
+// =================== RENDER QUESTION (SỬA LẠI LẦN CUỐI) ===================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const QuestionRenderer = ({ question, answer, onAnswerChange }: any) => {
+  // 1. Chuẩn hóa dữ liệu đầu vào (Chấp nhận cả hoa và thường)
+  const Id = question.Id || question.id;
+  const Qtype = (question.Qtype || question.qtype || "").toUpperCase();
+  const Choices = question.Choices || question.choices || [];
+  const Position = question.Position || question.position;
+
   let inputComponent;
 
-  switch (Qtype.toUpperCase()) {
+  switch (Qtype) {
     case "MCQ":
       inputComponent = (
         <select
+          // Nếu chưa có câu trả lời thì để chuỗi rỗng
           value={answer || ""}
           onChange={(e) => onAnswerChange(Id, e.target.value)}
           className="flex-1 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none cursor-pointer bg-white hover:border-slate-400 transition-colors"
         >
-          <option value=""></option>
-          {/* Sửa: Dùng choice.Id cho value, vì đây là ID của lựa chọn */}
-          {Choices?.map((choice) => (
-            <option key={choice.Id} value={choice.Id}>
-              {choice.Content}
-            </option>
-          ))}
+          <option value="">Select an answer...</option>
+          
+          {Choices?.map((choice: any, index: number) => {
+            // 2. LOGIC QUAN TRỌNG: Tìm đúng ID
+            // Kiểm tra xem backend trả về 'Id' hay 'id'
+            const cId = choice.Id ?? choice.id; 
+            const cContent = choice.Content || choice.content;
+
+            // Debug: Nếu cId vẫn null thì log ra để xem lỗi gì
+            if (cId === undefined || cId === null) {
+                console.warn("Không tìm thấy ID cho choice:", choice);
+            }
+
+            return (
+              <option 
+                // Dùng index làm fallback key nếu cId lỗi (để React không báo vàng)
+                key={cId ?? index} 
+                // QUAN TRỌNG: Value bắt buộc phải là cId (số)
+                value={cId}
+              >
+                {cContent}
+              </option>
+            );
+          })}
         </select>
       );
+      
       return (
         <div className="flex items-center gap-3">
           <span className="text-slate-700 font-medium text-sm w-5">
@@ -180,7 +215,7 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }) => {
           value={answer || ""}
           onChange={(e) => onAnswerChange(Id, e.target.value)}
           className="flex-1 border border-slate-300 rounded-full px-4 py-2.5 text-slate-700 text-sm outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
-          placeholder=""
+          placeholder="Type your answer..."
         />
       );
       return (
@@ -269,7 +304,7 @@ const ReadingTestPage = () => {
   const [paperData, setPaperData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timeLimit, setTimeLimit] = useState(0);
+  const [timeLimit, setTimeLimit] = useState(null);
   const [answers, setAnswers] = useState({});
 
   // === THÊM MỚI: STATE CHO SUBMIT VÀ ATTEMPT ===
@@ -286,59 +321,79 @@ const ReadingTestPage = () => {
   // === SỬA: handleAnswerChange ĐỂ GỌI API NGAY ===
   // (Cách này tốt hơn là submit tất cả 1 lúc)
   const handleAnswerChange = async (questionId, answer) => {
-    // 1. Cập nhật state React ngay lập tức
+    // 1. Cập nhật giao diện ngay lập tức để user thấy đã chọn
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
       [questionId]: answer,
     }));
 
-    if (!attemptId || !sectionId) {
-        console.warn("Attempt ID/Section ID chưa sẵn sàng, chưa thể lưu");
-        return;
-    }
+    // 2. Nếu chưa chọn gì (hoặc chọn lại dòng trống), thì KHÔNG gửi API
+    if (!answer || answer === "") return;
 
-    // 2. Chuẩn bị dữ liệu cho API
+    // 3. Tìm thông tin câu hỏi hiện tại để biết nó là MCQ hay Fill Blank
+    // Lưu ý: Tìm trong tất cả passages
     const question = paperData?.Sections?.[0]?.Passages
                       .flatMap(p => p.Questions)
                       .find(q => q.Id == questionId);
-                      
+
+    if (!question) {
+        console.error("Không tìm thấy thông tin câu hỏi");
+        return;
+    }
+
+    // 4. Xử lý dữ liệu gửi đi
     let answerJson = {};
-    if (question?.Qtype.toUpperCase() === "MCQ") {
-      answerJson = { choice_id: parseInt(answer, 10) };
+    
+    // Kiểm tra kỹ Qtype (chấp nhận cả hoa thường cho chắc)
+    const qType = (question.Qtype || "").toUpperCase();
+
+    if (qType === "MCQ") {
+      const parsedId = parseInt(answer, 10);
+      
+      // Nếu parse lỗi ra NaN -> Dừng ngay, không gửi rác lên server
+      if (isNaN(parsedId)) {
+          console.error("Lỗi parse ID đáp án:", answer);
+          return;
+      }
+      answerJson = { choice_id: parsedId };
     } else {
+      // Trường hợp điền từ
       answerJson = { text_answer: answer };
     }
 
+    // 5. Gọi API lưu (Giữ nguyên logic gọi API của bạn)
+    if (!attemptId || !sectionId) return;
+    
     const body = {
       QuestionId: parseInt(questionId, 10),
       AnswerJson: JSON.stringify(answerJson)
     };
-    
-    // 3. Gọi API để lưu (không cần chờ)
+
     const TOKEN = localStorage.getItem("Token");
-    fetch(
-      `http://localhost:8081/api/v1/attempts/${attemptId}/sections/${sectionId}/answer`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body)
-      }
-    ).then(res => {
-        if(!res.ok) console.error(`Lỗi lưu câu hỏi ${questionId}`);
-        else console.log(`Đã lưu câu ${questionId}`);
-    }).catch(err => {
-        console.error(`Lỗi API khi lưu câu ${questionId}:`, err);
-    });
+    try {
+        const res = await fetch(
+           `http://localhost:8081/api/v1/attempts/${attemptId}/sections/${sectionId}/answer`,
+           {
+             method: "POST",
+             headers: {
+               "Authorization": `Bearer ${TOKEN}`,
+               "Content-Type": "application/json",
+             },
+             body: JSON.stringify(body)
+           }
+        );
+        if(res.ok) console.log("Đã lưu thành công:", body);
+        else console.error("Lỗi server:", await res.text());
+    } catch (err) {
+        console.error("Lỗi mạng:", err);
+    }
   };
 
   // === THÊM MỚI: HÀM NỘP BÀI (CHỐT) ===
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
-    const confirmSubmit = window.confirm("Bạn có chắc chắn muốn nộp bài không? Bạn sẽ không thể sửa lại.");
+    const confirmSubmit = window.confirm("Submit test?");
     if (!confirmSubmit) {
       return;
     }
@@ -366,11 +421,16 @@ const ReadingTestPage = () => {
       }
 
       const result = await submitSectionResponse.json();
-      console.log("Nộp bài thành công:", result);
-      alert(`Nộp bài thành công! Điểm của bạn: ${result.RawScore}`);
+      console.log(" Submitted!", result);
+      alert(`Score: ${result.RawScore}`);
       
-      // Chuyển hướng
-      navigate('/library'); 
+      navigate('/answer', { 
+        state: { 
+            attemptId: attemptId, 
+            sectionId: sectionId,
+            paperName: paperName 
+        } 
+    }); 
 
     } catch (err) {
       console.error("Lỗi khi nộp bài:", err);
@@ -535,7 +595,8 @@ const ReadingTestPage = () => {
         timeProps={timeProps}
         onMiniMenuClick={() => setIsMiniMenuOpen(true)}
         onSubmitClick={handleSubmit} // Thêm hàm submit
-        isSubmitting={isSubmitting} // Thêm state loading
+        isSubmitting={isSubmitting}
+        isLoading={isLoading} // Thêm state loading
       />
 
       <div

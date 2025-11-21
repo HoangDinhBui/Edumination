@@ -74,12 +74,13 @@ project.assets.json
 *.nuget.dgspec.json
 *.nuget.g.props
 *.nuget.g.targets
-appsettings.json
-appsettings.Development.json
-appsettings.Production.json
+
 
 *.env
 
 venv/
 
 .vs/
+**/db/mongo_data/
+**/db/data/
+*.wt

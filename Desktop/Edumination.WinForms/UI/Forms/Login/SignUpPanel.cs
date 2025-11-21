@@ -126,6 +126,11 @@ namespace Edumination.WinForms.UI.Forms.Login
         {
             // Nếu chưa cần xử lý gì, để trống cũng được
         }
+
+        private void SignUpPanel_Load_1(object sender, EventArgs e)
+        {
+
+        }
     }
 }
 

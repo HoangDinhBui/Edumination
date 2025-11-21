@@ -1,3 +1,5 @@
+using Edumination.WinForms.UI.Admin;
+
 namespace Edumination.WinForms;
 
 static class Program

@@ -219,6 +219,7 @@
             Controls.Add(lblSignInLink);
             Name = "SignUpPanel";
             Size = new Size(760, 973);
+            Load += SignUpPanel_Load_1;
             ResumeLayout(false);
             PerformLayout();
         }

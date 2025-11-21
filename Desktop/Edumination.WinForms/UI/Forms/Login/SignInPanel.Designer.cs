@@ -160,6 +160,7 @@
             Name = "SignInPanel";
             Padding = new Padding(40);
             Size = new Size(760, 973);
+            Load += SignInPanel_Load;
             ResumeLayout(false);
             PerformLayout();
         }

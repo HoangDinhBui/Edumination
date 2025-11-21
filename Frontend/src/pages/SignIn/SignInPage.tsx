@@ -79,6 +79,7 @@ export default function SignInPage() {
       console.log("Response Data:", response.data);
 
       // === FIX 1: SỬA TÊN TOKEN (T VIẾT HOA) ===
+      const data = response.data;
       const token = response.data.Token;
 
       if (!token || typeof token !== "string") {
@@ -91,9 +92,25 @@ export default function SignInPage() {
 
       // === FIX 2: SỬA KEY LƯU TRỮ ===
       localStorage.setItem("Token", token);
+      localStorage.setItem("User", JSON.stringify(data));
 
       // Chuyển hướng đến trang ranking
-      navigate("/");
+      const roles = data.Roles || [];
+      
+      // Kiểm tra xem có quyền ADMIN không
+      // (Giả sử Roles là mảng string ["ADMIN", "STUDENT"])
+      const isAdmin = Array.isArray(roles) && roles.includes("ADMIN");
+
+      // *Lưu ý: Nếu roles là mảng object [{code: "ADMIN"}], dùng dòng dưới:
+      // const isAdmin = Array.isArray(roles) && roles.some(r => r.Code === "ADMIN" || r === "ADMIN");
+
+      if (isAdmin) {
+        console.log("User là ADMIN -> Chuyển tới trang quản trị");
+        navigate("/admin"); // Sửa đường dẫn này thành trang Admin của bạn (vd: /admin/dashboard)
+      } else {
+        console.log("User thường -> Chuyển tới trang chủ");
+        navigate("/");
+      }
     } catch (err: any) {
       setLoading(false);
 

@@ -161,7 +161,7 @@ public class AuthService : IAuthService
         };
 
         foreach (var code in role)
-            claims.Add(new Claim(ClaimTypes.Role, code));
+            claims.Add(new Claim("role", code));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -179,7 +179,8 @@ public class AuthService : IAuthService
             Token = new JwtSecurityTokenHandler().WriteToken(token),
             UserId = user.Id,
             Email = user.Email,
-            FullName = user.FullName
+            FullName = user.FullName,
+            Roles = role
         };
     }
 

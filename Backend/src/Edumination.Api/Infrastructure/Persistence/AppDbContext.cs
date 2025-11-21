@@ -47,8 +47,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Payment> Payments => Set<Payment>();
-    public DbSet<MockTest> MockTests => Set<MockTest>();
-    public DbSet<MockTestQuarter> MockTestQuarters => Set<MockTestQuarter>();
+    public DbSet<Edumination.Api.Domain.Entities.MockTest> MockTests => Set<Edumination.Api.Domain.Entities.MockTest>();
+    public DbSet<Edumination.Api.Domain.Entities.MockTestQuarter> MockTestQuarters => Set<Edumination.Api.Domain.Entities.MockTestQuarter>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -642,41 +642,41 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
         });
 
-        b.Entity<MockTest>(e =>
+        b.Entity<Edumination.Api.Domain.Entities.MockTest>(e =>
     {
         e.ToTable("mock_tests");
         e.HasKey(x => x.Id);
         e.Property(x => x.Title).HasMaxLength(255).IsRequired();
         e.Property(x => x.Year).IsRequired();
         e.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
-        
+
         // Quan hệ 1 MockTest có nhiều MockTestQuarter
-        e.HasMany(mt => mt.Quarters) 
-           .WithOne(mtq => mtq.MockTest) 
+        e.HasMany(mt => mt.Quarters)
+           .WithOne(mtq => mtq.MockTest)
            .HasForeignKey(mtq => mtq.MockTestId);
     });
 
-    b.Entity<MockTestQuarter>(e =>
-    {
-        e.ToTable("mock_test_quarters");
-        e.HasKey(x => x.Id);
-        e.Property(x => x.MockTestId).HasColumnName("mock_test_id");
-        e.Property(x => x.Quarter).HasConversion<string>().HasMaxLength(10); // Giả sử là Enum Q1, Q2...
-        e.Property(x => x.SetNumber).HasColumnName("set_number");
-        e.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
+        b.Entity<MockTestQuarter>(e =>
+        {
+            e.ToTable("mock_test_quarters");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.MockTestId).HasColumnName("mock_test_id");
+            e.Property(x => x.Quarter).HasConversion<string>().HasMaxLength(10); // Giả sử là Enum Q1, Q2...
+            e.Property(x => x.SetNumber).HasColumnName("set_number");
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
 
-        // Cấu hình các Foreign Key đến TestPaper (nếu cần)
-        e.HasOne(mtq => mtq.ListeningPaper)
-           .WithMany()
-           .HasForeignKey(mtq => mtq.ListeningPaperId)
-           .OnDelete(DeleteBehavior.Restrict); // Hoặc SetNull tùy logic
-           
-        e.HasOne(mtq => mtq.ReadingPaper)
-           .WithMany()
-           .HasForeignKey(mtq => mtq.ReadingPaperId)
-           .OnDelete(DeleteBehavior.Restrict); 
-           
-        // (Tương tự cho WritingPaperId và SpeakingPaperId)
-    });
+            // Cấu hình các Foreign Key đến TestPaper (nếu cần)
+            e.HasOne(mtq => mtq.ListeningPaper)
+               .WithMany()
+               .HasForeignKey(mtq => mtq.ListeningPaperId)
+               .OnDelete(DeleteBehavior.Restrict); // Hoặc SetNull tùy logic
+
+            e.HasOne(mtq => mtq.ReadingPaper)
+               .WithMany()
+               .HasForeignKey(mtq => mtq.ReadingPaperId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            // (Tương tự cho WritingPaperId và SpeakingPaperId)
+        });
     }
 }
