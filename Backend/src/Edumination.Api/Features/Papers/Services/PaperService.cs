@@ -174,6 +174,44 @@ public class PaperService : IPaperService
 
     return dto;
 }
+
+        public async Task<List<MockTestLibraryResponseDto>> GetMockTestsAsync(CancellationToken ct)
+        {
+            var mockTests = await _db.MockTests
+                .AsNoTracking()
+                .Where(mt => mt.Status == "PUBLISHED")
+                .OrderByDescending(mt => mt.Year)
+                .ToListAsync(ct);
+
+            var response = new List<MockTestLibraryResponseDto>();
+
+            foreach (var mt in mockTests)
+            {
+                var quarters = await _db.MockTestQuarters
+                    .AsNoTracking()
+                    .Where(q => q.MockTestId == mt.Id && q.Status == "PUBLISHED")
+                    .OrderBy(q => q.Quarter)
+                    .ToListAsync(ct);
+
+                var items = quarters
+                    .Select(q => new PaperLibraryItemDto
+                    {
+                        Id = q.Id,
+                        Name = $"Quarter {q.Quarter} - Set {q.SetNumber}",
+                        Taken = 0 // TODO: nếu cần tính thật thì SUM từ attempts
+                    })
+                    .ToList();
+
+                response.Add(new MockTestLibraryResponseDto
+                {
+                    Title = mt.Title,
+                    Items = items
+                });
+            }
+
+            return response;
+    }
+
 }
 public static class StringExtensions
     {

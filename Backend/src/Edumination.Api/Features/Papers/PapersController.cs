@@ -428,6 +428,15 @@ public async Task<IActionResult> CreateBandScales(long id, [FromBody] BandScaleC
         return StatusCode(500, "Có lỗi xảy ra khi cập nhật band scales.");
     }
 }
+
+    [HttpGet("mocktests")]
+    [AllowAnonymous]
+        public async Task<IActionResult> GetMockTests(CancellationToken ct)
+        {
+            var result = await _paperService.GetMockTestsAsync(ct);
+            return Ok(result);
+        }
+
 }
 
 public class CreatePaperRequest
