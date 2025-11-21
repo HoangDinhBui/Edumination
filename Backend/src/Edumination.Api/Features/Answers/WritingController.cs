@@ -36,7 +36,7 @@ namespace Edumination.Api.Features.Answers
                 return BadRequest(new { error = "Writing content cannot be empty." });
             }
 
-            var apiKey = _cfg["Groq:ApiKey"];
+            var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY"); ;
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 _logger.LogError("Groq API Key is not configured.");
