@@ -27,7 +27,7 @@ namespace Edumination.Api.MockTest;
 
         // GET: api/MockTestQuarters/1
         [HttpGet("{id}")]
-        public async Task<ActionResult<MockTestQuarter>> GetMockTestQuarter(long id)
+        public async Task<ActionResult<Edumination.Api.Domain.Entities.MockTestQuarter>> GetMockTestQuarter(long id)
         {
             var mockTestQuarter = await _context.MockTestQuarters.FindAsync(id);
 

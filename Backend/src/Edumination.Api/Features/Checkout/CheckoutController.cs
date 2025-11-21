@@ -115,9 +115,12 @@ public class CheckoutController : ControllerBase
         await _db.SaveChangesAsync(ct);
 
         // 7) Stripe Checkout Session (dùng StripeClient đã inject)
+        // var successUrl = string.IsNullOrWhiteSpace(req.ReturnUrl)
+        //     ? "http://localhost:8081/orders/thanks?sessionId={CHECKOUT_SESSION_ID}"
+        //     : req.ReturnUrl + "?sessionId={CHECKOUT_SESSION_ID}";
         var successUrl = string.IsNullOrWhiteSpace(req.ReturnUrl)
-            ? "http://localhost:8081/orders/thanks?sessionId={CHECKOUT_SESSION_ID}"
-            : req.ReturnUrl + "?sessionId={CHECKOUT_SESSION_ID}";
+            ? "http://localhost:8082/thanks"
+            : req.ReturnUrl;
         var cancelUrl = string.IsNullOrWhiteSpace(req.CancelUrl)
             ? "http://localhost:8081/orders/cancel"
             : req.CancelUrl;
@@ -239,7 +242,8 @@ public class CheckoutController : ControllerBase
                         }
                     }
 
-                    break;
+                    // Redirect to home page after successful payment
+                    return Redirect("/");
                 }
 
             case EventTypes.PaymentIntentSucceeded:
