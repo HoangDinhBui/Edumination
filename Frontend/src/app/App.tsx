@@ -17,6 +17,7 @@ import WritingTestPage from "../pages/Tests/WritingTestPage"; // Sửa lại tê
 import ReadingTestPage from "../pages/Tests/ReadingTestPage";
 import SpeakingTestPage from "../pages/Tests/SpeakingTestPage";
 import GoogleCallback from "../pages/GoogleCallback";
+import DashboardPage from "../pages/Dashboard/DashboardPage";
 
 // --- 2. CÁC COMPONENT ADMIN (Mới thêm) ---
 import AdminRoute from "../components/AdminRoute"; // Component bảo vệ
@@ -92,6 +93,14 @@ const router = createBrowserRouter([
   {
     path: "/ranking", // Trang xếp hạng
     element: <RankingPage />,
+  },
+  {
+    path: "/ranking", // Trang xếp hạng
+    element: <RankingPage />,
+  },
+  {
+    path: "/dashboard", // Trang xếp hạng
+    element: <DashboardPage />,
   },
 
   // ==============================

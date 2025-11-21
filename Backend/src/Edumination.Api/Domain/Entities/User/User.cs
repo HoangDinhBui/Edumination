@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Edumination.Api.Domain.Entities;
 
 public class User
@@ -6,6 +8,7 @@ public class User
     public string Email { get; set; } = default!;
     public bool EmailVerified { get; set; }
     public string? PasswordHash { get; set; }
+    [Column("full_name")]
     public string FullName { get; set; } = default!;
     public string? AvatarUrl { get; set; }
     public bool IsActive { get; set; } = true;

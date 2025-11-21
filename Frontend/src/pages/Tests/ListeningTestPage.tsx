@@ -519,7 +519,12 @@ const ListeningTestPage = () => {
         if (!res.ok) throw new Error("Submit failed");
         const data = await res.json();
         alert(`Submitted! Score: ${data.RawScore}`);
-        navigate("/library");
+        navigate("/answer", { 
+            state: { 
+                attemptId: attemptId, 
+                sectionId: sectionId 
+            } 
+        });
     } catch (err) {
         alert(err.message);
     } finally {
