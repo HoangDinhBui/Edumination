@@ -5,10 +5,14 @@
         private System.ComponentModel.IContainer components = null;
 
         private Panel panelNavbar;
+        private Label lblTitle;
+        private FlowLayoutPanel panelSkills;
+        private System.Windows.Forms.FlowLayoutPanel flowMain;
+
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing && components != null)
                 components.Dispose();
             base.Dispose(disposing);
         }
@@ -16,153 +20,65 @@
         private void InitializeComponent()
         {
             panelNavbar = new Panel();
-            lblLibrary = new Sunny.UI.UILabel();
-            btnAll = new Sunny.UI.UIButton();
-            btnListen = new Sunny.UI.UIButton();
-            uiButton1 = new Sunny.UI.UIButton();
-            uiButton2 = new Sunny.UI.UIButton();
-            uiButton3 = new Sunny.UI.UIButton();
+            lblTitle = new Label();
+            panelSkills = new FlowLayoutPanel();
             txtSearch = new Sunny.UI.UITextBox();
+            flowMain = new FlowLayoutPanel();
             SuspendLayout();
             // 
             // panelNavbar
             // 
+            panelNavbar.BackColor = Color.White;
             panelNavbar.Dock = DockStyle.Top;
             panelNavbar.Location = new Point(0, 0);
             panelNavbar.Name = "panelNavbar";
-            panelNavbar.Size = new Size(1920, 72);
+            panelNavbar.Size = new Size(1920, 70);
             panelNavbar.TabIndex = 4;
             // 
-            // lblLibrary
+            // lblTitle
             // 
-            lblLibrary.Font = new Font("Noto Serif SC", 19.7999973F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            lblLibrary.ForeColor = Color.FromArgb(41, 69, 99);
-            lblLibrary.Location = new Point(711, 102);
-            lblLibrary.Name = "lblLibrary";
-            lblLibrary.Size = new Size(454, 45);
-            lblLibrary.TabIndex = 5;
-            lblLibrary.Text = "IELTS Test Papers Library";
+            lblTitle.AutoSize = true;
+            lblTitle.Font = new Font("Noto Serif SC Black", 28.1999989F, FontStyle.Bold, GraphicsUnit.Point, 163);
+            lblTitle.ForeColor = Color.FromArgb(41, 69, 99);
+            lblTitle.Location = new Point(652, 101);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(658, 67);
+            lblTitle.TabIndex = 3;
+            lblTitle.Text = "IELTS Test Papers Library";
             // 
-            // btnAll
+            // panelSkills
             // 
-            btnAll.FillColor = Color.White;
-            btnAll.FillColor2 = Color.White;
-            btnAll.FillHoverColor = Color.FromArgb(39, 56, 146);
-            btnAll.FillPressColor = Color.FromArgb(39, 56, 146);
-            btnAll.FillSelectedColor = Color.FromArgb(39, 56, 146);
-            btnAll.Font = new Font("Noto Serif SC SemiBold", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            btnAll.ForeColor = Color.FromArgb(39, 56, 146);
-            btnAll.Location = new Point(322, 177);
-            btnAll.MinimumSize = new Size(1, 1);
-            btnAll.Name = "btnAll";
-            btnAll.Radius = 30;
-            btnAll.RectColor = Color.FromArgb(39, 56, 146);
-            btnAll.RectPressColor = Color.FromArgb(39, 56, 146);
-            btnAll.RectSelectedColor = Color.FromArgb(39, 56, 146);
-            btnAll.Size = new Size(220, 59);
-            btnAll.TabIndex = 7;
-            btnAll.Text = "All Skills";
-            btnAll.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            btnAll.Click += btnAll_Click;
-            // 
-            // btnListen
-            // 
-            btnListen.FillColor = Color.White;
-            btnListen.FillColor2 = Color.White;
-            btnListen.FillHoverColor = Color.FromArgb(39, 56, 146);
-            btnListen.FillPressColor = Color.FromArgb(39, 56, 146);
-            btnListen.FillSelectedColor = Color.FromArgb(39, 56, 146);
-            btnListen.Font = new Font("Noto Serif SC SemiBold", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            btnListen.ForeColor = Color.FromArgb(39, 56, 146);
-            btnListen.Location = new Point(571, 177);
-            btnListen.MinimumSize = new Size(1, 1);
-            btnListen.Name = "btnListen";
-            btnListen.Radius = 30;
-            btnListen.RectColor = Color.FromArgb(39, 56, 146);
-            btnListen.RectPressColor = Color.FromArgb(39, 56, 146);
-            btnListen.RectSelectedColor = Color.FromArgb(39, 56, 146);
-            btnListen.Size = new Size(220, 59);
-            btnListen.TabIndex = 8;
-            btnListen.Text = "Listening";
-            btnListen.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            // 
-            // uiButton1
-            // 
-            uiButton1.FillColor = Color.White;
-            uiButton1.FillColor2 = Color.White;
-            uiButton1.FillHoverColor = Color.FromArgb(39, 56, 146);
-            uiButton1.FillPressColor = Color.FromArgb(39, 56, 146);
-            uiButton1.FillSelectedColor = Color.FromArgb(39, 56, 146);
-            uiButton1.Font = new Font("Noto Serif SC SemiBold", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            uiButton1.ForeColor = Color.FromArgb(39, 56, 146);
-            uiButton1.Location = new Point(822, 177);
-            uiButton1.MinimumSize = new Size(1, 1);
-            uiButton1.Name = "uiButton1";
-            uiButton1.Radius = 30;
-            uiButton1.RectColor = Color.FromArgb(39, 56, 146);
-            uiButton1.RectPressColor = Color.FromArgb(39, 56, 146);
-            uiButton1.RectSelectedColor = Color.FromArgb(39, 56, 146);
-            uiButton1.Size = new Size(220, 59);
-            uiButton1.TabIndex = 9;
-            uiButton1.Text = "Reading";
-            uiButton1.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            // 
-            // uiButton2
-            // 
-            uiButton2.FillColor = Color.White;
-            uiButton2.FillColor2 = Color.White;
-            uiButton2.FillHoverColor = Color.FromArgb(39, 56, 146);
-            uiButton2.FillPressColor = Color.FromArgb(39, 56, 146);
-            uiButton2.FillSelectedColor = Color.FromArgb(39, 56, 146);
-            uiButton2.Font = new Font("Noto Serif SC SemiBold", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            uiButton2.ForeColor = Color.FromArgb(39, 56, 146);
-            uiButton2.Location = new Point(1077, 177);
-            uiButton2.MinimumSize = new Size(1, 1);
-            uiButton2.Name = "uiButton2";
-            uiButton2.Radius = 30;
-            uiButton2.RectColor = Color.FromArgb(39, 56, 146);
-            uiButton2.RectPressColor = Color.FromArgb(39, 56, 146);
-            uiButton2.RectSelectedColor = Color.FromArgb(39, 56, 146);
-            uiButton2.Size = new Size(220, 59);
-            uiButton2.TabIndex = 10;
-            uiButton2.Text = "Writing";
-            uiButton2.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            // 
-            // uiButton3
-            // 
-            uiButton3.FillColor = Color.White;
-            uiButton3.FillColor2 = Color.White;
-            uiButton3.FillHoverColor = Color.FromArgb(39, 56, 146);
-            uiButton3.FillPressColor = Color.FromArgb(39, 56, 146);
-            uiButton3.FillSelectedColor = Color.FromArgb(39, 56, 146);
-            uiButton3.Font = new Font("Noto Serif SC SemiBold", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 163);
-            uiButton3.ForeColor = Color.FromArgb(39, 56, 146);
-            uiButton3.Location = new Point(1329, 177);
-            uiButton3.MinimumSize = new Size(1, 1);
-            uiButton3.Name = "uiButton3";
-            uiButton3.Radius = 30;
-            uiButton3.RectColor = Color.FromArgb(39, 56, 146);
-            uiButton3.RectPressColor = Color.FromArgb(39, 56, 146);
-            uiButton3.RectSelectedColor = Color.FromArgb(39, 56, 146);
-            uiButton3.Size = new Size(220, 59);
-            uiButton3.TabIndex = 11;
-            uiButton3.Text = "Speaking";
-            uiButton3.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            panelSkills.Location = new Point(300, 188);
+            panelSkills.Name = "panelSkills";
+            panelSkills.Size = new Size(1300, 70);
+            panelSkills.TabIndex = 2;
             // 
             // txtSearch
             // 
             txtSearch.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            txtSearch.Location = new Point(322, 265);
+            txtSearch.Location = new Point(300, 294);
             txtSearch.Margin = new Padding(4, 5, 4, 5);
             txtSearch.MinimumSize = new Size(1, 16);
             txtSearch.Name = "txtSearch";
             txtSearch.Padding = new Padding(5);
-            txtSearch.Radius = 10;
+            txtSearch.Radius = 20;
             txtSearch.ShowText = false;
-            txtSearch.Size = new Size(1227, 57);
-            txtSearch.TabIndex = 13;
+            txtSearch.Size = new Size(1300, 58);
+            txtSearch.TabIndex = 5;
             txtSearch.TextAlignment = ContentAlignment.MiddleLeft;
-            txtSearch.Watermark = "Search";
+            txtSearch.Watermark = "";
+            txtSearch.TextChanged += txtSearch_TextChanged;
+            txtSearch.KeyDown += txtSearch_KeyDown;
+            // 
+            // flowMain
+            // 
+            flowMain.AutoScroll = true;
+            flowMain.FlowDirection = FlowDirection.TopDown;
+            flowMain.Location = new Point(148, 386);
+            flowMain.Name = "flowMain";
+            flowMain.Size = new Size(1600, 600);
+            flowMain.TabIndex = 20;
+            flowMain.WrapContents = false;
             // 
             // TestLibrary
             // 
@@ -170,24 +86,18 @@
             BackColor = Color.White;
             ClientSize = new Size(1920, 1020);
             Controls.Add(txtSearch);
-            Controls.Add(uiButton3);
-            Controls.Add(uiButton2);
-            Controls.Add(uiButton1);
-            Controls.Add(btnListen);
-            Controls.Add(btnAll);
-            Controls.Add(lblLibrary);
+            Controls.Add(panelSkills);
+            Controls.Add(lblTitle);
             Controls.Add(panelNavbar);
+            Controls.Add(flowMain);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Name = "TestLibrary";
+            WindowState = FormWindowState.Maximized;
             Load += TestLibrary_Load;
             ResumeLayout(false);
+            PerformLayout();
+
         }
-        private Sunny.UI.UILabel lblLibrary;
-        private Sunny.UI.UIButton btnAll;
-        private Sunny.UI.UIButton btnListen;
-        private Sunny.UI.UIButton uiButton1;
-        private Sunny.UI.UIButton uiButton2;
-        private Sunny.UI.UIButton uiButton3;
         private Sunny.UI.UITextBox txtSearch;
     }
 }

@@ -50,6 +50,7 @@
             lblTitle.Size = new Size(290, 40);
             lblTitle.TabIndex = 1;
             lblTitle.TextAlign = ContentAlignment.TopCenter;
+            lblTitle.Click += lblTitle_Click;
             // 
             // lblRating
             // 
@@ -69,7 +70,7 @@
             Margin = new Padding(80, 10, 10, 10);
             Name = "IeltsTestCardPanel";
             Size = new Size(290, 389);
-            Load += this.IeltsTestCardPanel_Load;
+            Load += IeltsTestCardPanel_Load;
             ((System.ComponentModel.ISupportInitialize)picThumb).EndInit();
             ResumeLayout(false);
         }

@@ -38,9 +38,14 @@ namespace Edumination.WinForms.UI.Forms.Home
         {
             InitializeComponent();
 
-            UserNavbarPanel nav = new UserNavbarPanel();
-            nav.Dock = DockStyle.Top;
+            // HIỂN THỊ FULL
+       
+            this.WindowState = FormWindowState.Maximized;
+            this.StartPosition = FormStartPosition.CenterScreen;
 
+            // NAVBAR
+            UserNavbarPanel nav = new UserNavbarPanel(this);
+            nav.Dock = DockStyle.Top;
             this.Controls.Add(nav);
             nav.BringToFront();
         }
