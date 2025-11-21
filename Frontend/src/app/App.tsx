@@ -21,6 +21,7 @@ import Foundation from "../pages/Foundation";
 import Booster from "../pages/Booster";
 import Intensive from "../pages/Intensive";
 import Mastery from "../pages/Mastery";
+import WritingResultsPage from "../pages/Result/WritingResultsPage"; // Import WritingResultsPage
 
 // --- 2. CÁC COMPONENT ADMIN (Mới thêm) ---
 import AdminRoute from "../components/AdminRoute"; // Component bảo vệ
@@ -122,6 +123,14 @@ const router = createBrowserRouter([
   {
     path: "/thanks",
     element: <ThankYouPage />,
+  },
+  {
+    path: "/writing-test",
+    element: <WritingTestPage />,
+  },
+  {
+    path: "/writing/results",
+    element: <WritingResultsPage />,
   },
 
   // ==============================
