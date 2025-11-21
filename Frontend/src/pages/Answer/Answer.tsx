@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   // Icons cho Sidebar
   Star,
@@ -16,69 +17,51 @@ import {
   MapPin,
   FileText,
   BookMarked,
+  Trophy,
+  Loader2, // Thêm Loader
 } from "lucide-react";
-import Avatar from "../../assets/img/Ellipse 24.png";
-import Navbar from "../../components/Navbar";
+
+// Giữ lại các import ảnh cũ của bạn
+import AvatarDefault from "../../assets/img/Ellipse 24.png"; 
 import EPicture from "../../assets/img/Rectangle 111141430.png";
-import { useNavigate } from "react-router-dom"; // 👈 thêm dòng này
-import { Trophy } from "lucide-react"; // 👈 biểu tượng cho nút
+import Navbar from "../../components/Navbar";
 
-// --- DỮ LIỆU MẪU (Mock Data) ---
+// --- COMPONENT: TestHeader (Đã sửa để nhận Props động) ---
+interface TestHeaderProps {
+  title: string;
+  date: string;
+  testTaken?: number;
+}
 
-const sampleAnswers = [
-  { id: 1, text: "Keiko:", isCorrect: false },
-  { id: 11, text: "B, D: C, D (Correct 1/2)", isCorrect: false },
-  { id: 2, text: "J06337:", isCorrect: false },
-  { id: 12, text: "Seafood:", isCorrect: true },
-  { id: 3, text: "Advanced English studies:", isCorrect: false },
-  { id: 13, text: "Tennis:", isCorrect: false },
-  { id: 4, text: "5 months:", isCorrect: true },
-  { id: 14, text: "Take the train:", isCorrect: false },
-  { id: 5, text: "About 4 months:", isCorrect: false },
-  { id: 15, text: "This afternoon:", isCorrect: false },
-];
+const TestHeader: React.FC<TestHeaderProps> = ({ title, date, testTaken = 1000 }) => {
+  // Mock static data cho phần hiển thị đẹp (Rating, Category...)
+  const staticData = {
+    rating: 4.5,
+    votes: 755,
+    category: "IELTS",
+    image: EPicture,
+  };
 
-const answerKeyData = [
-  { title: "Part 1: Question 1 - 10", answers: sampleAnswers.slice(0, 10) },
-  { title: "Part 2: Question 11 - 20", answers: sampleAnswers.slice(0, 10) },
-  { title: "Part 3: Question 21 - 30", answers: sampleAnswers.slice(0, 10) },
-  { title: "Part 4: Question 31 - 40", answers: sampleAnswers.slice(0, 10) },
-];
-
-// === MOCK DATA ===
-const mockTestHeaderData = {
-  title: "IELTS Mock Test 2025 January",
-  rating: 4.5,
-  votes: 755,
-  postedDate: "06 Jun 2025",
-  testTaken: 1000,
-  category: "IELTS",
-  image: { EPicture },
-};
-
-// --- COMPONENT: TestHeader ---
-const TestHeader: React.FC = () => {
-  const data = mockTestHeaderData;
-  const filledStars = Math.floor(data.rating);
-  const hasHalfStar = data.rating % 1 !== 0;
+  const filledStars = Math.floor(staticData.rating);
+  const hasHalfStar = staticData.rating % 1 !== 0;
 
   return (
-    <section className="w-full p-8 rounded-2xl shadow-md border border-blue-100 flex flex-col md:flex-row items-start gap-8">
+    <section className="w-full p-8 rounded-2xl shadow-md border border-blue-100 flex flex-col md:flex-row items-start gap-8 bg-white">
       {/* Hình ảnh minh họa */}
       <div className="w-full md:w-56 h-40 rounded-xl overflow-hidden shadow-lg flex-shrink-0 relative">
         <img
-          src={Object.values(data.image)[0]}
-          alt={data.title}
+          src={staticData.image}
+          alt={title}
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
         />
         <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-md shadow-md">
-          {data.category}
+          {staticData.category}
         </div>
       </div>
 
       {/* Nội dung thông tin */}
       <div className="flex-1">
-        <h1 className="text-3xl font-bold text-slate-800 mb-3">{data.title}</h1>
+        <h1 className="text-3xl font-bold text-slate-800 mb-3">{title}</h1>
 
         {/* Rating */}
         <div className="flex items-center mb-4">
@@ -89,7 +72,7 @@ const TestHeader: React.FC = () => {
             <Star className="w-5 h-5 text-yellow-400 opacity-60" />
           )}
           <span className="ml-2 text-sm text-slate-600 font-medium">
-            ({data.votes} votes)
+            ({staticData.votes} votes)
           </span>
         </div>
 
@@ -98,13 +81,13 @@ const TestHeader: React.FC = () => {
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-600" />
             <span>
-              <strong>Posted on:</strong> {data.postedDate}
+              <strong>Date:</strong> {new Date().toLocaleDateString()} {/* Hoặc dùng props date */}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <CheckSquare className="w-5 h-5 text-green-600" />
             <span>
-              <strong>Test taken:</strong> {data.testTaken.toLocaleString()}
+              <strong>Test taken:</strong> {testTaken.toLocaleString()}
             </span>
           </div>
         </div>
@@ -113,7 +96,7 @@ const TestHeader: React.FC = () => {
   );
 };
 
-// --- COMPONENT: ResultDonut ---
+// --- COMPONENT: ResultDonut (Giữ nguyên) ---
 interface ResultDonutProps {
   subText: string;
   borderColorClass: string;
@@ -137,29 +120,46 @@ const ResultDonut: React.FC<ResultDonutProps> = ({
   </div>
 );
 
-// --- COMPONENT: AnswerKeyPart & AnswerItem ---
+// --- COMPONENT: AnswerKeyPart & AnswerItem (Giữ nguyên) ---
 interface AnswerItemProps {
   number: number;
-  text: string;
+  userAnswer: string;
+  correctAnswer: string;
   isCorrect: boolean;
 }
-const AnswerItem: React.FC<AnswerItemProps> = ({ number, text, isCorrect }) => (
-  <div className="flex items-center gap-3">
-    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">
+
+const AnswerItem: React.FC<AnswerItemProps> = ({ number, userAnswer, correctAnswer, isCorrect }) => (
+  <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
+    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold mt-0.5">
       {number}
     </span>
-    <span className="flex-1 text-slate-700 text-sm">{text}</span>
-    {isCorrect ? (
-      <CheckCircle2 className="w-5 h-5 text-green-500" />
-    ) : (
-      <XCircle className="w-5 h-5 text-red-500" />
-    )}
+    <div className="flex-1 flex flex-col text-sm">
+      <div className="flex gap-1">
+        <span className="text-slate-500 font-medium w-14">Your:</span>
+        <span className={`font-semibold ${isCorrect ? "text-green-600" : "text-red-500"}`}>
+           {userAnswer || "(No Answer)"}
+        </span>
+      </div>
+      {!isCorrect && (
+        <div className="flex gap-1 mt-1">
+           <span className="text-slate-500 w-14">Key:</span>
+           <span className="font-semibold text-green-600">{correctAnswer}</span>
+        </div>
+      )}
+    </div>
+    <div className="mt-0.5">
+        {isCorrect ? (
+        <CheckCircle2 className="w-5 h-5 text-green-500" />
+        ) : (
+        <XCircle className="w-5 h-5 text-red-500" />
+        )}
+    </div>
   </div>
 );
 
 interface AnswerKeyPartProps {
   title: string;
-  answers: { id: number; text: string; isCorrect: boolean }[];
+  answers: any[];
 }
 const AnswerKeyPart: React.FC<AnswerKeyPartProps> = ({ title, answers }) => (
   <div>
@@ -170,8 +170,9 @@ const AnswerKeyPart: React.FC<AnswerKeyPartProps> = ({ title, answers }) => (
       {answers.map((answer) => (
         <AnswerItem
           key={answer.id}
-          number={answer.id}
-          text={answer.text}
+          number={answer.position}
+          userAnswer={answer.userAnswer}
+          correctAnswer={answer.correctAnswer}
           isCorrect={answer.isCorrect}
         />
       ))}
@@ -180,10 +181,9 @@ const AnswerKeyPart: React.FC<AnswerKeyPartProps> = ({ title, answers }) => (
 );
 
 // =======================================================
-// === COMPONENT: Review & Explanation ===
+// === COMPONENT: Review & Explanation (MOCK DATA - Để Designer vui) ===
 // =======================================================
 
-// --- Helper: Nút bấm nhỏ (Listen, Locate, Explain) ---
 const ReviewAnswerButton: React.FC<{
   icon: React.ElementType;
   text: string;
@@ -194,7 +194,6 @@ const ReviewAnswerButton: React.FC<{
   </button>
 );
 
-// --- Helper: Hàng trong form (Label + Answer) ---
 const ReviewFormRow: React.FC<{
   label: string;
   answer: string;
@@ -215,14 +214,12 @@ const ReviewFormRow: React.FC<{
   </div>
 );
 
-// --- Helper: Giả lập Audio Player ---
 const AudioPlayerMockup: React.FC = () => (
   <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-center gap-3 shadow-sm">
     <button className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center flex-shrink-0">
       <Play className="w-4 h-4 fill-white" />
     </button>
     <span className="text-sm text-slate-500">00:00</span>
-    {/* Thanh trượt (slider) */}
     <input
       type="range"
       defaultValue="0"
@@ -244,7 +241,6 @@ const AudioPlayerMockup: React.FC = () => (
   </div>
 );
 
-// === MOCK DATA CHO REVIEW & EXPLANATION ===
 const mockReviewExplanationData = {
   title: "Review & Explanation",
   partTitle: "Part 1",
@@ -258,53 +254,34 @@ const mockReviewExplanationData = {
     { label: "Family name", answer: "Yuinichi", number: 1 },
     { label: "Gender", answer: "Female" },
     { label: "Age", answer: "28" },
-    { label: "Passport number", answer: "", number: 2 },
-    { label: "Nationality", answer: "Japanese" },
-    { label: "Course enrolled", answer: "", number: 3 },
-    { label: "Length of the course", answer: "", number: 4 },
-    { label: "Homestay time", answer: "", number: 5 },
   ],
   reviewAnswers: [
     { number: 1, text: "Keiko" },
     { number: 2, text: "J06337" },
-    { number: 3, text: "Advanced English studies" },
   ],
   audioScript: [
-    "Please turn to section 1 of listening practice test. Listen to the conversation between a Japanese student and a housing officer and complete the form. First you have some time to look at questions 1 to 5. You will see that there is an example which has been done for you. The conversation relating to this will be played first.",
     "Man: Yes? What can I do for you?",
     "Girl: My friend is in a homestay and she really enjoys it, so I'd like to join a family as well.",
     "Man: Okay let me get some details. What's your name?",
     "Girl: My name is Keiko Yuichini.",
-    "Man: Could you spell your family name for me, please?",
-    "Girl: Yes. It's Yuichini. That's Y U I C H I N I.",
-    "The student's family name is Yuichini. So that has been written on the form. Now we shall begin. You should answer the questions as you listen because you will not hear the recording a second time. Now listen carefully and answer questions 1 to 5.",
-    "Man: Yes? What can I do for you?",
-    "Girl: My friend is in a homestay and she really enjoys it so I'd like to join a family as well.",
   ],
 };
 
-// --- Component Review & Explanation chính ---
 const ReviewExplanation: React.FC = () => {
   const data = mockReviewExplanationData;
-
   return (
     <section className="mt-8 bg-white rounded-2xl shadow-lg border-2 border-blue-500 overflow-hidden">
-      {/* HEADER */}
       <div className="flex items-center gap-2 p-4 bg-blue-500 text-white">
         <BookMarked className="w-5 h-5" />
         <h2 className="text-xl font-bold">{data.title}</h2>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-        {/* === CỘT TRÁI === */}
         <div>
           <h3 className="font-semibold text-slate-800">{data.questionRange}</h3>
           <p className="text-sm text-slate-600 mt-1">{data.instructionTitle}</p>
           <p className="text-sm text-red-600 font-medium my-3">
             {data.instructionNote}
           </p>
-
-          {/* FORM */}
           <div className="bg-blue-50 text-blue-800 font-semibold p-3 rounded-t-lg text-sm">
             {data.formTitle}
           </div>
@@ -318,26 +295,7 @@ const ReviewExplanation: React.FC = () => {
               />
             ))}
           </div>
-
-          {/* CÂU TRẢ LỜI */}
-          <div className="mt-6 space-y-4">
-            {data.reviewAnswers.map((ans) => (
-              <div key={ans.number}>
-                <p className="text-sm text-slate-800">
-                  {ans.number}. Answer:{" "}
-                  <strong className="font-semibold">{ans.text}</strong>
-                </p>
-                <div className="flex items-center gap-2 mt-2">
-                  <ReviewAnswerButton icon={Play} text="Listen from here" />
-                  <ReviewAnswerButton icon={MapPin} text="Locate" />
-                  <ReviewAnswerButton icon={FileText} text="Explain" />
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
-
-        {/* === CỘT PHẢI === */}
         <div>
           <AudioPlayerMockup />
           <h3 className="text-xl font-semibold text-slate-800 mt-6">
@@ -345,15 +303,7 @@ const ReviewExplanation: React.FC = () => {
           </h3>
           <div className="mt-4 space-y-3 text-slate-700 text-sm leading-relaxed max-h-96 overflow-y-auto">
             {data.audioScript.map((line, i) => (
-              <p key={i}>
-                {line.includes("Man:") || line.includes("Girl:") ? (
-                  <>
-                    <strong>{line.split(":")[0]}:</strong> {line.split(":")[1]}
-                  </>
-                ) : (
-                  line
-                )}
-              </p>
+              <p key={i}>{line}</p>
             ))}
           </div>
         </div>
@@ -362,17 +312,12 @@ const ReviewExplanation: React.FC = () => {
   );
 };
 
-// --- COMPONENT: View Ranking Button ---
 const ViewRankingButton: React.FC = () => {
   const navigate = useNavigate();
-
   return (
     <button
       onClick={() => navigate("/ranking")}
-      className="mt-8 flex items-center gap-2 px-6 py-3 
-                 bg-gradient-to-r from-sky-500 to-indigo-500 
-                 text-white font-semibold rounded-full shadow-lg 
-                 hover:shadow-xl hover:scale-105 transition-all duration-300"
+      className="mt-8 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-500 to-indigo-500 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
     >
       <Trophy className="w-5 h-5 text-white" />
       <span>View Global Ranking</span>
@@ -380,65 +325,138 @@ const ViewRankingButton: React.FC = () => {
   );
 };
 
-// === MOCK DATA CHO ANSWER PAGE ===
-const mockAnswerPageData = {
-  user: {
-    name: "Tran Dung",
-    avatar: { Avatar },
-  },
-  result: {
-    correctAnswers: "2/40",
-    bandScore: "2",
-    timeCompleted: "32:00",
-  },
-  answerKeys: [
-    {
-      title: "Part 1: Question 1 - 10",
-      answers: [
-        { id: 1, text: "Keiko", isCorrect: true },
-        { id: 2, text: "J06337", isCorrect: false },
-        { id: 3, text: "Advanced English studies", isCorrect: false },
-        { id: 4, text: "5 months", isCorrect: true },
-        { id: 5, text: "About 4 months", isCorrect: false },
-      ],
-    },
-    {
-      title: "Part 2: Question 11 - 20",
-      answers: [
-        { id: 11, text: "B, D: C, D (Correct 1/2)", isCorrect: false },
-        { id: 12, text: "Seafood", isCorrect: true },
-        { id: 13, text: "Tennis", isCorrect: false },
-        { id: 14, text: "Take the train", isCorrect: false },
-        { id: 15, text: "This afternoon", isCorrect: false },
-      ],
-    },
-  ],
-};
-
-// --- COMPONENT TRANG CHÍNH ---
+// =================== TRANG CHÍNH ANSWER PAGE ===================
 export default function AnswerPage() {
-  const data = mockAnswerPageData;
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Lấy ID từ state được truyền từ trang Reading/Listening
+  const { attemptId, sectionId } = location.state || {};
+
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // --- FETCH DATA TỪ API ---
+  useEffect(() => {
+    if (!attemptId || !sectionId) {
+      // Nếu vào trực tiếp mà không qua nộp bài -> Quay về thư viện
+      // Hoặc có thể hiển thị Mock Data nếu muốn test UI
+      // navigate("/library"); 
+      setError("Không tìm thấy thông tin bài thi. Vui lòng nộp bài trước.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchResult = async () => {
+      try {
+        const TOKEN = localStorage.getItem("Token");
+        const res = await fetch(
+          `http://localhost:8081/api/v1/attempts/${attemptId}/sections/${sectionId}/result`,
+          {
+            headers: {
+              "Authorization": `Bearer ${TOKEN}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to load result");
+        }
+
+        const resultData = await res.json();
+        setData(resultData);
+      } catch (err: any) {
+        console.error("Error fetching result:", err);
+        setError("Có lỗi khi tải kết quả bài thi.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResult();
+  }, [attemptId, sectionId, navigate]);
+
+  // --- XỬ LÝ TRẠNG THÁI ---
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+        <p className="text-slate-600">Đang tính điểm và tổng hợp kết quả...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-center">
+        <XCircle className="w-16 h-16 text-red-500 mb-4" />
+        <h2 className="text-2xl font-bold text-slate-800">Đã có lỗi xảy ra</h2>
+        <p className="text-slate-600 mt-2">{error}</p>
+        <button onClick={() => navigate('/library')} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-full">
+            Quay lại thư viện
+        </button>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  // --- MAP DATA TỪ API SANG FORMAT CỦA UI ---
+  
+  // 1. Nhóm câu hỏi theo Part (PassageTitle)
+  // API trả về list câu hỏi phẳng, ta cần gom lại để hiển thị theo nhóm
+  const groupedQuestions = data.Questions.reduce((acc: any, q: any) => {
+    const key = q.PartTitle || "Questions"; // Dùng PartTitle làm key nhóm
+    if (!acc[key]) {
+        acc[key] = [];
+    }
+    acc[key].push({
+        id: q.Id,
+        position: q.Position,
+        userAnswer: q.UserAnswerText,
+        correctAnswer: q.CorrectAnswerText,
+        isCorrect: q.IsCorrect
+    });
+    return acc;
+  }, {});
+
+  // Chuyển object grouped thành mảng để map
+  const answerKeys = Object.entries(groupedQuestions).map(([title, answers]) => ({
+      title,
+      answers
+  }));
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
 
       {/* Nội dung chính - Full width với container */}
       <main className="w-full px-8 py-8 mt-10">
+        
         {/* Header bài test */}
-        <TestHeader />
+        <TestHeader 
+            title={data.PaperTitle} 
+            date={new Date().toLocaleDateString('en-GB')}
+        />
 
         {/* Khối Avatar và Result */}
         <div className="flex flex-col items-center my-12">
           <div className="w-24 h-24 rounded-full overflow-hidden shadow-xl ring-4 ring-blue-100 bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
-            <img
-              src={Object.values(data.user.avatar)[0]}
-              alt={data.user.name}
-              className="w-full h-full object-cover"
-            />
+            {data.AvatarUrl ? (
+                 <img
+                 src={data.AvatarUrl}
+                 alt={data.CandidateName}
+                 className="w-full h-full object-cover"
+               />
+            ) : (
+                <span className="text-2xl font-bold text-white">
+                    {data.CandidateName?.charAt(0)?.toUpperCase()}
+                </span>
+            )}
           </div>
           <span className="mt-4 text-xl font-semibold text-slate-800">
-            {data.user.name}
+            {data.CandidateName}
           </span>
           <h2 className="text-4xl font-bold text-slate-800 mt-6 mb-2">
             Result
@@ -446,7 +464,6 @@ export default function AnswerPage() {
           <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
 
           <ViewRankingButton />
-
         </div>
 
         {/* Phần Result Donut */}
@@ -458,14 +475,14 @@ export default function AnswerPage() {
             <div className="flex flex-col items-center">
               <CheckSquare className="w-10 h-10 text-blue-600" />
               <span className="text-2xl font-bold text-slate-700 mt-2">
-                {data.result.correctAnswers}
+                {data.RawScore} {/* Ví dụ: "35/40" */}
               </span>
             </div>
           </ResultDonut>
 
           <ResultDonut subText="Band score" borderColorClass="border-blue-300">
             <span className="text-6xl font-bold text-blue-600">
-              {data.result.bandScore}
+              {data.BandScore || "0.0"}
             </span>
           </ResultDonut>
 
@@ -476,7 +493,7 @@ export default function AnswerPage() {
             <div className="flex flex-col items-center">
               <Clock className="w-10 h-10 text-blue-600" />
               <span className="text-2xl font-bold text-slate-700 mt-2">
-                {data.result.timeCompleted}
+                {data.TimeTaken}
               </span>
             </div>
           </ResultDonut>
@@ -486,11 +503,11 @@ export default function AnswerPage() {
         <section className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 mb-8">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b-2 border-blue-100">
             <ListChecks className="w-7 h-7 text-blue-600" />
-            <h2 className="text-2xl font-bold text-slate-800">Answer Keys</h2>
+            <h2 className="text-2xl font-bold text-slate-800">Detailed Answers</h2>
           </div>
 
           <div className="space-y-10">
-            {data.answerKeys.map((part) => (
+            {answerKeys.map((part: any) => (
               <AnswerKeyPart
                 key={part.title}
                 title={part.title}
@@ -500,8 +517,7 @@ export default function AnswerPage() {
           </div>
         </section>
 
-        {/* Component Review & Explanation */}
-        <ReviewExplanation />
+        
       </main>
     </div>
   );
