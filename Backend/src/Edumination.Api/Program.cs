@@ -40,6 +40,7 @@ using Stripe;
 using Microsoft.AspNetCore.Cors;
 using MongoDB.Driver;
 using Edumination.Api.Domain.MongoEntities;
+using Edumination.Api.Features.Courses.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -137,6 +138,8 @@ builder.Services.AddScoped<IMyEnrollmentsService, MyEnrollmentsService>();
 builder.Services.AddScoped<ITestAttemptRepository, TestAttemptRepository>();
 builder.Services.AddScoped<ISectionAttemptRepository, SectionAttemptRepository>();
 builder.Services.AddScoped<IAttemptService, AttemptService>();
+builder.Services.AddScoped<IModuleService, ModuleService>();
+
 
 // Authentication & Authorization
 var jwt = builder.Configuration.GetSection("Jwt");
