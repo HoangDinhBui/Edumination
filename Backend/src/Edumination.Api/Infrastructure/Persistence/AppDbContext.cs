@@ -558,6 +558,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.ContentText).HasColumnName("content_text").IsRequired();
             e.Property(x => x.PromptText).HasColumnName("prompt_text");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
+            e.Property(x => x.WordsCount).HasColumnName("words_count").IsRequired();
 
             e.HasOne(s => s.SectionAttempt)
                 .WithOne()
