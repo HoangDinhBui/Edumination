@@ -270,6 +270,15 @@ public class AttemptsController : ControllerBase
         }
     }
 
+    [HttpGet("{aid}/sections/{sid}/result")]
+    [Authorize]
+    public async Task<IActionResult> GetResult(long aid, long sid, CancellationToken ct)
+    {
+        var userId = GetCurrentUserId();
+        var result = await _attemptService.GetSectionResultAsync(aid, sid, userId, ct);
+        return Ok(result);
+    }
+
     // GetCurrentUserId giữ nguyên
 
     private long GetCurrentUserId()

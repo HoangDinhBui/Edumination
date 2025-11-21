@@ -1,6 +1,14 @@
 name: edumination
 
 services:
+  mongo:
+      image: mongo:latest
+      container_name: edu_mongo
+      restart: always
+      ports:
+        - "27017:27017"
+      volumes:
+        - ./db/mongo_data:/data/db
   mysql:
     image: mysql:8.0
     container_name: edu_mysql
@@ -51,7 +59,9 @@ services:
       ASPNETCORE_URLS: http://0.0.0.0:8080
       App__FrontendBaseUrl: "http://localhost:8082"
       ConnectionStrings__DefaultConnection: "server=100.127.114.108;port=3307;database=english_learning;user=appuser;password=apppass;Persist Security Info=False;SslMode=none"
-
+      ConnectionStrings__MongoDbConnection: "mongodb://edu_mongo:27017"
+      MongoDbSettings__DatabaseName: "english_learning_logs"
+      MongoDbSettings__CollectionName: "reading_submissions"
       Jwt__Key: "H8w3v7gZ1rQm2Kp9TtB4xY6cV0nJ5uLfD3sA8pRq"
       Jwt__Issuer: "Edumination"
       Jwt__Audience: "Edumination"
@@ -75,6 +85,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      mongo:  # Backend phải đợi Mongo chạy xong
+        condition: service_started
 
   # Frontend Dev Mode (hot reload)
   frontend:

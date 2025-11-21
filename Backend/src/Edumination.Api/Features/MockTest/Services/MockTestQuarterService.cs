@@ -10,18 +10,36 @@ using System.Threading.Tasks;
 namespace Edumination.Api.Features.MockTest.Services;
 
 public class MockTestQuarterService : IMockTestQuarterService
+{
+    private readonly AppDbContext _context;
+
+    public MockTestQuarterService(AppDbContext context)
     {
-        private readonly AppDbContext _context;
-
-        public MockTestQuarterService(AppDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<MockTestQuarter?> GetByIdAsync(long id)
-        {
-            return await _context.MockTestQuarters
-                                 .AsNoTracking()   // không track để tối ưu đọc
-                                 .FirstOrDefaultAsync(m => m.Id == id);
-        }
+        _context = context;
     }
+
+    public async Task<MockTestQuarter?> GetByIdAsync(long id)
+    {
+        var entity = await _context.MockTestQuarters
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (entity == null)
+            return null;
+
+        // Ánh xạ từ Entities.MockTestQuarter sang Dtos.MockTestQuarter
+        return new MockTestQuarter
+        {
+            Id = entity.Id,
+            MockTestId = entity.MockTestId,
+            Quarter = entity.Quarter,
+            SetNumber = (byte)entity.SetNumber,
+            ListeningPaperId = entity.ListeningPaperId,
+            ReadingPaperId = entity.ReadingPaperId,
+            WritingPaperId = entity.WritingPaperId,
+            SpeakingPaperId = entity.SpeakingPaperId,
+            Status = entity.Status,
+            CreatedAt = entity.CreatedAt
+        };
+    }
+}

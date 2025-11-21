@@ -165,7 +165,7 @@ public class PaperService : IPaperService
                     Qtype = q.Qtype ?? string.Empty,
                     Stem = q.Stem ?? string.Empty,
                     Position = q.Position,
-                    Choices = hideAnswers ? null : (q.QuestionChoices?.Select(c => new ChoiceDto { Content = c.Content ?? string.Empty, IsCorrect = c.IsCorrect }).ToList() ?? new List<ChoiceDto>()),
+                    Choices = hideAnswers ? null : (q.QuestionChoices?.Select(c => new ChoiceDto { Id = c.Id,Content = c.Content ?? string.Empty, IsCorrect = c.IsCorrect }).ToList() ?? new List<ChoiceDto>()),
                     AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson ?? string.Empty
                 }).ToList()
             }).ToList()

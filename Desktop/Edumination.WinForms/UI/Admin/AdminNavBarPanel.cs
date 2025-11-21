@@ -27,5 +27,10 @@ namespace Edumination.WinForms.UI.Admin
             btnSettings.Click += (s, e) => OnMenuClicked?.Invoke("settings");
             btnLogout.Click += (s, e) => OnMenuClicked?.Invoke("logout");
         }
+
+        private void flowMenu_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

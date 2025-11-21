@@ -6,4 +6,5 @@ public class AuthResponse
     public long UserId { get; set; }
     public string Email { get; set; } = default!;
     public string FullName { get; set; } = default!;
+    public List<string> Roles { get; set; }
 }

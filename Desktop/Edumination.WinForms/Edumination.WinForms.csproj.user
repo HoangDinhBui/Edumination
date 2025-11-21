@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Compile Update="frmTest.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Update="UI\Admin\AdminMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="UI\Admin\AdminNavBarPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="UI\Admin\TestManager\pnlAllSkillTest.cs">
+    <Compile Update="UI\Forms\Home\Home.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Home\IeltsTestCardPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="UI\Admin\TestManager\pnlTestInfo.cs">
+    <Compile Update="UI\Forms\Home\LessonCardPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="UI\Admin\TestManager\pnlTestManager.cs">
+    <Compile Update="UI\Forms\Home\UserNavbarPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\Forms\Login\EnterOtpPanel.cs">
@@ -33,6 +33,57 @@
     </Compile>
     <Compile Update="UI\Forms\Login\SignUpPanel.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Results\AnswerResultForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Results\AnswerRowPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestLibrary\MockTestContainerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestLibrary\MockTestItemPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestLibrary\TestLibrary.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\AnswerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\AudioPlayerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\AudioRecorderPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\PdfViewerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\TestFooterPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\TestNavBarPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\WritingAnswerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\WritingPromptPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\ListeningTest\ListeningTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\ReadingTest\ReadingTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\SpeakingTest\SpeakingTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\WritingTest\WritingTest.cs">
+      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
 </Project>

@@ -97,22 +97,22 @@ namespace Edumination.WinForms.UI.Forms.Login
 
                         switch (userRole.ToUpper()) // Chuyển sang chữ hoa để so sánh không phân biệt chữ hoa/thường
                         {
-                            case "ADMIN":                              
+                            case "ADMIN":
                                 nextForm = new AdminMainForm(_parentForm, tokenString);
                                 _parentForm.Hide();
-                                nextForm.Show();                               
+                                nextForm.Show();
                                 break;
 
                             case "TEACHER":
                                 //nextForm = new TeacherForm(); // Giả sử tên Form của bạn là TeacherForm
                                 _parentForm.Hide();
-                                nextForm.Show();                               
+                                nextForm.Show();
                                 break;
 
                             case "STUDENT":
                                 //nextForm = new Home(); 
                                 _parentForm.Hide();
-                                nextForm.Show();  
+                                nextForm.Show();
                                 break;
 
                             default:
@@ -186,6 +186,11 @@ namespace Edumination.WinForms.UI.Forms.Login
                 Console.WriteLine("Error decoding token: " + ex.Message);
                 return "Decode failed";
             }
+        }
+
+        private void SignInPanel_Load(object sender, EventArgs e)
+        {
+            // Nếu chưa cần xử lý gì, để trống cũng được
         }
     }
 }
