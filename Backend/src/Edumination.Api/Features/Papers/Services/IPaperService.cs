@@ -16,4 +16,6 @@ public interface IPaperService
 
     // Thêm: Get detailed paper (với tùy chọn ẩn answers)
     Task<DetailedPaperDto?> GetDetailedAsync(long id, bool hideAnswers, CancellationToken ct = default);
+
+    Task<List<MockTestLibraryResponseDto>> GetMockTestsAsync(CancellationToken ct);
 }

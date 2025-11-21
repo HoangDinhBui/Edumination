@@ -29,7 +29,8 @@ namespace Edumination.WinForms.UI.Forms.Login
             btnGoogleLogin.Click += BtnGoogleLogin_Click;
             lblForgotPassword.Click += LblForgotPassword_Click;
             lblRegister.Click += LblRegister_Click;
-
+            txtEmail.Text = "eduminationielts@gmail.com";
+            txtPassword.Text ="Admin123!";
             // Căn giữa nội dung khi load và resize
             this.Load += (s, e) => CenterContent();
             this.Resize += (s, e) => CenterContent();
@@ -87,8 +88,10 @@ namespace Edumination.WinForms.UI.Forms.Login
 
                         // --- Gọi phương thức giải mã để lấy Role ---
                         var userRole = DecodeAndGetRole(tokenString);
-                        MessageBox.Show($"Login Success!\nUser Role: {userRole}");
+                        //MessageBox.Show($"Login Success!\nUser Role: {userRole}");
                         SessionManager.JwtToken = tokenString;
+                        //MessageBox.Show("Token: " + tokenString);
+                        //Console.WriteLine("Token: "+ tokenString);
                         SessionManager.UserRole = userRole;
                         Form nextForm = null;
 
