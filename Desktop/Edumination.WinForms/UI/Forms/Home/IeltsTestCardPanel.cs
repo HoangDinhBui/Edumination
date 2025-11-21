@@ -44,5 +44,10 @@ namespace Edumination.WinForms.UI.Forms.Home
         {
 
         }
+
+        private void lblTitle_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
