@@ -12,6 +12,29 @@ import {
 } from 'lucide-react';
 
 export default function CourseManagement() {
+      // Delete course API call
+      const handleDeleteCourse = async (courseId: string | number) => {
+        if (!window.confirm("Are you sure you want to delete this course?")) return;
+        try {
+          const token = localStorage.getItem("Token");
+          const API_URL = `http://localhost:8081/api/v1/courses/${courseId}`;
+          const res = await fetch(API_URL, {
+            method: "DELETE",
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (!res.ok) {
+            throw new Error(`Delete failed: ${res.statusText}`);
+          }
+          await fetchCourses();
+          alert("Course deleted successfully!");
+        } catch (err) {
+          alert("Failed to delete course.");
+          console.error(err);
+        }
+      };
     // State for edit modal
     const [editModal, setEditModal] = useState<{ show: boolean, courseId: string | number | null, title: string, isPublished: boolean }>({ show: false, courseId: null, title: "", isPublished: false });
 
@@ -412,7 +435,11 @@ export default function CourseManagement() {
                           </form>
                         </div>
                       )}
-                <button className="p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition" title="Delete">
+                <button
+                  className="p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition"
+                  title="Delete"
+                  onClick={() => handleDeleteCourse(course.id)}
+                >
                   <Trash2 size={18} />
                 </button>
                 <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition">
