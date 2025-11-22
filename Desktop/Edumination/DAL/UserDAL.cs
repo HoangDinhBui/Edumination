@@ -1,10 +1,11 @@
-﻿using System;
+﻿using IELTS.DTO;
+using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
 namespace IELTS.DAL
 {
     public class UserDAL
@@ -46,21 +47,21 @@ namespace IELTS.DAL
             }
         }
 
-        public DataTable GetUserById(long userId)
-        {
-            using (SqlConnection conn = DatabaseConnection.GetConnection())
-            using (SqlCommand cmd = new SqlCommand("SELECT * FROM Users WHERE Id = @UserId", conn))
-            {
-                cmd.Parameters.Add("@UserId", System.Data.SqlDbType.BigInt).Value = userId;
+        //public DataTable GetUserById(long userId)
+        //{
+        //    using (SqlConnection conn = DatabaseConnection.GetConnection())
+        //    using (SqlCommand cmd = new SqlCommand("SELECT * FROM Users WHERE Id = @UserId", conn))
+        //    {
+        //        cmd.Parameters.Add("@UserId", System.Data.SqlDbType.BigInt).Value = userId;
 
-                using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
-                {
-                    DataTable dt = new DataTable();
-                    adapter.Fill(dt);
-                    return dt;
-                }
-            }
-        }
+        //        using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+        //        {
+        //            DataTable dt = new DataTable();
+        //            adapter.Fill(dt);
+        //            return dt;
+        //        }
+        //    }
+        //}
 
         public bool UpdateProfile(long userId, string fullName, string phone, DateTime? dob)
         {
@@ -91,6 +92,34 @@ namespace IELTS.DAL
                 adapter.Fill(dt);
                 return dt;
             }
+        }
+
+        public UserDTO GetUserById(long id)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+                string query = "SELECT Id, FullName FROM Users WHERE Id = @Id";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", id);
+
+                    using (SqlDataReader r = cmd.ExecuteReader())
+                    {
+                        if (r.Read())
+                        {
+                            return new UserDTO
+                            {
+                                Id = r.GetInt64(0),
+                                FullName = r.GetString(1)
+                            };
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

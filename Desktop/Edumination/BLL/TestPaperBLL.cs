@@ -1,4 +1,5 @@
 ﻿using IELTS.DAL;
+using IELTS.DTO;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,6 +13,7 @@ namespace IELTS.BLL
     public class TestPaperBLL
     {
         private TestPaperDAL paperDAL = new TestPaperDAL();
+        private readonly UserDAL _userDal= new UserDAL();
 
         public DataTable GetAllPublishedPapers()
         {
@@ -76,6 +78,19 @@ namespace IELTS.BLL
 
             // Gọi DAL lưu vào database
             return paperDAL.CreateTestPaper(code, title, description, createdBy, pdfFileName, pdfFilePath);
+        }
+
+        public List<TestPaperDTO> GetAll()
+        {
+            var papers = paperDAL.GetAllTestPapers();
+
+            foreach (var p in papers)
+            {
+                var user = _userDal.GetUserById(p.CreatedBy);
+                p.CreatorFullName = user?.FullName ?? "Unknown";
+            }
+
+            return papers;
         }
     }
 }

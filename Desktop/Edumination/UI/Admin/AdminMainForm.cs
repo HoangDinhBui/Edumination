@@ -66,7 +66,7 @@ namespace Edumination.WinForms.UI.Admin
                     break;
 
                 case "tests":
-                    LoadContent(new pnlTestManager());
+                    LoadContent(new TestManagerControl());
                     break;
 
                 case "students":

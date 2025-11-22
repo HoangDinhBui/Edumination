@@ -1,19 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Compile Update="BLL\AddTestSectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="UI\Admin\AdminMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="UI\Admin\AdminNavBarPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="UI\Admin\TestManager\pnlTestManager.cs">
+    <Compile Update="UI\Admin\TestManager\AllSkillsTestControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\TestManagerControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\frmHienThiPdf.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="UI\GUI.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="UI\Login\Register.cs">

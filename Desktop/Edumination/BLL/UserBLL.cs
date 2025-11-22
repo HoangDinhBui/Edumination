@@ -1,13 +1,14 @@
 ﻿using IELTS.DAL;
+using IELTS.DTO;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace IELTS.BLL
 {
@@ -73,12 +74,17 @@ namespace IELTS.BLL
             return userDAL.Register(email, passwordHash, fullName);
         }
 
-        public DataTable GetUserById(long userId)
-        {
-            if (userId <= 0)
-                throw new Exception("User ID không hợp lệ!");
+        //public DataTable GetUserById(long userId)
+        //{
+        //    if (userId <= 0)
+        //        throw new Exception("User ID không hợp lệ!");
 
-            return userDAL.GetUserById(userId);
+        //    return userDAL.GetUserById(userId);
+        //}
+
+        public UserDTO GetUserById(long id)
+        {
+            return userDAL.GetUserById(id);
         }
 
         public bool UpdateProfile(long userId, string fullName, string phone, DateTime? dob)
