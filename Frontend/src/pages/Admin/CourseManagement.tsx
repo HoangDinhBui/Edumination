@@ -12,6 +12,48 @@ import {
 } from 'lucide-react';
 
 export default function CourseManagement() {
+    // State for edit modal
+    const [editModal, setEditModal] = useState<{ show: boolean, courseId: string | number | null, title: string, isPublished: boolean }>({ show: false, courseId: null, title: "", isPublished: false });
+
+    // Open edit modal with course data
+    const openEditModal = (course: any) => {
+      setEditModal({
+        show: true,
+        courseId: course.id,
+        title: course.title,
+        isPublished: course.status === "Published"
+      });
+    };
+
+    // Call API to update course
+    const handleEditCourse = async (e: React.FormEvent) => {
+      e.preventDefault();
+      try {
+        const token = localStorage.getItem("Token");
+        const API_URL = `http://localhost:8081/api/v1/courses/${editModal.courseId}`;
+        const body = {
+          title: editModal.title,
+          isPublished: editModal.isPublished
+        };
+        const res = await fetch(API_URL, {
+          method: "PATCH",
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+          throw new Error(`Edit failed: ${res.statusText}`);
+        }
+        await fetchCourses();
+        setEditModal({ show: false, courseId: null, title: "", isPublished: false });
+        alert("Course updated successfully!");
+      } catch (err) {
+        alert("Failed to update course.");
+        console.error(err);
+      }
+    };
   // --- State management ---
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -324,9 +366,52 @@ export default function CourseManagement() {
 
               {/* Actions */}
               <div className="flex items-center gap-2 w-full md:w-auto border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 mt-4 md:mt-0 justify-end">
-                <button className="p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition" title="Edit">
+                <button
+                  className="p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition"
+                  title="Edit"
+                  onClick={() => openEditModal(course)}
+                >
                   <Edit size={18} />
                 </button>
+                      {/* Edit Modal */}
+                      {editModal.show && (
+                        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+                          <form
+                            className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative"
+                            onSubmit={handleEditCourse}
+                          >
+                            <button
+                              type="button"
+                              className="absolute top-3 right-3 text-slate-400 hover:text-red-500 text-xl"
+                              onClick={() => setEditModal({ show: false, courseId: null, title: "", isPublished: false })}
+                            >×</button>
+                            <h2 className="text-xl font-bold mb-6 text-slate-800">Edit Course</h2>
+                            <div className="mb-4">
+                              <label className="block text-sm font-medium mb-1">Title</label>
+                              <input
+                                type="text"
+                                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                                value={editModal.title}
+                                onChange={e => setEditModal(m => ({ ...m, title: e.target.value }))}
+                                required
+                              />
+                            </div>
+                            <div className="mb-6 flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id="editIsPublished"
+                                checked={editModal.isPublished}
+                                onChange={e => setEditModal(m => ({ ...m, isPublished: e.target.checked }))}
+                              />
+                              <label htmlFor="editIsPublished" className="text-sm">Published</label>
+                            </div>
+                            <button
+                              type="submit"
+                              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium w-full"
+                            >Save</button>
+                          </form>
+                        </div>
+                      )}
                 <button className="p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition" title="Delete">
                   <Trash2 size={18} />
                 </button>
