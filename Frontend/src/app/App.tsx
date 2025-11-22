@@ -17,6 +17,7 @@ import WritingTestPage from "../pages/Tests/WritingTestPage"; // Sửa lại tê
 import ReadingTestPage from "../pages/Tests/ReadingTestPage";
 import SpeakingTestPage from "../pages/Tests/SpeakingTestPage";
 import GoogleCallback from "../pages/GoogleCallback";
+import DashboardPage from "../pages/Dashboard/DashboardPage";
 import Foundation from "../pages/Foundation";
 import Booster from "../pages/Booster";
 import Intensive from "../pages/Intensive";
@@ -99,6 +100,10 @@ const router = createBrowserRouter([
   {
     path: "/ranking", // Trang xếp hạng
     element: <RankingPage />,
+  },
+  {
+    path: "/dashboard", // Trang xếp hạng
+    element: <DashboardPage />
   },
   {
     path: "/foundation",
