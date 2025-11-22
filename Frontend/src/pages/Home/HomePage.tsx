@@ -994,7 +994,15 @@ const Footer: React.FC = () => {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen w-full text-slate-800">
+    <div
+      className="min-h-screen w-full text-slate-800"
+      style={{
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#7BA5D1 #F3F4F6',
+        overflowY: 'auto',
+        maxHeight: '100vh',
+      }}
+    >
       <Navbar />
       <Hero />
       <Stats />
@@ -1002,6 +1010,20 @@ export default function HomePage() {
       <ProgramCards />
       <CampusCarousel />
       <Footer />
+      <style>{`
+        /* Custom Scrollbar for HomePage */
+        div::-webkit-scrollbar {
+          width: 8px;
+          background: #F3F4F6;
+        }
+        div::-webkit-scrollbar-thumb {
+          background: #7BA5D1;
+          border-radius: 8px;
+        }
+        div::-webkit-scrollbar-track {
+          background: #F3F4F6;
+        }
+      `}</style>
     </div>
   );
 }
