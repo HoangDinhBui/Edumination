@@ -1,7 +1,7 @@
 // falseimport React, { useState } from 'react';
-import { ChevronDown, Filter, Search, User, Briefcase, Clock, Zap, BookOpen, BarChart, UserCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, Filter, Search, User, Briefcase, Clock, BookOpen, BarChart, UserCheck } from 'lucide-react';
 import logoImage from "../../assets/img/Rectangle 78.png";
-import { useState } from 'react';
 const Dropdown: React.FC<{
   title: string;
   sections: { header?: string; items: string[] }[];
@@ -118,15 +118,6 @@ const Navbar: React.FC = () => {
 
 
 // === MOCK DATA & CÁC COMPONENTS KHÁC (GIỮ NGUYÊN) ===
-const mockRankingData = [
-  { id: 1, name: 'Bui Dinh Hoang', paper: 'Quarter 1 IELTS Test 1', score: 8.0, date: '09-03-2025' },
-  { id: 2, name: 'My Dung', paper: 'Quarter 1 IELTS Test 1', score: 8.0, date: '09-03-2025' },
-  { id: 3, name: 'Minh Tu', paper: 'Quarter 1 IELTS Test 1', score: 7.5, date: '09-03-2025' },
-  { id: 4, name: 'The Huy Forum', paper: 'Quarter 1 IELTS Test 1', score: 7.0, date: '09-03-2025' },
-  { id: 5, name: 'Tuan Anh', paper: 'Quarter 1 IELTS Test 1', score: 6.5, date: '09-03-2025' },
-  { id: 6, name: 'Ngoc Linh', paper: 'Quarter 2 IELTS Test 2', score: 8.5, date: '15-05-2025' },
-];
-
 const mockUserDetails = {
     email: '6451071025@st.utc2.edu.vn',
     bestBand: '7.5',
@@ -135,6 +126,20 @@ const mockUserDetails = {
     worstSkill: 'Writing (6.0)',
     avgBand: '6.8',
 };
+
+// MOCK LEADERBOARD DATA
+const mockLeaderboard = [
+  { id: 3, fullName: "Tran Thi My Lam", email: "student1@utc2.edu.vn", bestOverallBand: 7.5, bestAt: "2025-08-19 03:07:57" },
+  { id: 4, fullName: "Nguyen Van B", email: "student100@utc2.edu.vn", bestOverallBand: 7.0, bestAt: "2025-08-19 03:16:47" },
+  { id: 5, fullName: "Nguyen Van B", email: "student2@utc2.edu.vn", bestOverallBand: 6.5, bestAt: "2025-08-19 03:21:41" },
+  { id: 6, fullName: "Nguyen Van C", email: "student3@utc2.edu.vn", bestOverallBand: 8.0, bestAt: "2025-08-19 07:57:27" },
+  { id: 7, fullName: "Nguyen Van A", email: "a@abc.edu.vn", bestOverallBand: 8.5, bestAt: "2025-08-22 09:34:11" },
+  { id: 8, fullName: "Tran Thi B", email: "b@def.edu.vn", bestOverallBand: 7.8, bestAt: "2025-08-22 09:34:11" },
+  { id: 9, fullName: "Le Van C", email: "c@xyz.edu.vn", bestOverallBand: 7.2, bestAt: "2025-08-22 09:34:11" },
+  { id: 10, fullName: "Bui Dinh Hoang (updated)", email: "teacher1@utc2.edu.vn", bestOverallBand: 9.0, bestAt: "2025-08-25 04:05:04" },
+  { id: 11, fullName: "Truong Dinh Hoang", email: "student19@utc2.edu.vn", bestOverallBand: 8.1, bestAt: "2025-08-27 03:53:47" },
+  { id: 12, fullName: "Bùi Đình Hoàng", email: "buidinhhoang1910@gmail.com", bestOverallBand: 8.9, bestAt: "2025-09-01 09:27:00" }
+];
 
 // ... (FilterDropdown component giữ nguyên)
 interface DropdownProps {
@@ -188,9 +193,49 @@ export default function RankingPage() {
     const [quarter, setQuarter] = useState('Quarter 1');
     const [time, setTime] = useState('Today');
     const [searchQuery, setSearchQuery] = useState('');
+    const [leaderboard, setLeaderboard] = useState<Array<Record<string, unknown>>>(mockLeaderboard);
+    const [filteredLeaderboard, setFilteredLeaderboard] = useState<Array<Record<string, unknown>>>(mockLeaderboard);
+
+    // Filter logic
+    const handleFilter = () => {
+      let filtered = leaderboard;
+      // Filter by domain (email)
+      if (domain && domain !== "All") {
+        filtered = filtered.filter(item => String(item.email ?? '').endsWith(domain));
+      }
+      // Filter by paper (simulate by bestBand for demo)
+      if (quarter && quarter !== "All" && quarter !== 'Quarter 1') {
+        filtered = filtered.filter(item => Number(item.bestOverallBand ?? 0) >= 7);
+      }
+      // Filter by time (simulate by bestAt date)
+      if (time && time !== "All" && time !== 'Today') {
+        filtered = filtered.filter(item => String(item.bestAt ?? '').startsWith('2025-08'));
+      }
+      // Filter by search query
+      if (searchQuery) {
+        filtered = filtered.filter(item => String(item.fullName ?? '').toLowerCase().includes(searchQuery.toLowerCase()));
+      }
+      setFilteredLeaderboard(filtered);
+    };
+
+    useEffect(() => {
+      const fetchLeaderboard = async () => {
+        try {
+          const res = await fetch('http://localhost:8081/api/v1/leaderboard?paperId=1&limit=100');
+          if (!res.ok) throw new Error('Failed to fetch leaderboard');
+          const data = await res.json();
+          setLeaderboard(Array.isArray(data) ? data : (data.items || data.Items || data.data || []));
+          setFilteredLeaderboard(Array.isArray(data) ? data : (data.items || data.Items || data.data || []));
+        } catch {
+          setLeaderboard([]);
+          setFilteredLeaderboard([]);
+        }
+      };
+      // fetchLeaderboard();
+    }, []);
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-slate-50" style={{ overflowY: 'auto', maxHeight: '100vh' }}>
             {/* === Navigation & Header (SỬ DỤNG NAVBAR MỚI) === */}
             <Navbar /> 
 
@@ -202,35 +247,35 @@ export default function RankingPage() {
                     {/* === CỘT TRUNG TÂM (FILTERS & TABLE) - 9/12 === */}
                     <div className="lg:col-span-8 space-y-6">
                         {/* --- Filters Row --- */}
-                        <div className="flex flex-wrap gap-4 items-center p-4 bg-white rounded-xl shadow-lg border border-slate-100">
-                            <FilterDropdown
-                                title="Domain EDU"
-                                icon={Briefcase}
-                                options={['@st.utc2.edu.vn', '@gmail.com', '@hcmut.edu.vn']}
-                                value={domain}
-                                onChange={setDomain}
-                            />
-                            <FilterDropdown
-                                title="Paper"
-                                icon={BookOpen}
-                                options={['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4']}
-                                value={quarter}
-                                onChange={setQuarter}
-                            />
-                            <FilterDropdown
-                                title="Time"
-                                icon={Clock}
-                                options={['Today', 'Last 7 days', 'Last 30 days', 'This month', 'Last month']}
-                                value={time}
-                                onChange={setTime}
-                            />
-                            
-                            <button className="flex items-center px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg shadow-md hover:bg-sky-700 transition duration-150 h-[42px]">
-                                <Filter className="w-5 h-5 mr-2" />
-                                Filter
-                            </button>
-                            
-                            <div className="flex items-center border border-slate-300 rounded-lg bg-white ml-auto max-w-xs w-full">
+                        <div className="flex flex-col gap-4 p-4 bg-white rounded-xl shadow-lg border border-slate-100">
+                            <div className="flex flex-row gap-4 w-full">
+                                <FilterDropdown
+                                    title="Domain EDU"
+                                    icon={Briefcase}
+                                    options={["All", '@st.utc2.edu.vn', '@gmail.com', '@hcmut.edu.vn']}
+                                    value={domain}
+                                    onChange={setDomain}
+                                />
+                                <FilterDropdown
+                                    title="Paper"
+                                    icon={BookOpen}
+                                    options={["All", 'Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4']}
+                                    value={quarter}
+                                    onChange={setQuarter}
+                                />
+                                <FilterDropdown
+                                    title="Time"
+                                    icon={Clock}
+                                    options={["All", 'Today', 'Last 7 days', 'Last 30 days', 'This month', 'Last month']}
+                                    value={time}
+                                    onChange={setTime}
+                                />
+                                <button className="flex items-center px-4 py-2 bg-sky-600 text-white font-semibold rounded-lg shadow-md hover:bg-sky-700 transition duration-150 h-[42px]" onClick={handleFilter}>
+                                    <Filter className="w-5 h-5 mr-2" />
+                                    Filter
+                                </button>
+                            </div>
+                            <div className="flex items-center border border-slate-300 rounded-lg bg-white w-full">
                                 <input
                                     type="text"
                                     placeholder="Search student..."
@@ -245,40 +290,53 @@ export default function RankingPage() {
                         </div>
 
                         {/* --- Ranking Table --- */}
-                        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-100">
-                            <table className="min-w-full divide-y divide-slate-200">
+                        <div className="bg-white rounded-xl shadow-lg overflow-auto border border-slate-100" style={{ maxHeight: '520px' }}>
+                            <table className="min-w-full divide-y divide-slate-200" style={{ minWidth: '700px' }}>
                                 <thead className="bg-slate-50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">#</th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Students</th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Paper</th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Score</th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Time Achived</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Full Name</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Best Band</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Best At</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-slate-200">
-                                    {mockRankingData.map((student) => (
-                                        <tr key={student.id} className={student.id <= 3 ? 'bg-sky-50/50' : 'hover:bg-slate-50'}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                                                {student.id}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 flex items-center">
-                                                <User className="w-4 h-4 mr-2 text-sky-600" />
-                                                {student.name}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                                {student.paper}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-sky-600">
-                                                {student.score}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                                {student.date}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {filteredLeaderboard.map((item, idx) => {
+                                        const fullName = String(item.fullName ?? item.FullName ?? '');
+                                        const email = String(item.email ?? item.Email ?? '');
+                                        const bestBand = String(item.bestOverallBand ?? item.BestOverallBand ?? '');
+                                        const bestAt = String(item.bestAt ?? item.BestAt ?? '');
+                                        return (
+                                            <tr key={String(item.id ?? item.Id ?? idx)} className={idx < 3 ? 'bg-sky-50/50' : 'hover:bg-slate-50'}>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{idx + 1}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 flex items-center">
+                                                    <User className="w-4 h-4 mr-2 text-sky-600" />
+                                                    {fullName}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{email}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-sky-600">{bestBand}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{bestAt}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
+                            <style>{`
+                              /* Custom Scrollbar for Ranking Table (vertical & horizontal) */
+                              div::-webkit-scrollbar {
+                                width: 8px;
+                                height: 8px;
+                                background: #F3F4F6;
+                              }
+                              div::-webkit-scrollbar-thumb {
+                                background: #7BA5D1;
+                                border-radius: 8px;
+                              }
+                              div::-webkit-scrollbar-track {
+                                background: #F3F4F6;
+                              }
+                            `}</style>
                         </div>
                     </div>
 

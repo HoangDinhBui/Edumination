@@ -228,7 +228,7 @@ const Navbar: React.FC = () => {
                       },
                     ],
                   },
-                  { label: "Ranking", href: "#" },
+                  { label: "Ranking", onClick: () => navigate("/ranking") },
                 ].map((item) => (
                   <li key={item.label} className="relative group">
                     {item.dropdown ? (
@@ -240,7 +240,8 @@ const Navbar: React.FC = () => {
                       />
                     ) : (
                       <a
-                        href={item.href}
+                        href="#"
+                        onClick={item.onClick}
                         className="text-gray-700 hover:text-gray-900 relative group/link transition-all duration-300 px-1"
                       >
                         {item.label}

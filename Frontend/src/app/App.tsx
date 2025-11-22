@@ -137,6 +137,10 @@ const router = createBrowserRouter([
     path: "/writing/results",
     element: <WritingResultsPage />,
   },
+  {
+    path: "/ranking",
+    element: <RankingPage />,
+  },
 
   // ==============================
   // KHU VỰC ADMIN (Bảo mật)
