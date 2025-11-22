@@ -140,7 +140,7 @@ const Hero: React.FC = () => {
 
             <div className="pt-4">
               <a
-                href="#start"
+                href="/library"
                 className="relative inline-flex items-center justify-center px-6 md:px-8 py-2.5 md:py-3.5 rounded-full overflow-hidden group transition-all duration-300 hover:scale-105 font-montserrat font-semibold text-white shadow-lg hover:shadow-2xl"
               >
                 {/* Hai lớp gradient đổi màu khi hover */}

@@ -1,4 +1,5 @@
 ﻿using IELTS.DAL;
+using IELTS.DTO;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -113,6 +114,42 @@ namespace IELTS.DAL
                 conn.Open();
                 return cmd.ExecuteNonQuery() > 0;
             }
+        }
+
+        public List<TestPaperDTO> GetAllTestPapers()
+        {
+            List<TestPaperDTO> list = new();
+
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+                string query = @"
+                    SELECT Id, Code, Title, Description,
+                           IsPublished, CreatedBy, CreatedAt
+                    FROM TestPapers
+                    ORDER BY CreatedAt DESC
+                ";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlDataReader r = cmd.ExecuteReader())
+                {
+                    while (r.Read())
+                    {
+                        list.Add(new TestPaperDTO
+                        {
+                            Id = r.GetInt64(0),
+                            Code = r.GetString(1),
+                            Title = r.GetString(2),
+                            Description = r.IsDBNull(3) ? "" : r.GetString(3),
+                            IsPublished = r.GetBoolean(4),
+                            CreatedBy = r.GetInt64(5),
+                            CreatedAt = r.GetDateTime(6)
+                        });
+                    }
+                }
+            }
+
+            return list;
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Windows.Forms; // Cần thiết cho Panel và PictureBox
 
 namespace Edumination.WinForms.UI.Admin.TestManager
 {
-    partial class pnlTestManager
+    partial class TestManagerControl
     {
         /// <summary> 
         /// Required designer variable.
