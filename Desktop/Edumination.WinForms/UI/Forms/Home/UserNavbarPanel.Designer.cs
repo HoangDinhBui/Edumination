@@ -61,6 +61,7 @@
             btnHome.TabIndex = 1;
             btnHome.Text = "Home";
             btnHome.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnHome.Click += btnHome_Click;
             // 
             // btnLibrary
             // 
@@ -75,6 +76,7 @@
             btnLibrary.TabIndex = 2;
             btnLibrary.Text = "IELTS Exam Library";
             btnLibrary.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnLibrary.Click += btnLibrary_Click;
             // 
             // btnAvt
             // 

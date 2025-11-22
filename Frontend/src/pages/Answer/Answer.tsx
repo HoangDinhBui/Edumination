@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 // Giữ lại các import ảnh cũ của bạn
-import AvatarDefault from "../../assets/img/Ellipse 24.png"; 
+import AvatarDefault from "../../assets/img/Ellipse 24.png";
 import EPicture from "../../assets/img/Rectangle 111141430.png";
 import Navbar from "../../components/Navbar";
 
@@ -33,7 +33,11 @@ interface TestHeaderProps {
   testTaken?: number;
 }
 
-const TestHeader: React.FC<TestHeaderProps> = ({ title, date, testTaken = 1000 }) => {
+const TestHeader: React.FC<TestHeaderProps> = ({
+  title,
+  date,
+  testTaken = 1000,
+}) => {
   // Mock static data cho phần hiển thị đẹp (Rating, Category...)
   const staticData = {
     rating: 4.5,
@@ -41,6 +45,15 @@ const TestHeader: React.FC<TestHeaderProps> = ({ title, date, testTaken = 1000 }
     category: "IELTS",
     image: EPicture,
   };
+
+  React.useEffect(() => {
+    document.body.style.overflow = "auto";
+    document.documentElement.style.overflow = "auto";
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
 
   const filledStars = Math.floor(staticData.rating);
   const hasHalfStar = staticData.rating % 1 !== 0;
@@ -81,7 +94,8 @@ const TestHeader: React.FC<TestHeaderProps> = ({ title, date, testTaken = 1000 }
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-600" />
             <span>
-              <strong>Date:</strong> {new Date().toLocaleDateString()} {/* Hoặc dùng props date */}
+              <strong>Date:</strong> {new Date().toLocaleDateString()}{" "}
+              {/* Hoặc dùng props date */}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -128,7 +142,12 @@ interface AnswerItemProps {
   isCorrect: boolean;
 }
 
-const AnswerItem: React.FC<AnswerItemProps> = ({ number, userAnswer, correctAnswer, isCorrect }) => (
+const AnswerItem: React.FC<AnswerItemProps> = ({
+  number,
+  userAnswer,
+  correctAnswer,
+  isCorrect,
+}) => (
   <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold mt-0.5">
       {number}
@@ -136,23 +155,27 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ number, userAnswer, correctAnsw
     <div className="flex-1 flex flex-col text-sm">
       <div className="flex gap-1">
         <span className="text-slate-500 font-medium w-14">Your:</span>
-        <span className={`font-semibold ${isCorrect ? "text-green-600" : "text-red-500"}`}>
-           {userAnswer || "(No Answer)"}
+        <span
+          className={`font-semibold ${
+            isCorrect ? "text-green-600" : "text-red-500"
+          }`}
+        >
+          {userAnswer || "(No Answer)"}
         </span>
       </div>
       {!isCorrect && (
         <div className="flex gap-1 mt-1">
-           <span className="text-slate-500 w-14">Key:</span>
-           <span className="font-semibold text-green-600">{correctAnswer}</span>
+          <span className="text-slate-500 w-14">Key:</span>
+          <span className="font-semibold text-green-600">{correctAnswer}</span>
         </div>
       )}
     </div>
     <div className="mt-0.5">
-        {isCorrect ? (
+      {isCorrect ? (
         <CheckCircle2 className="w-5 h-5 text-green-500" />
-        ) : (
+      ) : (
         <XCircle className="w-5 h-5 text-red-500" />
-        )}
+      )}
     </div>
   </div>
 );
@@ -329,7 +352,7 @@ const ViewRankingButton: React.FC = () => {
 export default function AnswerPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Lấy ID từ state được truyền từ trang Reading/Listening
   const { attemptId, sectionId } = location.state || {};
 
@@ -342,7 +365,7 @@ export default function AnswerPage() {
     if (!attemptId || !sectionId) {
       // Nếu vào trực tiếp mà không qua nộp bài -> Quay về thư viện
       // Hoặc có thể hiển thị Mock Data nếu muốn test UI
-      // navigate("/library"); 
+      // navigate("/library");
       setError("Không tìm thấy thông tin bài thi. Vui lòng nộp bài trước.");
       setLoading(false);
       return;
@@ -355,7 +378,7 @@ export default function AnswerPage() {
           `http://localhost:8081/api/v1/attempts/${attemptId}/sections/${sectionId}/result`,
           {
             headers: {
-              "Authorization": `Bearer ${TOKEN}`,
+              Authorization: `Bearer ${TOKEN}`,
             },
           }
         );
@@ -393,8 +416,11 @@ export default function AnswerPage() {
         <XCircle className="w-16 h-16 text-red-500 mb-4" />
         <h2 className="text-2xl font-bold text-slate-800">Đã có lỗi xảy ra</h2>
         <p className="text-slate-600 mt-2">{error}</p>
-        <button onClick={() => navigate('/library')} className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-full">
-            Quay lại thư viện
+        <button
+          onClick={() => navigate("/library")}
+          className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-full"
+        >
+          Quay lại thư viện
         </button>
       </div>
     );
@@ -403,29 +429,31 @@ export default function AnswerPage() {
   if (!data) return null;
 
   // --- MAP DATA TỪ API SANG FORMAT CỦA UI ---
-  
+
   // 1. Nhóm câu hỏi theo Part (PassageTitle)
   // API trả về list câu hỏi phẳng, ta cần gom lại để hiển thị theo nhóm
   const groupedQuestions = data.Questions.reduce((acc: any, q: any) => {
     const key = q.PartTitle || "Questions"; // Dùng PartTitle làm key nhóm
     if (!acc[key]) {
-        acc[key] = [];
+      acc[key] = [];
     }
     acc[key].push({
-        id: q.Id,
-        position: q.Position,
-        userAnswer: q.UserAnswerText,
-        correctAnswer: q.CorrectAnswerText,
-        isCorrect: q.IsCorrect
+      id: q.Id,
+      position: q.Position,
+      userAnswer: q.UserAnswerText,
+      correctAnswer: q.CorrectAnswerText,
+      isCorrect: q.IsCorrect,
     });
     return acc;
   }, {});
 
   // Chuyển object grouped thành mảng để map
-  const answerKeys = Object.entries(groupedQuestions).map(([title, answers]) => ({
+  const answerKeys = Object.entries(groupedQuestions).map(
+    ([title, answers]) => ({
       title,
-      answers
-  }));
+      answers,
+    })
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -433,26 +461,25 @@ export default function AnswerPage() {
 
       {/* Nội dung chính - Full width với container */}
       <main className="w-full px-8 py-8 mt-10">
-        
         {/* Header bài test */}
-        <TestHeader 
-            title={data.PaperTitle} 
-            date={new Date().toLocaleDateString('en-GB')}
+        <TestHeader
+          title={data.PaperTitle}
+          date={new Date().toLocaleDateString("en-GB")}
         />
 
         {/* Khối Avatar và Result */}
         <div className="flex flex-col items-center my-12">
           <div className="w-24 h-24 rounded-full overflow-hidden shadow-xl ring-4 ring-blue-100 bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
             {data.AvatarUrl ? (
-                 <img
-                 src={data.AvatarUrl}
-                 alt={data.CandidateName}
-                 className="w-full h-full object-cover"
-               />
+              <img
+                src={data.AvatarUrl}
+                alt={data.CandidateName}
+                className="w-full h-full object-cover"
+              />
             ) : (
-                <span className="text-2xl font-bold text-white">
-                    {data.CandidateName?.charAt(0)?.toUpperCase()}
-                </span>
+              <span className="text-2xl font-bold text-white">
+                {data.CandidateName?.charAt(0)?.toUpperCase()}
+              </span>
             )}
           </div>
           <span className="mt-4 text-xl font-semibold text-slate-800">
@@ -503,7 +530,9 @@ export default function AnswerPage() {
         <section className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 mb-8">
           <div className="flex items-center gap-3 mb-8 pb-4 border-b-2 border-blue-100">
             <ListChecks className="w-7 h-7 text-blue-600" />
-            <h2 className="text-2xl font-bold text-slate-800">Detailed Answers</h2>
+            <h2 className="text-2xl font-bold text-slate-800">
+              Detailed Answers
+            </h2>
           </div>
 
           <div className="space-y-10">
@@ -516,8 +545,6 @@ export default function AnswerPage() {
             ))}
           </div>
         </section>
-
-        
       </main>
     </div>
   );

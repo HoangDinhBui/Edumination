@@ -18,14 +18,20 @@ import ReadingTestPage from "../pages/Tests/ReadingTestPage";
 import SpeakingTestPage from "../pages/Tests/SpeakingTestPage";
 import GoogleCallback from "../pages/GoogleCallback";
 import DashboardPage from "../pages/Dashboard/DashboardPage";
+import Foundation from "../pages/Foundation";
+import Booster from "../pages/Booster";
+import Intensive from "../pages/Intensive";
+import Mastery from "../pages/Mastery";
 
 // --- 2. CÁC COMPONENT ADMIN (Mới thêm) ---
 import AdminRoute from "../components/AdminRoute"; // Component bảo vệ
-import AdminLayout from "../layouts/AdminLayout";   // Khung giao diện Admin
+import AdminLayout from "../layouts/AdminLayout"; // Khung giao diện Admin
 import AdminDashboard from "../pages/Admin/DashboardOverview";
 import UserManagement from "../pages/Admin/UserManagement";
 import TestManagement from "../pages/Admin/TestManagement";
 import CourseManagement from "../pages/Admin/CourseManagement";
+import IELTSCoursesOverview from "../pages/IELTSCoursesOverview";
+import ThankYouPage from "../pages/ThankYouPage";
 // import CourseManagement from "../pages/Admin/CourseManagement"; // Bỏ comment khi tạo xong file này
 
 const router = createBrowserRouter([
@@ -95,12 +101,32 @@ const router = createBrowserRouter([
     element: <RankingPage />,
   },
   {
-    path: "/ranking", // Trang xếp hạng
-    element: <RankingPage />,
+    path: "/dashboard", // Trang xếp hạng
+    element: <DashboardPage />
   },
   {
-    path: "/dashboard", // Trang xếp hạng
-    element: <DashboardPage />,
+    path: "/foundation",
+    element: <Foundation />,
+  },
+  {
+    path: "/booster",
+    element: <Booster />,
+  },
+  {
+    path: "/intensive",
+    element: <Intensive />,
+  },
+  {
+    path: "/mastery",
+    element: <Mastery />,
+  },
+  {
+    path: "/overview",
+    element: <IELTSCoursesOverview />,
+  },
+  {
+    path: "/thanks",
+    element: <ThankYouPage />,
   },
 
   // ==============================
@@ -108,7 +134,7 @@ const router = createBrowserRouter([
   // ==============================
   {
     // Bọc ngoài cùng là AdminRoute để kiểm tra quyền
-    element: <AdminRoute />, 
+    element: <AdminRoute />,
     children: [
       {
         path: "/admin",

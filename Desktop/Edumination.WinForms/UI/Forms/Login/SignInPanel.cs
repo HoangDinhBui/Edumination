@@ -29,7 +29,8 @@ namespace Edumination.WinForms.UI.Forms.Login
             btnGoogleLogin.Click += BtnGoogleLogin_Click;
             lblForgotPassword.Click += LblForgotPassword_Click;
             lblRegister.Click += LblRegister_Click;
-
+            txtEmail.Text = "eduminationielts@gmail.com";
+            txtPassword.Text ="Admin123!";
             // Căn giữa nội dung khi load và resize
             this.Load += (s, e) => CenterContent();
             this.Resize += (s, e) => CenterContent();
@@ -87,29 +88,31 @@ namespace Edumination.WinForms.UI.Forms.Login
 
                         // --- Gọi phương thức giải mã để lấy Role ---
                         var userRole = DecodeAndGetRole(tokenString);
-                        MessageBox.Show($"Login Success!\nUser Role: {userRole}");
+                        //MessageBox.Show($"Login Success!\nUser Role: {userRole}");
                         SessionManager.JwtToken = tokenString;
+                        //MessageBox.Show("Token: " + tokenString);
+                        //Console.WriteLine("Token: "+ tokenString);
                         SessionManager.UserRole = userRole;
                         Form nextForm = null;
 
                         switch (userRole.ToUpper()) // Chuyển sang chữ hoa để so sánh không phân biệt chữ hoa/thường
                         {
-                            case "ADMIN":                              
+                            case "ADMIN":
                                 nextForm = new AdminMainForm(_parentForm, tokenString);
                                 _parentForm.Hide();
-                                nextForm.Show();                               
+                                nextForm.Show();
                                 break;
 
                             case "TEACHER":
                                 //nextForm = new TeacherForm(); // Giả sử tên Form của bạn là TeacherForm
                                 _parentForm.Hide();
-                                nextForm.Show();                               
+                                nextForm.Show();
                                 break;
 
                             case "STUDENT":
                                 //nextForm = new Home(); 
                                 _parentForm.Hide();
-                                nextForm.Show();  
+                                nextForm.Show();
                                 break;
 
                             default:
@@ -183,6 +186,11 @@ namespace Edumination.WinForms.UI.Forms.Login
                 Console.WriteLine("Error decoding token: " + ex.Message);
                 return "Decode failed";
             }
+        }
+
+        private void SignInPanel_Load(object sender, EventArgs e)
+        {
+            // Nếu chưa cần xử lý gì, để trống cũng được
         }
     }
 }

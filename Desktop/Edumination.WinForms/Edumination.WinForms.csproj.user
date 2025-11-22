@@ -34,6 +34,12 @@
     <Compile Update="UI\Forms\Login\SignUpPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\Forms\Results\AnswerResultForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\Results\AnswerRowPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Forms\TestLibrary\MockTestContainerPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -41,6 +47,42 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\Forms\TestLibrary\TestLibrary.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\AnswerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\AudioPlayerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\AudioRecorderPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\PdfViewerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\TestFooterPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\TestNavBarPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\WritingAnswerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\Controls\WritingPromptPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\ListeningTest\ListeningTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\ReadingTest\ReadingTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\SpeakingTest\SpeakingTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Forms\TestTaking\WritingTest\WritingTest.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
