@@ -155,7 +155,7 @@ namespace IELTS.UI.User.TestTaking.WritingTest
                 _timer.Stop();
                 SubmitTest();
                 Hide();
-                new IELTS.UI.User.TestLibrary.TestLibrary().Show();
+                
             }
         }
 

@@ -8,6 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using IELTS.BLL;
+using IELTS.DAL;
+using IELTS.UI.Login;
 
 namespace IELTS.UI.User.Home
 {
@@ -29,12 +32,12 @@ namespace IELTS.UI.User.Home
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
-            SessionManager.ClearSession();
+            SessionManager.Logout();
             MessageBox.Show("You have been logged out.");
 
             this.FindForm().Hide();  // Ẩn Home
 
-            LoginForm login = new LoginForm();
+            SignIn login = new SignIn();
             if (login.ShowDialog() == DialogResult.OK)
             {
                 // login lại thành công

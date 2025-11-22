@@ -1,12 +1,8 @@
 ﻿using Sunny.UI;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace IELTS.UI.User.Results
@@ -33,12 +29,15 @@ namespace IELTS.UI.User.Results
                 {
                     picAvatar.Image = Image.FromFile(_result.AvatarPath);
                 }
-                catch { /* ignore */ }
+                catch
+                {
+                    // ignore lỗi đọc ảnh
+                }
             }
 
-            // User name
+            // User name & title
             lblUserName.Text = string.IsNullOrWhiteSpace(_result.UserName)
-                ? "Student"
+                ? "Student Name"
                 : _result.UserName;
 
             lblTitleResult.Text = $"{_result.Skill} Result";
@@ -58,11 +57,14 @@ namespace IELTS.UI.User.Results
         {
             panelAnswerKeys.Controls.Clear();
 
-            int y = 10;
+            if (_result.Parts == null || _result.Parts.Count == 0)
+                return;
+
+            int y = 0;
 
             foreach (var part in _result.Parts)
             {
-                // Part title
+                // Tiêu đề Part
                 var lblPart = new UILabel
                 {
                     Font = new Font("Segoe UI", 11F, FontStyle.Bold),
@@ -73,41 +75,66 @@ namespace IELTS.UI.User.Results
                     Text = part.PartName
                 };
                 panelAnswerKeys.Controls.Add(lblPart);
-                y += 30;
+                y += 32;
 
-                // Table 2 cột
-                var table = new TableLayoutPanel
+                // FLowLayout 2 cột
+                var flow = new FlowLayoutPanel
                 {
                     Location = new Point(0, y),
-                    Size = new Size(1300, 10),
-                    ColumnCount = 2,
-                    RowCount = 1,
-                    AutoSize = true
+                    Width = panelAnswerKeys.Width - 40,
+                    AutoSize = true,
+                    WrapContents = false,
+                    FlowDirection = FlowDirection.LeftToRight
                 };
-                table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-                table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
 
-                // Cắt list câu thành 2 nửa
+                var leftCol = new FlowLayoutPanel
+                {
+                    Width = 600,
+                    AutoSize = true,
+                    FlowDirection = FlowDirection.TopDown
+                };
+
+                var rightCol = new FlowLayoutPanel
+                {
+                    Width = 600,
+                    AutoSize = true,
+                    FlowDirection = FlowDirection.TopDown
+                };
+
+                // Cắt câu thành 2 phần
                 var list = part.Questions.OrderBy(q => q.Number).ToList();
                 int half = (int)Math.Ceiling(list.Count / 2.0);
 
-                var leftPanel = BuildColumnPanel(list.Take(half).ToList());
-                var rightPanel = BuildColumnPanel(list.Skip(half).ToList());
+                foreach (var q in list.Take(half))
+                {
+                    var row = new AnswerRowPanel();
+                    row.Bind(q);
+                    leftCol.Controls.Add(row);
+                }
 
-                table.Controls.Add(leftPanel, 0, 0);
-                table.Controls.Add(rightPanel, 1, 0);
+                foreach (var q in list.Skip(half))
+                {
+                    var row = new AnswerRowPanel();
+                    row.Bind(q);
+                    rightCol.Controls.Add(row);
+                }
 
-                panelAnswerKeys.Controls.Add(table);
+                flow.Controls.Add(leftCol);
+                flow.Controls.Add(rightCol);
 
-                y += table.Height + 20;
+                panelAnswerKeys.Controls.Add(flow);
+
+                y += flow.Height + 25;
             }
         }
+
 
         private Control BuildColumnPanel(System.Collections.Generic.List<QuestionReview> list)
         {
             var panel = new Panel
             {
                 AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 Dock = DockStyle.Fill
             };
 

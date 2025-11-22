@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using IELTS.BLL;
+using IELTS.DTO;
 
 namespace IELTS.UI.User.Home
 {
     public partial class Home : Form
     {
-
         int slideIndex = 0;
-        string slidePath;
         List<Image> slides;
 
         List<IeltsTestCardPanel> testCards;
@@ -25,21 +26,14 @@ namespace IELTS.UI.User.Home
 
         const int CardsPerPage = 4;
 
-        //public class PaperDto
-        //{
-        //    public long Id { get; set; }
-        //    public string Title { get; set; }
-        //    public string Status { get; set; }
-        //    public DateTime CreatedAt { get; set; }
-        //    public long? PdfAssetId { get; set; }
-        //}
+        // BLL
+        private readonly TestPaperBLL _paperBLL = new TestPaperBLL();
+        private readonly CourseBLL _courseBLL = new CourseBLL();
 
         public Home()
         {
             InitializeComponent();
 
-            // HIỂN THỊ FULL
-       
             this.WindowState = FormWindowState.Maximized;
             this.StartPosition = FormStartPosition.CenterScreen;
 
@@ -52,8 +46,9 @@ namespace IELTS.UI.User.Home
 
         private void Home_Load(object sender, EventArgs e)
         {
-
-
+            // =====================================
+            // SLIDE SHOW
+            // =====================================
             slides = new List<Image>
             {
                 Image.FromFile(Path.Combine(Application.StartupPath, "assets/img/slide1.jpg")),
@@ -63,119 +58,115 @@ namespace IELTS.UI.User.Home
 
             slideIndex = 0;
             picSlide.Image = slides[slideIndex];
-
             timerSlide.Start();
 
-            // ========================
-            // BUILD TEST CARD LIST
-            // ========================
-            testCards = new List<IeltsTestCardPanel>
-            {
-                new IeltsTestCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/mock1.png"),
-                    Title = "IELTS Mock Test 2025 January",
-                    Rating = "⭐ 4.7 (125 votes)"
-                },
-                new IeltsTestCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/mock2.png"),
-                    Title = "IELTS Mock Test 2024 October",
-                    Rating = "⭐ 4.8 (175 votes)"
-                },
-                new IeltsTestCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/mock2.png"),
-                    Title = "IELTS Mock Test 2024 October",
-                    Rating = "⭐ 4.8 (175 votes)"
-                },
-                new IeltsTestCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/mock2.png"),
-                    Title = "IELTS Mock Test 2024 October",
-                    Rating = "⭐ 4.8 (175 votes)"
-                },
-                new IeltsTestCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/mock2.png"),
-                    Title = "IELTS Mock Test 2024 October",
-                    Rating = "⭐ 4.8 (175 votes)"
-                },
-                new IeltsTestCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/mock2.png"),
-                    Title = "IELTS Mock Test 2024 October",
-                    Rating = "⭐ 4.8 (175 votes)"
-                },
-                new IeltsTestCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/mock2.png"),
-                    Title = "IELTS Mock Test 2024 October",
-                    Rating = "⭐ 4.8 (175 votes)"
-                }
-            };
 
+            // =====================================
+            // LOAD MOCK TESTS
+            // =====================================
+            LoadMockTestsFromDatabase();
             ShowTestPage(0);
 
 
-            // ========================
-            // BUILD LESSON CARD LIST
-            // ========================
-            lessonCards = new List<LessonCardPanel>
-            {
-                new LessonCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/lesson_writing.png"),
-                    Category = "Writing",
-                    TitleText = "Academic Writing Task 1 – Describing Maps",
-                    TimeText = "19:00 – 20:00 (GMT+7)",
-                    Attending = "1,800+ attending"
-                },
-                new LessonCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/lesson_writing.png"),
-                    Category = "Writing",
-                    TitleText = "Academic Writing Task 1 – Describing Maps",
-                    TimeText = "19:00 – 20:00 (GMT+7)",
-                    Attending = "1,800+ attending"
-                },
-                new LessonCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/lesson_writing.png"),
-                    Category = "Writing",
-                    TitleText = "Academic Writing Task 1 – Describing Maps",
-                    TimeText = "19:00 – 20:00 (GMT+7)",
-                    Attending = "1,800+ attending"
-                },
-                new LessonCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/lesson_writing.png"),
-                    Category = "Writing",
-                    TitleText = "Academic Writing Task 1 – Describing Maps",
-                    TimeText = "19:00 – 20:00 (GMT+7)",
-                    Attending = "1,800+ attending"
-                },
-                new LessonCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/lesson_writing.png"),
-                    Category = "Writing",
-                    TitleText = "Academic Writing Task 1 – Describing Maps",
-                    TimeText = "19:00 – 20:00 (GMT+7)",
-                    Attending = "1,800+ attending"
-                },
-                new LessonCardPanel
-                {
-                    Thumbnail = Image.FromFile("assets/img/lesson_writing.png"),
-                    Category = "Writing",
-                    TitleText = "Academic Writing Task 1 – Describing Maps",
-                    TimeText = "19:00 – 20:00 (GMT+7)",
-                    Attending = "1,800+ attending"
-                }
-            };
-
+            // =====================================
+            // LOAD COURSES
+            // =====================================
+            LoadCoursesFromDatabase();
             ShowLessonPage(0);
         }
 
+
+
+        // =====================================
+        // LOAD MOCK TESTS FROM DB
+        // =====================================
+        private void LoadMockTestsFromDatabase()
+        {
+            testCards = new List<IeltsTestCardPanel>();
+
+            DataTable dt = _paperBLL.GetAllPublishedPapers();
+            if (dt.Rows.Count == 0)
+            {
+                MessageBox.Show("Không có mock test nào được publish!", "Info");
+                return;
+            }
+
+            string thumbnailPath = "assets/img/mock1.png";
+
+            foreach (DataRow row in dt.Rows)
+            {
+                IeltsTestCardPanel card = new IeltsTestCardPanel();
+
+                if (File.Exists(thumbnailPath))
+                    card.Thumbnail = Image.FromFile(thumbnailPath);
+
+                card.Title = row["Title"].ToString();
+
+                Random rd = new Random();
+                double rating = 4.5 + rd.NextDouble() * 0.4;
+                int votes = rd.Next(120, 650);
+
+                card.Rating = $"⭐ {rating:0.0} ({votes} votes)";
+
+                testCards.Add(card);
+            }
+        }
+
+
+
+        // =====================================
+        // LOAD COURSES FROM DB
+        // =====================================
+        private void LoadCoursesFromDatabase()
+        {
+            lessonCards = new List<LessonCardPanel>();
+
+            DataTable dt = _courseBLL.GetAllPublishedCourses();
+            if (dt.Rows.Count == 0)
+            {
+                MessageBox.Show("Không có khóa học nào được publish!", "Info");
+                return;
+            }
+
+            // Bộ ảnh random
+            string[] thumbs =
+            {
+        "assets/img/imageGroupStudy1.png",
+        "assets/img/imageGroupStudy2.png",
+        "assets/img/imageGroupStudy3.png",
+        "assets/img/lesson_writing.png"
+    };
+
+            Random rnd = new Random();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                LessonCardPanel card = new LessonCardPanel();
+
+                // Random 1 ảnh
+                string thumbPath = thumbs[rnd.Next(thumbs.Length)];
+
+                if (File.Exists(thumbPath))
+                    card.Thumbnail = Image.FromFile(thumbPath);
+
+                // Mapping dữ liệu DB
+                card.Category = row["Level"].ToString();
+                card.TitleText = row["Title"].ToString();
+                card.TimeText = $"{Convert.ToInt32(row["PriceVND"]):N0} VNĐ";
+
+                string desc = row["Description"]?.ToString() ?? "";
+                card.Attending = desc.Length > 80 ? desc.Substring(0, 80) + "..." : desc;
+
+                lessonCards.Add(card);
+            }
+        }
+
+
+
+
+        // =====================================
+        // PAGING
+        // =====================================
         private void ShowTestPage(int page)
         {
             panelTests.Controls.Clear();
@@ -189,7 +180,6 @@ namespace IELTS.UI.User.Home
             testPageIndex = page;
         }
 
-
         private void ShowLessonPage(int page)
         {
             panelLessons.Controls.Clear();
@@ -202,6 +192,7 @@ namespace IELTS.UI.User.Home
 
             lessonPageIndex = page;
         }
+
 
         private void btnPrevTest_Click(object sender, EventArgs e)
         {
@@ -227,7 +218,6 @@ namespace IELTS.UI.User.Home
             if ((lessonPageIndex + 1) * CardsPerPage < lessonCards.Count)
                 ShowLessonPage(lessonPageIndex + 1);
         }
-
 
 
         private void timerSlide_Tick(object sender, EventArgs e)

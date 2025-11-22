@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace IELTS.UI.User.Results
@@ -19,15 +13,18 @@ namespace IELTS.UI.User.Results
 
         public void Bind(QuestionReview q)
         {
+            if (q == null) return;
+
+            // số câu
             lblNumber.Text = q.Number.ToString();
 
-            string user = string.IsNullOrWhiteSpace(q.UserAnswer)
-                ? "(no answer)"
-                : q.UserAnswer;
+            // text user answer (giống mẫu: "1   Keiko:")
+            lblUserAnswer.Text = $"{q.Number}.  {q.UserAnswer}";
 
-            lblUserAnswer.Text = $"Your answer: {user}";
-            lblCorrectAnswer.Text = $"Correct: {q.CorrectAnswer}";
+            // đáp án đúng
+            lblCorrectAnswer.Text = q.CorrectAnswer;
 
+            // icon & màu đúng/sai
             if (q.IsCorrect)
             {
                 lblIcon.Text = "✓";
@@ -35,8 +32,8 @@ namespace IELTS.UI.User.Results
             }
             else
             {
-                lblIcon.Text = "✗";
-                lblIcon.ForeColor = Color.FromArgb(220, 70, 70);
+                lblIcon.Text = "✕";
+                lblIcon.ForeColor = Color.FromArgb(235, 85, 85);
             }
         }
     }
