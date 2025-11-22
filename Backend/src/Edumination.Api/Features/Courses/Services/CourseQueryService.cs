@@ -12,6 +12,30 @@ public class CourseService : ICourseService
     private readonly AppDbContext _db;
     public CourseService(AppDbContext db) => _db = db;
 
+    public async Task<ApiResult<object>> DeleteAsync(long id, ClaimsPrincipal user, CancellationToken ct)
+    {
+        var course = await _db.Courses.SingleOrDefaultAsync(c => c.Id == id, ct);
+        if (course is null)
+            return new(false, null, "NOT_FOUND");
+
+        // resolve uid + role
+        long? uid = null;
+        var idStr = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? user.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+        if (long.TryParse(idStr, out var parsed)) uid = parsed;
+
+        var isStaff = user.IsInRole("ADMIN") || user.IsInRole("TEACHER");
+        var isOwner = uid.HasValue && course.CreatedBy == uid.Value;
+        if (!(isStaff || isOwner))
+            return new(false, null, "FORBIDDEN");
+
+        // Xoá enrollments, modules, lessons liên quan nếu cần (cascade hoặc thủ công)
+        // Nếu DB đã cascade thì chỉ cần xoá course
+        _db.Courses.Remove(course);
+        await _db.SaveChangesAsync(ct);
+        return new(true, null, null);
+    }
+
     public async Task<PagedResult<CourseItemDto>> GetAsync(CourseListQuery query, ClaimsPrincipal? user, CancellationToken ct)
     {
         var q = _db.Courses.AsQueryable();

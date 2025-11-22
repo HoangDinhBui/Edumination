@@ -14,7 +14,7 @@ namespace Edumination.Api.Features.Courses;
 
 [ApiController]
 [Route("api/v1/courses")]
-public class CoursesController : ControllerBase
+public class CoursesController : ControllerBase 
 {
     private readonly ICourseService _svc;
     private readonly IModuleService _moduleService;
@@ -171,6 +171,26 @@ public class CoursesController : ControllerBase
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
                         ?? User.FindFirstValue(JwtNames.Sub);
         return long.TryParse(userIdStr, out var id) ? id : (long?)null;
+    }
+
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "ADMIN,TEACHER")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Delete([FromRoute] long id, CancellationToken ct)
+    {
+        var result = await _svc.DeleteAsync(id, User, ct);
+        if (!result.Success)
+        {
+            return result.Error switch
+            {
+                "NOT_FOUND" => NotFound(new { error = "Course not found." }),
+                "FORBIDDEN" => Forbid(),
+                _ => BadRequest(result)
+            };
+        }
+        return NoContent();
     }
 
     [HttpPost("{id:long}/modules")]

@@ -9,6 +9,7 @@ public class WritingSubmission
     public string ContentText { get; set; } // Nội dung văn bản
     public string? PromptText { get; set; } // Prompt của câu hỏi (tùy chọn)
     public DateTime CreatedAt { get; set; }
+    public int WordsCount { get; set; }
 
     // Navigation properties
     public SectionAttempt SectionAttempt { get; set; }

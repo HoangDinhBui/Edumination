@@ -31,13 +31,13 @@ const skillsData = [
   { name: 'Speaking', value: 20 },
 ];
 
-// Danh sách hoạt động giả (Audit Logs Mock)
+// Mock activity list (Audit Logs Mock)
 const MOCK_ACTIVITIES = [
-    { id: 1, user: "nguyenvan.a@gmail.com", action: "Completed Test", target: "IELTS Reading Cam 18", time: "5 phút trước" },
-    { id: 2, user: "tran.thib@yahoo.com", action: "New Registration", target: "System", time: "30 phút trước" },
-    { id: 3, user: "admin_main", action: "Created Course", target: "Speaking Masterclass", time: "2 giờ trước" },
-    { id: 4, user: "user123456", action: "Failed Login", target: "Auth", time: "5 giờ trước" },
-    { id: 5, user: "le.vanc@gmail.com", action: "Enrolled", target: "IELTS Writing Task 2", time: "1 ngày trước" },
+  { id: 1, user: "nguyenvan.a@gmail.com", action: "Completed Test", target: "IELTS Reading Cam 18", time: "5 minutes ago" },
+  { id: 2, user: "tran.thib@yahoo.com", action: "New Registration", target: "System", time: "30 minutes ago" },
+  { id: 3, user: "admin_main", action: "Created Course", target: "Speaking Masterclass", time: "2 hours ago" },
+  { id: 4, user: "user123456", action: "Failed Login", target: "Auth", time: "5 hours ago" },
+  { id: 5, user: "le.vanc@gmail.com", action: "Enrolled", target: "IELTS Writing Task 2", time: "1 day ago" },
 ];
 
 const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
@@ -61,6 +61,8 @@ const StatCard = ({ title, value, icon: Icon, color, loading }: any) => (
 
 // --- 3. COMPONENT CHÍNH ---
 export default function DashboardOverview() {
+    // Modal state for full email list
+    const [showEmailModal, setShowEmailModal] = useState(false);
   // State lưu dữ liệu
   const [stats, setStats] = useState({
     users: 0,
@@ -70,35 +72,32 @@ export default function DashboardOverview() {
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // GIẢ LẬP GỌI API (Mocking API Call)
+    useEffect(() => {
+    // Simulate API call (Mocking API Call)
     const loadFakeData = () => {
-        setLoading(true);
-        
-        // Dùng setTimeout để giả vờ đang tải mất 0.8 giây
-        setTimeout(() => {
-            setStats({
-                users: 12,  // Số giả
-                papers: 18,   // Số giả
-                courses: 12   // Số giả
-            });
-            setRecentActivities(MOCK_ACTIVITIES);
-            setLoading(false);
-        }, 800);
+      setLoading(true);
+      setTimeout(() => {
+        setStats({
+          users: 12,  // Fake number
+          papers: 18,   // Fake number
+          courses: 12   // Fake number
+        });
+        setRecentActivities(MOCK_ACTIVITIES);
+        setLoading(false);
+      }, 800);
     };
-
     loadFakeData();
-  }, []);
+    }, []);
 
   return (
     <div className="space-y-6 pb-10">
       {/* --- HEADER --- */}
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Dashboard Overview</h1>
-        <p className="text-slate-500">Tổng quan tình hình hoạt động của hệ thống.</p>
+        <p className="text-slate-500">System activity overview.</p>
       </div>
 
-      {/* --- STATS CARDS (DATA FAKE) --- */}
+      {/* --- STATS CARDS (FAKE DATA) --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
           title="Total Students" 
@@ -126,7 +125,7 @@ export default function DashboardOverview() {
       {/* --- CHARTS SECTION (DATA FAKE) --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Biểu đồ 1: Tăng trưởng User */}
+        {/* Chart 1: User Growth */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 lg:col-span-2">
           <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
             <TrendingUp size={18} className="text-slate-400"/>
@@ -149,7 +148,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Biểu đồ 2: Phân bố kỹ năng */}
+        {/* Chart 2: Skill Distribution */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h3 className="font-bold text-slate-800 mb-4">Skill Distribution</h3>
           <div className="h-64 flex justify-center items-center">
@@ -174,7 +173,7 @@ export default function DashboardOverview() {
             </ResponsiveContainer>
           </div>
           <div className="text-center mt-4 text-xs text-slate-400">
-            *Dữ liệu demo
+            *Demo data
           </div>
         </div>
       </div>
@@ -182,41 +181,64 @@ export default function DashboardOverview() {
       {/* --- BOTTOM SECTION: LOGS & LISTS --- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Recent Activity (DATA FAKE) */}
+        {/* Recent Activity (FAKE DATA) */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
               <Activity size={18} className="text-slate-400"/>
               Recent System Activity
             </h3>
-            <button className="text-xs text-blue-600 font-medium hover:underline">View All</button>
+            <button className="text-xs text-blue-600 font-medium hover:underline" onClick={() => setShowEmailModal(true)}>View All</button>
+                {/* Email List Modal */}
+                {showEmailModal && (
+                  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+                      <button
+                        type="button"
+                        className="absolute top-3 right-3 text-slate-400 hover:text-red-500 text-xl"
+                        onClick={() => setShowEmailModal(false)}
+                      >×</button>
+                      <h2 className="text-xl font-bold mb-6 text-slate-800">All User Emails</h2>
+                      <div className="max-h-96 overflow-y-auto">
+                        <ul className="divide-y divide-slate-100">
+                          {recentActivities.map((act, idx) => (
+                            <li key={idx} className="py-3 flex items-center gap-3">
+                              <span className="font-mono text-slate-700">{act.user}</span>
+                              <span className="text-xs text-slate-400 ml-auto">{act.time}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
           </div>
           
           <div className="space-y-4">
             {loading ? (
-               <p className="text-slate-400 text-sm">Loading activities...</p>
+              <p className="text-slate-400 text-sm">Loading activities...</p>
             ) : recentActivities.length > 0 ? (
-               recentActivities.map((act) => (
-                <div key={act.id} className="flex items-start justify-between border-b border-slate-50 pb-4 last:border-0 last:pb-0">
-                  <div className="flex gap-3">
-                     <div className="bg-slate-100 p-2 rounded-full h-10 w-10 flex items-center justify-center text-slate-500 flex-shrink-0">
-                        <Clock size={18} />
-                     </div>
-                     <div>
-                        <p className="text-sm font-semibold text-slate-800">{act.user}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {act.action} <span className="text-slate-300 mx-1">•</span> <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{act.target}</span>
-                        </p>
-                     </div>
+              recentActivities.map((act) => (
+               <div key={act.id} className="flex items-start justify-between border-b border-slate-50 pb-4 last:border-0 last:pb-0">
+                <div className="flex gap-3">
+                  <div className="bg-slate-100 p-2 rounded-full h-10 w-10 flex items-center justify-center text-slate-500 flex-shrink-0">
+                    <Clock size={18} />
                   </div>
-                  <div className="text-right flex-shrink-0">
-                     <p className="text-xs text-slate-400">{act.time}</p>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{act.user}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {act.action} <span className="text-slate-300 mx-1">•</span> <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{act.target}</span>
+                    </p>
                   </div>
                 </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-xs text-slate-400">{act.time}</p>
+                </div>
+               </div>
               ))
             ) : (
               <div className="text-center py-8 text-slate-400 text-sm">
-                Chưa có dữ liệu.
+               No data available.
               </div>
             )}
           </div>

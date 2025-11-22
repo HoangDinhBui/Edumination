@@ -160,14 +160,27 @@ public class PaperService : IPaperService
                 Title = pa.Title ?? string.Empty,
                 ContentText = pa.ContentText ?? string.Empty,
                 Questions = pa.Questions.Select(q => new QuestionDto
-                {
-                    Id = q.Id,
-                    Qtype = q.Qtype ?? string.Empty,
-                    Stem = q.Stem ?? string.Empty,
-                    Position = q.Position,
-                    Choices = hideAnswers ? null : (q.QuestionChoices?.Select(c => new ChoiceDto { Id = c.Id,Content = c.Content ?? string.Empty, IsCorrect = c.IsCorrect }).ToList() ?? new List<ChoiceDto>()),
-                    AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson ?? string.Empty
-                }).ToList()
+                    {
+                        Id = q.Id,
+                        Qtype = q.Qtype ?? string.Empty,
+                        Stem = q.Stem ?? string.Empty,
+                        Position = q.Position,
+                        
+                        // --- SỬA ĐOẠN NÀY ---
+                        // Luôn trả về danh sách Choices, kể cả là học sinh.
+                        // Chỉ ẩn thuộc tính IsCorrect nếu cần thiết (hoặc luôn trả về false cho học sinh)
+                        Choices = q.QuestionChoices?.Select(c => new ChoiceDto 
+                        { 
+                            Id = c.Id,
+                            Content = c.Content ?? string.Empty, 
+                            // Nếu hideAnswers = true (là học sinh), ta gán IsCorrect = false để che đáp án
+                            IsCorrect = hideAnswers ? false : c.IsCorrect 
+                        }).ToList() ?? new List<ChoiceDto>(),
+                        // --------------------
+
+                        // AnswerKey thì vẫn giữ nguyên logic ẩn đi đối với học sinh
+                        AnswerKey = hideAnswers ? null : q.QuestionAnswerKey?.KeyJson ?? string.Empty
+                    }).ToList()
             }).ToList()
         }).ToList()
     };

@@ -35,6 +35,7 @@
     <Folder Include="src\DB\" />
     <Folder Include="UI\Forms\" />
     <Folder Include="UI\assets\" />
+    <Folder Include="UI\User\" />
   </ItemGroup>
 
   <ItemGroup>

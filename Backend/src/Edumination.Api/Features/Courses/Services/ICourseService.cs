@@ -15,4 +15,5 @@ public interface ICourseService
     Task<List<ModuleDto>?> GetModulesAsync(long courseId, ClaimsPrincipal? user, CancellationToken ct);
     Task<ApiResult<ModuleDto>> CreateModuleAsync(
         long courseId, CreateModuleRequest req, ClaimsPrincipal user, CancellationToken ct);
+    Task<ApiResult<object>> DeleteAsync(long id, ClaimsPrincipal user, CancellationToken ct);
 }
