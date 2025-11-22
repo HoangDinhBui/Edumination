@@ -26,6 +26,8 @@ namespace IELTS.DTO
         public List<TestSectionDTO> Sections { get; set; } = new();
 
         public override string ToString() => $"{Code} - {Title}";
+
+        public string CreatorFullName { get; set; }
     }
 
 }
