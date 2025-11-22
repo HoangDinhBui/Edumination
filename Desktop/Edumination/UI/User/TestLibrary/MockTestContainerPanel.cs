@@ -1,10 +1,8 @@
-﻿using IELTS.UI.User.TestTaking.ReadingTest;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using IELTS.BLL;
 
 namespace IELTS.UI.User.TestLibrary
 {
@@ -14,7 +12,6 @@ namespace IELTS.UI.User.TestLibrary
         public List<MockSectionItem> Items { get; set; } = new List<MockSectionItem>();
 
         public string TitleText => lblTitle.Text;
-        public long SectionId { get; set; }
 
         public MockTestContainerPanel()
         {
@@ -25,28 +22,11 @@ namespace IELTS.UI.User.TestLibrary
         {
             lblTitle.Text = title;
         }
-        private void Item_Click(object sender, EventArgs e)
-        {
-            var item = sender as MockTestItemPanel;
-            if (item == null) return;
-
-            // Lấy section từ DB
-            var section = _sectionBLL.GetSectionById(item.SectionId);
-
-            // Mở form test
-            var form = new ReadingTest(section);
-            form.Show();
-        }
 
         public void AddItem(string skill, string title, string taken)
         {
             var item = new MockTestItemPanel();
-            item.SectionId = sectionId;
             item.SetData(skill, title, taken);
-
-            // Thêm sự kiện click
-            item.Click += Item_Click;
-
             panelItems.Controls.Add(item);
 
             Items.Add(new MockSectionItem

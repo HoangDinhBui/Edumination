@@ -25,7 +25,6 @@ namespace IELTS.UI.User.TestLibrary
 
         private void TestLibrary_Load(object sender, EventArgs e)
         {
-            // Navbar load
             var nav = new UserNavbarPanel();
             nav.Dock = DockStyle.Fill;
             panelNavbar.Controls.Add(nav);
@@ -71,7 +70,7 @@ namespace IELTS.UI.User.TestLibrary
                 {
                     activeSkill = skill;
                     BuildSkillButtons();
-                    FilterMockTests();   // 🔥 sort ngay
+                    FilterMockTests();
                 };
 
                 panelSkills.Controls.Add(btn);
@@ -95,17 +94,15 @@ namespace IELTS.UI.User.TestLibrary
 
                 var dtSection = _sectionBLL.GetSectionsByPaperId(paperId);
 
-                // Nếu paper không có section thì bỏ qua
                 if (dtSection.Rows.Count == 0)
                     continue;
 
                 var container = new MockTestContainerPanel();
                 container.SetTitle(title);
 
-                // 🔥 Loop qua từng section
                 foreach (DataRow s in dtSection.Rows)
                 {
-                    string skill = s["Skill"].ToString().Trim().ToUpper();  // LISTENING, READING...
+                    string skill = s["Skill"].ToString().Trim().ToUpper();
 
                     int? time = s["TimeLimitMinutes"] != DBNull.Value
                         ? Convert.ToInt32(s["TimeLimitMinutes"])
@@ -115,8 +112,6 @@ namespace IELTS.UI.User.TestLibrary
                     if (time.HasValue)
                         testName += $" – {time.Value} minutes";
 
-                    // 🔥 Đây là dòng QUAN TRỌNG NHẤT
-                    // Truyền đúng thứ tự (skill, title, taken)
                     container.AddItem(skill, testName, "Available");
                 }
 
@@ -126,8 +121,6 @@ namespace IELTS.UI.User.TestLibrary
         }
 
 
-
-        // ⭐⭐⭐ Bộ lọc theo Skill ⭐⭐⭐
         private void FilterMockTests()
         {
             flowMain.Controls.Clear();
@@ -141,30 +134,11 @@ namespace IELTS.UI.User.TestLibrary
 
             string filterSkill = activeSkill.ToUpper();
 
-            foreach (var container in allMockTests)
-            {
-                // Lấy danh sách item phù hợp
-                var matchedItems = container.Items
-                    .Where(i => i.Skill.ToUpper() == filterSkill)
-                    .ToList();
+            var filtered = allMockTests
+                .Where(c => c.Skills.Any(s => s.ToUpper() == filterSkill))
+                .ToList();
 
-                if (matchedItems.Count == 0)
-                    continue;   // paper này không có section theo skill
-
-                // tạo container mới chỉ chứa section phù hợp
-                var filteredContainer = new MockTestContainerPanel();
-                filteredContainer.SetTitle(container.TitleText);
-
-                foreach (var it in matchedItems)
-                {
-                    filteredContainer.AddItem(it.Skill, it.DisplayText, it.TakenText);
-                }
-
-                flowMain.Controls.Add(filteredContainer);
-            }
-
-            // Không có kết quả
-            if (flowMain.Controls.Count == 0)
+            if (filtered.Count == 0)
             {
                 flowMain.Controls.Add(new Label()
                 {
@@ -174,15 +148,17 @@ namespace IELTS.UI.User.TestLibrary
                     ForeColor = Color.Gray,
                     Margin = new Padding(20)
                 });
+                return;
             }
-        }
 
+            foreach (var m in filtered)
+                flowMain.Controls.Add(m);
+        }
 
 
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn(int left, int top, int right, int bottom,
             int width, int height);
-
 
         private void txtSearch_KeyDown(object sender, KeyEventArgs e)
         {
