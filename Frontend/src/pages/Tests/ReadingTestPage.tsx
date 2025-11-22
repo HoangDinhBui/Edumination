@@ -154,11 +154,19 @@ const MaterialViewer = ({ paperData }) => {
 // =================== RENDER QUESTION (SỬA LẠI LẦN CUỐI) ===================
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const QuestionRenderer = ({ question, answer, onAnswerChange }: any) => {
-  // 1. Chuẩn hóa dữ liệu đầu vào (Chấp nhận cả hoa và thường)
+  // 1. Chuẩn hóa dữ liệu đầu vào
   const Id = question.Id || question.id;
   const Qtype = (question.Qtype || question.qtype || "").toUpperCase();
-  const Choices = question.Choices || question.choices || [];
   const Position = question.Position || question.position;
+
+  // --- DEBUG QUAN TRỌNG: Mở F12 -> Console để xem dòng này ---
+  // Xem backend trả về 'Choices', 'choices', 'Options' hay là gì?
+  // Xem nội dung bên trong là 'Content', 'content', 'Text' hay 'label'?
+  // console.log(`Question ${Position} Data:`, question); 
+  // -----------------------------------------------------------
+
+  // 2. Cố gắng lấy mảng Choices từ nhiều nguồn khác nhau
+  const Choices = question.Choices || question.choices || question.Options || question.options || [];
 
   let inputComponent;
 
@@ -166,41 +174,40 @@ const QuestionRenderer = ({ question, answer, onAnswerChange }: any) => {
     case "MCQ":
       inputComponent = (
         <select
-          // Nếu chưa có câu trả lời thì để chuỗi rỗng
           value={answer || ""}
           onChange={(e) => onAnswerChange(Id, e.target.value)}
           className="flex-1 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none cursor-pointer bg-white hover:border-slate-400 transition-colors"
         >
           <option value="">Select an answer...</option>
           
-          {Choices?.map((choice: any, index: number) => {
-            // 2. LOGIC QUAN TRỌNG: Tìm đúng ID
-            // Kiểm tra xem backend trả về 'Id' hay 'id'
-            const cId = choice.Id ?? choice.id; 
-            const cContent = choice.Content || choice.content;
+          {Choices.length > 0 ? (
+            Choices.map((choice: any, index: number) => {
+              // 3. LOGIC BẮT DÍNH DỮ LIỆU (Thử mọi trường hợp có thể)
+              
+              // Lấy ID: thử Id, id, choice_id, value
+              const cId = choice.Id ?? choice.id ?? choice.choice_id ?? choice.value ?? index;
+              
+              // Lấy Nội dung: thử Content, content, Text, text, Label, label
+              const cContent = choice.Content || choice.content || choice.Text || choice.text || choice.Label || choice.label;
 
-            // Debug: Nếu cId vẫn null thì log ra để xem lỗi gì
-            if (cId === undefined || cId === null) {
-                console.warn("Không tìm thấy ID cho choice:", choice);
-            }
-
-            return (
-              <option 
-                // Dùng index làm fallback key nếu cId lỗi (để React không báo vàng)
-                key={cId ?? index} 
-                // QUAN TRỌNG: Value bắt buộc phải là cId (số)
-                value={cId}
-              >
-                {cContent}
-              </option>
-            );
-          })}
+              return (
+                <option key={cId} value={cId}>
+                  {cContent || `Option ${index + 1} (Lỗi hiển thị)`}
+                </option>
+              );
+            })
+          ) : (
+            // Fallback nếu không có Choices nào (Ví dụ câu True/False mà BE quên gửi option)
+            <>
+                <option disabled>⚠ Không có dữ liệu lựa chọn</option>
+            </>
+          )}
         </select>
       );
       
       return (
         <div className="flex items-center gap-3">
-          <span className="text-slate-700 font-medium text-sm w-5">
+          <span className="text-slate-700 font-medium text-sm w-5 flex-shrink-0">
             {Position}.
           </span>
           {inputComponent}
