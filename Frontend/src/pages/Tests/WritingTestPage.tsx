@@ -84,7 +84,7 @@ const MaterialViewer = ({ paperData }) => {
   const API_BASE_URL = "http://localhost:8081";
   const pdfAssetId = paperData?.PdfAssetId;
   const fullPdfUrl = pdfAssetId
-    ? `${API_BASE_URL}/api/v1/assets/download/${pdfAssetId}`
+    ? `${API_BASE_URL}/api/v1/assets/download/${pdfAssetId}#toolbar=0&navpanes=0&view=FitV`
     : null;
 
   return (
