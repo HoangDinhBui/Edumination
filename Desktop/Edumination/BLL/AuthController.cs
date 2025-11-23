@@ -243,6 +243,7 @@ namespace IELTS.API
     {
         private readonly HttpListener listener;
         private readonly AuthController authController;
+        private readonly PaymentController paymentController;
         private bool isRunning;
 
         public SimpleApiServer(string prefix = "http://localhost:5000/")
@@ -250,6 +251,7 @@ namespace IELTS.API
             listener = new HttpListener();
             listener.Prefixes.Add(prefix);
             authController = new AuthController();
+            paymentController = new PaymentController();
             isRunning = false;
         }
 
@@ -268,6 +270,8 @@ namespace IELTS.API
             Console.WriteLine("  POST /api/auth/logout");
             Console.WriteLine("  POST /api/auth/forgot-password");
             Console.WriteLine("  POST /api/auth/reset-password");
+            Console.WriteLine("  POST /api/payment/create-session");
+            Console.WriteLine("  POST /api/payment/verify");
 
             // Listen for requests
             while (isRunning)
@@ -355,6 +359,16 @@ namespace IELTS.API
                 {
                     var resetRequest = JsonConvert.DeserializeObject<ResetPasswordRequestDTO>(requestBody);
                     responseString = authController.ResetPassword(resetRequest);
+                }
+                else if (path == "/api/payment/create-session" && request.HttpMethod == "POST")
+                {
+                    var paymentRequest = JsonConvert.DeserializeObject<CreatePaymentSessionRequestDTO>(requestBody);
+                    responseString = paymentController.CreateSession(paymentRequest);
+                }
+                else if (path == "/api/payment/verify" && request.HttpMethod == "POST")
+                {
+                    var verifyRequest = JsonConvert.DeserializeObject<VerifyPaymentRequestDTO>(requestBody);
+                    responseString = paymentController.VerifyPayment(verifyRequest);
                 }
                 else
                 {

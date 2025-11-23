@@ -144,15 +144,15 @@ namespace IELTS.UI.Login
                     break;
 
                 case "STUDENT":
-                    MessageBox.Show($"Đã đăng nhập với tư cách STUDENT\nEmail: {user.Email}\nID: {user.Id}");
-                    //nextForm = new frmStudent(user.FullName, user.Role);
-                    //nextForm.ShowDialog();
+                    // MessageBox.Show($"Đã đăng nhập với tư cách STUDENT\nEmail: {user.Email}\nID: {user.Id}");
+                    nextForm = new IELTS.UI.User.Home.Home();
+                    nextForm.ShowDialog();
                     break;
 
                 case "TEACHER":
-                    MessageBox.Show($"Đã đăng nhập với tư cách TEACHER\nEmail: {user.Email}\nID: {user.Id}");
-                    //nextForm = new frmTeacher(user.FullName, user.Role);
-                    //nextForm.ShowDialog();
+                    // MessageBox.Show($"Đã đăng nhập với tư cách TEACHER\nEmail: {user.Email}\nID: {user.Id}");
+                    nextForm = new IELTS.UI.User.Home.Home();
+                    nextForm.ShowDialog();
                     break;
 
                 default:

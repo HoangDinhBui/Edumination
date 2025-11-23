@@ -70,10 +70,12 @@ namespace IELTS.UI.User.Courses
                     out string successText
                 );
 
-                string priceText = "$" + priceVnd.ToString("N0");
+                long courseId = Convert.ToInt64(row["Id"]);
+                string priceText = priceVnd.ToString("N0") + " VND";
 
                 var card = new CourseCardPanel();
                 card.BindCourse(
+                    courseId, // Thêm courseId
                     title,
                     levelText,
                     bandRange,
@@ -85,6 +87,7 @@ namespace IELTS.UI.User.Courses
                     $"{hoursText} · {groupText} · {ratingText}",
                     successText,
                     priceText,
+                    priceVnd, // Thêm priceVnd
                     badgeText,
                     badgeColor,
                     bgColor
