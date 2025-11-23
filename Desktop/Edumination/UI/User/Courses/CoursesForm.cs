@@ -33,67 +33,82 @@ namespace IELTS.UI.User.Courses
 
         private void LoadCoursesFromDatabase()
         {
-            flowCourses.Controls.Clear();
-
-            DataTable dt = _courseBLL.GetAllPublishedCourses();
-            if (dt.Rows.Count == 0)
+            try
             {
-                MessageBox.Show("No published courses found.", "Info");
-                return;
-            }
+                flowCourses.Controls.Clear();
 
-            foreach (DataRow row in dt.Rows)
-            {
-                string title = row["Title"].ToString();
-                string levelCode = row["Level"].ToString();
-                string desc = row["Description"]?.ToString() ?? "";
-                int priceVnd = row["PriceVND"] != DBNull.Value ? Convert.ToInt32(row["PriceVND"]) : 0;
-
-                string levelText = levelCode switch
+                DataTable dt = _courseBLL.GetAllPublishedCourses();
+                if (dt.Rows.Count == 0)
                 {
-                    "BEGINNER" => "Beginner",
-                    "INTERMEDIATE" => "Intermediate",
-                    "ADVANCED" => "Advanced",
-                    _ => levelCode
-                };
+                    MessageBox.Show("No published courses found.", "Info");
+                    return;
+                }
 
-                GetBandInfo(
-                    title,
-                    levelCode,
-                    out string bandRange,
-                    out string badgeText,
-                    out Color badgeColor,
-                    out Color bgColor,
-                    out string hoursText,
-                    out string groupText,
-                    out string ratingText,
-                    out string successText
-                );
+                foreach (DataRow row in dt.Rows)
+                {
+                    try
+                    {
+                        string title = row["Title"].ToString();
+                        string levelCode = row["Level"].ToString();
+                        string desc = row["Description"]?.ToString() ?? "";
+                        int priceVnd = row["PriceVND"] != DBNull.Value ? Convert.ToInt32(row["PriceVND"]) : 0;
 
-                long courseId = Convert.ToInt64(row["Id"]);
-                string priceText = priceVnd.ToString("N0") + " VND";
+                        string levelText = levelCode switch
+                        {
+                            "BEGINNER" => "Beginner",
+                            "INTERMEDIATE" => "Intermediate",
+                            "ADVANCED" => "Advanced",
+                            _ => levelCode
+                        };
 
-                var card = new CourseCardPanel();
-                card.BindCourse(
-                    courseId, // Thêm courseId
-                    title,
-                    levelText,
-                    bandRange,
-                    desc,
-                    "Essential grammar foundation",
-                    "Basic vocabulary building",
-                    "Simple exam techniques",
-                    "Weekly practice tests",
-                    $"{hoursText} · {groupText} · {ratingText}",
-                    successText,
-                    priceText,
-                    priceVnd, // Thêm priceVnd
-                    badgeText,
-                    badgeColor,
-                    bgColor
-                );
+                        GetBandInfo(
+                            title,
+                            levelCode,
+                            out string bandRange,
+                            out string badgeText,
+                            out Color badgeColor,
+                            out Color bgColor,
+                            out string hoursText,
+                            out string groupText,
+                            out string ratingText,
+                            out string successText
+                        );
 
-                flowCourses.Controls.Add(card);
+                        long courseId = row["Id"] != DBNull.Value ? Convert.ToInt64(row["Id"]) : 0;
+                        string priceText = priceVnd.ToString("N0") + " VND";
+
+                        var card = new CourseCardPanel();
+                        card.BindCourse(
+                            courseId,
+                            title,
+                            levelText,
+                            bandRange,
+                            desc,
+                            "Essential grammar foundation",
+                            "Basic vocabulary building",
+                            "Simple exam techniques",
+                            "Weekly practice tests",
+                            $"{hoursText} · {groupText} · {ratingText}",
+                            successText,
+                            priceText,
+                            priceVnd,
+                            badgeText,
+                            badgeColor,
+                            bgColor
+                        );
+
+                        flowCourses.Controls.Add(card);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error loading course row: {ex.Message}");
+                        continue; // Skip faulty row
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading courses: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
