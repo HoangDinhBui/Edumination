@@ -1,43 +1,40 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.ComponentModel;
-//using System.Data;
-//using System.Drawing;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using System.Windows.Forms;
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
 
-//namespace IELTS.UI.User.Results
-//{
-//    public partial class AnswerRowPanel : UserControl
-//    {
-//        public AnswerRowPanel()
-//        {
-//            InitializeComponent();
-//        }
+namespace IELTS.UI.User.Results
+{
+    public partial class AnswerRowPanel : UserControl
+    {
+        public AnswerRowPanel()
+        {
+            InitializeComponent();
+        }
 
-//        public void Bind(QuestionReview q)
-//        {
-//            lblNumber.Text = q.Number.ToString();
+        public void Bind(QuestionReview q)
+        {
+            if (q == null) return;
 
-//            string user = string.IsNullOrWhiteSpace(q.UserAnswer)
-//                ? "(no answer)"
-//                : q.UserAnswer;
+            // số câu
+            lblNumber.Text = q.Number.ToString();
 
-//            lblUserAnswer.Text = $"Your answer: {user}";
-//            lblCorrectAnswer.Text = $"Correct: {q.CorrectAnswer}";
+            // text user answer (giống mẫu: "1   Keiko:")
+            lblUserAnswer.Text = $"{q.Number}.  {q.UserAnswer}";
 
-//            if (q.IsCorrect)
-//            {
-//                lblIcon.Text = "✓";
-//                lblIcon.ForeColor = Color.FromArgb(0, 160, 80);
-//            }
-//            else
-//            {
-//                lblIcon.Text = "✗";
-//                lblIcon.ForeColor = Color.FromArgb(220, 70, 70);
-//            }
-//        }
-//    }
-//}
+            // đáp án đúng
+            lblCorrectAnswer.Text = q.CorrectAnswer;
+
+            // icon & màu đúng/sai
+            if (q.IsCorrect)
+            {
+                lblIcon.Text = "✓";
+                lblIcon.ForeColor = Color.FromArgb(0, 160, 80);
+            }
+            else
+            {
+                lblIcon.Text = "✕";
+                lblIcon.ForeColor = Color.FromArgb(235, 85, 85);
+            }
+        }
+    }
+}

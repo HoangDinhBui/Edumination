@@ -1,203 +1,188 @@
-﻿//using Sunny.UI;
+﻿using Sunny.UI;
+using System.Drawing;
+using System.Windows.Forms;
 
-//namespace IELTS.UI.User.Results
-//{
-//    partial class AnswerResultForm
-//    {
-//        private System.ComponentModel.IContainer components = null;
+namespace IELTS.UI.User.Results
+{
+    partial class AnswerResultForm
+    {
+        private System.ComponentModel.IContainer components = null;
 
-//        private PictureBox picAvatar;
-//        private UILabel lblUserName;
-//        private UILabel lblTitleResult;
+        private PictureBox picAvatar;
+        private Label lblUserName;
+        private Label lblTitleResult;
 
-//        private UIPanel panelCorrectCircle;
-//        private UIPanel panelBandCircle;
-//        private UIPanel panelTimeCircle;
+        private Label lblCorrectMain;
+        private Label lblBandMain;
+        private Label lblTimeMain;
 
-//        private UILabel lblCorrectMain;
-//        private UILabel lblCorrectSub;
+        private Label lblCorrectLabel;
+        private Label lblBandLabel;
+        private Label lblTimeLabel;
 
-//        private UILabel lblBandMain;
-//        private UILabel lblBandSub;
+        private Label lblAnswerKeysTitle;
+        private Panel panelAnswerKeys;
 
-//        private UILabel lblTimeMain;
-//        private UILabel lblTimeSub;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+                components.Dispose();
+            base.Dispose(disposing);
+        }
 
-//        private UILabel lblAnswerKeysTitle;
-//        private Panel panelAnswerKeys;   // scroll area
-
-//        protected override void Dispose(bool disposing)
-//        {
-//            if (disposing && components != null)
-//                components.Dispose();
-//            base.Dispose(disposing);
-//        }
-
-//        private void InitializeComponent()
-//        {
-//            components = new System.ComponentModel.Container();
-//            picAvatar = new PictureBox();
-//            lblUserName = new UILabel();
-//            lblTitleResult = new UILabel();
-
-//            panelCorrectCircle = new UIPanel();
-//            panelBandCircle = new UIPanel();
-//            panelTimeCircle = new UIPanel();
-
-//            lblCorrectMain = new UILabel();
-//            lblCorrectSub = new UILabel();
-
-//            lblBandMain = new UILabel();
-//            lblBandSub = new UILabel();
-
-//            lblTimeMain = new UILabel();
-//            lblTimeSub = new UILabel();
-
-//            lblAnswerKeysTitle = new UILabel();
-//            panelAnswerKeys = new Panel();
-
-//            ((System.ComponentModel.ISupportInitialize)picAvatar).BeginInit();
-//            SuspendLayout();
-
-//            // Form
-//            AutoScaleMode = AutoScaleMode.None;
-//            BackColor = Color.White;
-//            ClientSize = new Size(1920, 1020);
-//            FormBorderStyle = FormBorderStyle.FixedSingle;
-//            Name = "AnswerResultForm";
-//            Text = "Test Result";
-
-//            // Avatar
-//            picAvatar.Location = new Point(910, 40);
-//            picAvatar.Size = new Size(100, 100);
-//            picAvatar.SizeMode = PictureBoxSizeMode.Zoom;
-//            picAvatar.BorderStyle = BorderStyle.None;
-
-//            // User Name
-//            lblUserName.Font = new Font("Segoe UI", 12F, FontStyle.Regular);
-//            lblUserName.ForeColor = Color.FromArgb(60, 60, 60);
-//            lblUserName.Location = new Point(0, 145);
-//            lblUserName.Size = new Size(1920, 25);
-//            lblUserName.TextAlign = ContentAlignment.MiddleCenter;
-//            lblUserName.Text = "Student Name";
-
-//            // Title "Result"
-//            lblTitleResult.Font = new Font("Noto Serif SC", 24F, FontStyle.Bold);
-//            lblTitleResult.ForeColor = Color.FromArgb(41, 69, 99);
-//            lblTitleResult.Location = new Point(0, 170);
-//            lblTitleResult.Size = new Size(1920, 60);
-//            lblTitleResult.TextAlign = ContentAlignment.MiddleCenter;
-//            lblTitleResult.Text = "Result";
-
-//            // ======= CIRCLE PANELS =======
-//            int circleY = 240;
-//            int circleW = 180;
-//            int circleH = 180;
-//            int centerX = 1920 / 2;
-
-//            // Correct circle
-//            panelCorrectCircle.Size = new Size(circleW, circleH);
-//            panelCorrectCircle.Location = new Point(centerX - circleW - 140, circleY);
-//            panelCorrectCircle.Radius = circleW / 2;
-//            panelCorrectCircle.FillColor = Color.White;
-//            panelCorrectCircle.RectColor = Color.FromArgb(0, 185, 241);
-//            panelCorrectCircle.RectSize = 4;
-
-//            // Band circle (ở đây dùng "total correct" dạng số, giống hình demo)
-//            panelBandCircle.Size = new Size(circleW, circleH);
-//            panelBandCircle.Location = new Point(centerX - circleW / 2, circleY);
-//            panelBandCircle.Radius = circleW / 2;
-//            panelBandCircle.FillColor = Color.White;
-//            panelBandCircle.RectColor = Color.FromArgb(0, 185, 241);
-//            panelBandCircle.RectSize = 4;
-
-//            // Time circle
-//            panelTimeCircle.Size = new Size(circleW, circleH);
-//            panelTimeCircle.Location = new Point(centerX + circleW + 60, circleY);
-//            panelTimeCircle.Radius = circleW / 2;
-//            panelTimeCircle.FillColor = Color.White;
-//            panelTimeCircle.RectColor = Color.FromArgb(0, 185, 241);
-//            panelTimeCircle.RectSize = 4;
-
-//            // Correct labels
-//            lblCorrectMain.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-//            lblCorrectMain.Location = new Point(0, 45);
-//            lblCorrectMain.Size = new Size(circleW, 40);
-//            lblCorrectMain.TextAlign = ContentAlignment.MiddleCenter;
-//            lblCorrectMain.Text = "0/40";
-
-//            lblCorrectSub.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
-//            lblCorrectSub.Location = new Point(10, 90);
-//            lblCorrectSub.Size = new Size(circleW - 20, 40);
-//            lblCorrectSub.TextAlign = ContentAlignment.TopCenter;
-//            lblCorrectSub.ForeColor = Color.Gray;
-//            lblCorrectSub.Text = "The correct answer";
-
-//            panelCorrectCircle.Controls.Add(lblCorrectMain);
-//            panelCorrectCircle.Controls.Add(lblCorrectSub);
-
-//            // Band labels (ở đây dùng "score" – số câu đúng hoặc bandscore nếu có)
-//            lblBandMain.Font = new Font("Segoe UI", 32F, FontStyle.Bold);
-//            lblBandMain.Location = new Point(0, 55);
-//            lblBandMain.Size = new Size(circleW, 60);
-//            lblBandMain.TextAlign = ContentAlignment.MiddleCenter;
-//            lblBandMain.Text = "0";
-
-//            lblBandSub.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
-//            lblBandSub.Location = new Point(10, 115);
-//            lblBandSub.Size = new Size(circleW - 20, 40);
-//            lblBandSub.TextAlign = ContentAlignment.TopCenter;
-//            lblBandSub.ForeColor = Color.Gray;
-//            lblBandSub.Text = "Score";
-
-//            panelBandCircle.Controls.Add(lblBandMain);
-//            panelBandCircle.Controls.Add(lblBandSub);
-
-//            // Time labels
-//            lblTimeMain.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-//            lblTimeMain.Location = new Point(0, 50);
-//            lblTimeMain.Size = new Size(circleW, 50);
-//            lblTimeMain.TextAlign = ContentAlignment.MiddleCenter;
-//            lblTimeMain.Text = "00:00";
-
-//            lblTimeSub.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
-//            lblTimeSub.Location = new Point(10, 100);
-//            lblTimeSub.Size = new Size(circleW - 20, 40);
-//            lblTimeSub.TextAlign = ContentAlignment.TopCenter;
-//            lblTimeSub.ForeColor = Color.Gray;
-//            lblTimeSub.Text = "Time to complete\nthe exam";
-
-//            panelTimeCircle.Controls.Add(lblTimeMain);
-//            panelTimeCircle.Controls.Add(lblTimeSub);
-
-//            // ====== Answer Keys Title ======
-//            lblAnswerKeysTitle.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-//            lblAnswerKeysTitle.Location = new Point(260, 450);
-//            lblAnswerKeysTitle.Size = new Size(300, 30);
-//            lblAnswerKeysTitle.TextAlign = ContentAlignment.MiddleLeft;
-//            lblAnswerKeysTitle.Text = "Answer Keys";
-
-//            // Panel AnswerKeys
-//            panelAnswerKeys.Location = new Point(260, 485);
-//            panelAnswerKeys.Size = new Size(1400, 480);
-//            panelAnswerKeys.BackColor = Color.White;
-//            panelAnswerKeys.AutoScroll = true;
-//            panelAnswerKeys.BorderStyle = BorderStyle.None;
-
-//            // Add controls to form
-//            Controls.Add(picAvatar);
-//            Controls.Add(lblUserName);
-//            Controls.Add(lblTitleResult);
-
-//            Controls.Add(panelCorrectCircle);
-//            Controls.Add(panelBandCircle);
-//            Controls.Add(panelTimeCircle);
-
-//            Controls.Add(lblAnswerKeysTitle);
-//            Controls.Add(panelAnswerKeys);
-
-//            ((System.ComponentModel.ISupportInitialize)picAvatar).EndInit();
-//            ResumeLayout(false);
-//        }
-//    }
-//}
+        private void InitializeComponent()
+        {
+            picAvatar = new PictureBox();
+            lblUserName = new Label();
+            lblTitleResult = new Label();
+            lblCorrectMain = new Label();
+            lblBandMain = new Label();
+            lblTimeMain = new Label();
+            lblCorrectLabel = new Label();
+            lblBandLabel = new Label();
+            lblTimeLabel = new Label();
+            lblAnswerKeysTitle = new Label();
+            panelAnswerKeys = new Panel();
+            ((System.ComponentModel.ISupportInitialize)picAvatar).BeginInit();
+            SuspendLayout();
+            // 
+            // picAvatar
+            // 
+            picAvatar.Location = new Point(829, 49);
+            picAvatar.Margin = new Padding(3, 4, 3, 4);
+            picAvatar.Name = "picAvatar";
+            picAvatar.Size = new Size(126, 147);
+            picAvatar.SizeMode = PictureBoxSizeMode.Zoom;
+            picAvatar.TabIndex = 0;
+            picAvatar.TabStop = false;
+            // 
+            // lblUserName
+            // 
+            lblUserName.AutoSize = true;
+            lblUserName.Font = new Font("Segoe UI", 11F);
+            lblUserName.Location = new Point(829, 200);
+            lblUserName.Name = "lblUserName";
+            lblUserName.Size = new Size(131, 25);
+            lblUserName.TabIndex = 1;
+            lblUserName.Text = "Student Name";
+            // 
+            // lblTitleResult
+            // 
+            lblTitleResult.AutoSize = true;
+            lblTitleResult.Font = new Font("Segoe UI", 26F, FontStyle.Bold);
+            lblTitleResult.ForeColor = Color.FromArgb(39, 56, 146);
+            lblTitleResult.Location = new Point(737, 247);
+            lblTitleResult.Name = "lblTitleResult";
+            lblTitleResult.Size = new Size(335, 60);
+            lblTitleResult.TabIndex = 2;
+            lblTitleResult.Text = "Reading Result";
+            // 
+            // lblCorrectMain
+            // 
+            lblCorrectMain.AutoSize = true;
+            lblCorrectMain.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblCorrectMain.Location = new Point(632, 399);
+            lblCorrectMain.Name = "lblCorrectMain";
+            lblCorrectMain.Size = new Size(77, 37);
+            lblCorrectMain.TabIndex = 4;
+            lblCorrectMain.Text = "0/40";
+            // 
+            // lblBandMain
+            // 
+            lblBandMain.AutoSize = true;
+            lblBandMain.Font = new Font("Segoe UI", 26F, FontStyle.Bold);
+            lblBandMain.Location = new Point(878, 392);
+            lblBandMain.Name = "lblBandMain";
+            lblBandMain.Size = new Size(50, 60);
+            lblBandMain.TabIndex = 6;
+            lblBandMain.Text = "0";
+            // 
+            // lblTimeMain
+            // 
+            lblTimeMain.AutoSize = true;
+            lblTimeMain.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblTimeMain.Location = new Point(1064, 399);
+            lblTimeMain.Name = "lblTimeMain";
+            lblTimeMain.Size = new Size(88, 37);
+            lblTimeMain.TabIndex = 8;
+            lblTimeMain.Text = "00:00";
+            // 
+            // lblCorrectLabel
+            // 
+            lblCorrectLabel.AutoSize = true;
+            lblCorrectLabel.Font = new Font("Segoe UI", 12F);
+            lblCorrectLabel.Location = new Point(632, 359);
+            lblCorrectLabel.Name = "lblCorrectLabel";
+            lblCorrectLabel.Size = new Size(76, 28);
+            lblCorrectLabel.TabIndex = 3;
+            lblCorrectLabel.Text = "Correct";
+            // 
+            // lblBandLabel
+            // 
+            lblBandLabel.AutoSize = true;
+            lblBandLabel.Font = new Font("Segoe UI", 12F);
+            lblBandLabel.Location = new Point(861, 359);
+            lblBandLabel.Name = "lblBandLabel";
+            lblBandLabel.Size = new Size(123, 28);
+            lblBandLabel.TabIndex = 5;
+            lblBandLabel.Text = "Total Correct";
+            // 
+            // lblTimeLabel
+            // 
+            lblTimeLabel.AutoSize = true;
+            lblTimeLabel.Font = new Font("Segoe UI", 12F);
+            lblTimeLabel.Location = new Point(1078, 359);
+            lblTimeLabel.Name = "lblTimeLabel";
+            lblTimeLabel.Size = new Size(54, 28);
+            lblTimeLabel.TabIndex = 7;
+            lblTimeLabel.Text = "Time";
+            // 
+            // lblAnswerKeysTitle
+            // 
+            lblAnswerKeysTitle.AutoSize = true;
+            lblAnswerKeysTitle.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            lblAnswerKeysTitle.ForeColor = Color.FromArgb(39, 56, 146);
+            lblAnswerKeysTitle.Location = new Point(137, 480);
+            lblAnswerKeysTitle.Name = "lblAnswerKeysTitle";
+            lblAnswerKeysTitle.Size = new Size(164, 35);
+            lblAnswerKeysTitle.TabIndex = 9;
+            lblAnswerKeysTitle.Text = "Answer Keys";
+            // 
+            // panelAnswerKeys
+            // 
+            panelAnswerKeys.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelAnswerKeys.AutoScroll = true;
+            panelAnswerKeys.BackColor = Color.White;
+            panelAnswerKeys.Location = new Point(164, 533);
+            panelAnswerKeys.Margin = new Padding(3, 4, 3, 4);
+            panelAnswerKeys.Name = "panelAnswerKeys";
+            panelAnswerKeys.Size = new Size(1429, 453);
+            panelAnswerKeys.TabIndex = 10;
+            // 
+            // AnswerResultForm
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.White;
+            ClientSize = new Size(1691, 1055);
+            Controls.Add(picAvatar);
+            Controls.Add(lblUserName);
+            Controls.Add(lblTitleResult);
+            Controls.Add(lblCorrectLabel);
+            Controls.Add(lblCorrectMain);
+            Controls.Add(lblBandLabel);
+            Controls.Add(lblBandMain);
+            Controls.Add(lblTimeLabel);
+            Controls.Add(lblTimeMain);
+            Controls.Add(lblAnswerKeysTitle);
+            Controls.Add(panelAnswerKeys);
+            Margin = new Padding(3, 4, 3, 4);
+            Name = "AnswerResultForm";
+            Text = "Test Result";
+            Load += AnswerResultForm_Load;
+            ((System.ComponentModel.ISupportInitialize)picAvatar).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
+        }
+    }
+}

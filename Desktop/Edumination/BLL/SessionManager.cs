@@ -13,6 +13,7 @@ namespace IELTS.BLL
         public static string CurrentUserEmail { get; set; }
         public static string CurrentUserName { get; set; }
         public static string CurrentUserRole { get; set; }
+        public static string CurrentToken { get; set; } // JWT Token
 
         public static bool IsLoggedIn
         {
@@ -40,6 +41,22 @@ namespace IELTS.BLL
             CurrentUserEmail = user["Email"].ToString();
             CurrentUserName = user["FullName"].ToString();
             CurrentUserRole = user["Role"].ToString();
+            
+            // Lưu token nếu có
+            if (user.Table.Columns.Contains("Token") && user["Token"] != DBNull.Value)
+            {
+                CurrentToken = user["Token"].ToString();
+            }
+        }
+
+        public static void SetToken(string token)
+        {
+            CurrentToken = token;
+        }
+
+        public static string GetToken()
+        {
+            return CurrentToken;
         }
 
         public static void Logout()
@@ -48,6 +65,7 @@ namespace IELTS.BLL
             CurrentUserEmail = null;
             CurrentUserName = null;
             CurrentUserRole = null;
+            CurrentToken = null; // Xóa token khi logout
         }
     }
 }

@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace IELTS.UI.User.Home
@@ -15,6 +9,10 @@ namespace IELTS.UI.User.Home
         public LessonCardPanel()
         {
             InitializeComponent();
+
+            this.Click += OpenCourses;
+            foreach (Control c in this.Controls)
+                c.Click += OpenCourses;
         }
 
         public Image Thumbnail { get => picThumb.Image; set => picThumb.Image = value; }
@@ -23,14 +21,13 @@ namespace IELTS.UI.User.Home
         public string TimeText { get => lblTime.Text; set => lblTime.Text = value; }
         public string Attending { get => lblAttending.Text; set => lblAttending.Text = value; }
 
-        private void LessonCardPanel_Load(object sender, EventArgs e)
+        private void OpenCourses(object sender, EventArgs e)
         {
+            var form = new IELTS.UI.User.Courses.CoursesForm();
+            form.Show();
 
-        }
-
-        private void lblAttending_Click(object sender, EventArgs e)
-        {
-
+            Form parent = this.FindForm();
+            parent?.Hide();
         }
     }
 }

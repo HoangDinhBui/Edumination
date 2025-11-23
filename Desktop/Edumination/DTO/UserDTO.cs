@@ -425,4 +425,84 @@ namespace IELTS.DTO
         }
     }
 
+    // =========================================================
+    // 24. LOGIN RESPONSE DTO (cho API Login)
+    // =========================================================
+    public class LoginResponseDTO
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public string Token { get; set; }
+        public UserDTO User { get; set; }
+
+        public LoginResponseDTO()
+        {
+        }
+
+        public LoginResponseDTO(bool success, string message, string token = null, UserDTO user = null)
+        {
+            Success = success;
+            Message = message;
+            Token = token;
+            User = user;
+        }
+
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
+        public static LoginResponseDTO FromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<LoginResponseDTO>(json);
+        }
+    }
+
+    // =========================================================
+    // 25. FORGOT PASSWORD REQUEST DTO
+    // =========================================================
+    public class ForgotPasswordRequestDTO
+    {
+        public string Email { get; set; }
+
+        public ForgotPasswordRequestDTO() { }
+
+        public ForgotPasswordRequestDTO(string email)
+        {
+            Email = email;
+        }
+    }
+
+    // =========================================================
+    // 26. FORGOT PASSWORD RESPONSE DTO
+    // =========================================================
+    public class ForgotPasswordResponseDTO
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public string OtpToken { get; set; } // Token để verify OTP sau này
+
+        public ForgotPasswordResponseDTO() { }
+
+        public ForgotPasswordResponseDTO(bool success, string message, string otpToken = null)
+        {
+            Success = success;
+            Message = message;
+            OtpToken = otpToken;
+        }
+    }
+
+    // =========================================================
+    // 27. RESET PASSWORD REQUEST DTO
+    // =========================================================
+    public class ResetPasswordRequestDTO
+    {
+        public string Email { get; set; }
+        public string OtpCode { get; set; }
+        public string NewPassword { get; set; }
+        public string ConfirmPassword { get; set; }
+
+        public ResetPasswordRequestDTO() { }
+    }
+
 }
