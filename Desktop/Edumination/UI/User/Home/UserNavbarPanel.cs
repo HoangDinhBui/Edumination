@@ -49,7 +49,7 @@ namespace IELTS.UI.User.Home
             }
         }
 
-        
+
 
         private void btnHome_Click(object sender, EventArgs e)
         {
@@ -87,5 +87,39 @@ namespace IELTS.UI.User.Home
         {
 
         }
+
+        private void btnCourse_Click(object sender, EventArgs e)
+        {
+            Form parent = this.FindForm();
+            var f = new IELTS.UI.User.Courses.CoursesForm();
+            f.Show();
+            parent.Hide();
+        }
+        public void SetActive(string key)
+        {
+            // reset colors
+            btnHome.ForeColor = Color.FromArgb(100, 100, 100);
+            btnLibrary.ForeColor = Color.FromArgb(100, 100, 100);
+            btnCourse.ForeColor = Color.FromArgb(100, 100, 100);
+            btnAvt.ForeColor = Color.FromArgb(100, 100, 100);
+
+            // highlight active
+            switch (key.ToLower())
+            {
+                case "home":
+                    btnHome.ForeColor = Color.FromArgb(25, 41, 88);
+                    break;
+                case "library":
+                    btnLibrary.ForeColor = Color.FromArgb(25, 41, 88);
+                    break;
+                case "courses":
+                    btnCourse.ForeColor = Color.FromArgb(25, 41, 88);
+                    break;
+                case "profile":
+                    btnAvt.ForeColor = Color.FromArgb(25, 41, 88);
+                    break;
+            }
+        }
+
     }
 }
