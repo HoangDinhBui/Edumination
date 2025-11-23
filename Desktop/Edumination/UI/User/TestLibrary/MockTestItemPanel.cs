@@ -7,7 +7,7 @@ namespace IELTS.UI.User.TestLibrary
 {
     public partial class MockTestItemPanel : UserControl
     {
-        public string Skill { get; set; }
+        public string Skill { get; set; }   // ⭐ Lưu skill để filter
 
         public MockTestItemPanel()
         {
@@ -16,7 +16,7 @@ namespace IELTS.UI.User.TestLibrary
 
         public void SetData(string skill, string title, string taken)
         {
-            Skill = skill;
+            Skill = skill;       // ⭐ Lưu skill vào item
             lblTitle.Text = title;
             lblTaken.Text = taken;
         }

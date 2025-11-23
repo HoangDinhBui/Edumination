@@ -2,6 +2,8 @@
 using IELTS.UI;
 //using IELTS.UI.IELTS.UI;
 using IELTS.UI.Login;
+using IELTS.UI.User;
+using IELTS.UI.User.Home;
 
 namespace Edumination.WinForms;
 
@@ -21,6 +23,6 @@ static class Program
         ApplicationConfiguration.Initialize();
         string fullPath = Path.Combine(Application.StartupPath, "UI", "assets", pdfName);
         //Application.Run(new frmHienThiPdf(fullPath));
-        Application.Run(new SignIn());
+        Application.Run(new Home());
     }
 }

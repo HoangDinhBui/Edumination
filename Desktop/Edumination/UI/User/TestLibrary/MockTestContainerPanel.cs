@@ -26,7 +26,8 @@ namespace IELTS.UI.User.TestLibrary
         public void AddItem(string skill, string title, string taken)
         {
             var item = new MockTestItemPanel();
-            item.SetData(skill, title, taken);
+            item.SetData(skill, title, taken);   // ⭐ truyền SKILL
+
             panelItems.Controls.Add(item);
 
             Items.Add(new MockSectionItem
