@@ -10,6 +10,32 @@ namespace IELTS.DAL
 {
     public class UserDAL
     {
+        /// <summary>
+        /// Lấy user theo email (bao gồm PasswordHash) để verify với BCrypt
+        /// </summary>
+        public DataTable GetUserByEmail(string email)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                @"SELECT Id, Email, PasswordHash, FullName, Role, IsActive 
+              FROM Users 
+              WHERE Email = @Email AND IsActive = 1", conn))
+            {
+                cmd.Parameters.Add("@Email", System.Data.SqlDbType.NVarChar, 255).Value = email;
+
+                using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                {
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+                    return dt;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Login method cũ (deprecated - dùng GetUserByEmail thay thế)
+        /// Giữ lại để backward compatibility
+        /// </summary>
         public DataTable Login(string email, string passwordHash)
         {
             using (SqlConnection conn = DatabaseConnection.GetConnection())

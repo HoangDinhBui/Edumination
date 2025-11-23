@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text;
 using System.Threading.Tasks;
+using BCrypt.Net;
 
 namespace IELTS.BLL
 {
@@ -18,20 +17,31 @@ namespace IELTS.BLL
     {
         private UserDAL userDAL = new UserDAL();
 
-        // Hash password bằng SHA256
+        /// <summary>
+        /// Hash password bằng BCrypt (an toàn hơn SHA256)
+        /// </summary>
         private string HashPassword(string password)
         {
-            using (SHA256 sha256 = SHA256.Create())
+            // BCrypt tự động generate salt và hash
+            // WorkFactor 12 = 2^12 iterations (an toàn và nhanh)
+            return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
+        }
+
+        /// <summary>
+        /// Verify password với BCrypt hash
+        /// </summary>
+        private bool VerifyPassword(string password, string hash)
+        {
+            try
             {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in bytes)
-                {
-                    builder.Append(b.ToString("x2"));
-                }
-                return builder.ToString();
+                return BCrypt.Net.BCrypt.Verify(password, hash);
+            }
+            catch
+            {
+                return false;
             }
         }
+
 
         public DataTable Login(string email, string password)
         {
@@ -54,7 +64,67 @@ namespace IELTS.BLL
             return result;
         }
 
+        /// <summary>
+        /// Login với JWT Token - Trả về LoginResponseDTO
+        /// Sử dụng BCrypt để verify password
+        /// </summary>
+        public LoginResponseDTO LoginWithToken(string email, string password)
+        {
+            try
+            {
+                // Validation
+                if (string.IsNullOrWhiteSpace(email))
+                    return new LoginResponseDTO(false, "Email không được để trống!");
+
+                if (string.IsNullOrWhiteSpace(password))
+                    return new LoginResponseDTO(false, "Mật khẩu không được để trống!");
+
+                if (!email.Contains("@"))
+                    return new LoginResponseDTO(false, "Email không hợp lệ!");
+
+                // Lấy user từ database (bao gồm PasswordHash)
+                DataTable result = userDAL.GetUserByEmail(email);
+
+                if (result.Rows.Count == 0)
+                    return new LoginResponseDTO(false, "Email hoặc mật khẩu không đúng!");
+
+                // Lấy thông tin user
+                DataRow row = result.Rows[0];
+                string storedHash = row["PasswordHash"].ToString();
+
+                // Verify password với BCrypt
+                if (!VerifyPassword(password, storedHash))
+                    return new LoginResponseDTO(false, "Email hoặc mật khẩu không đúng!");
+
+                // Tạo UserDTO từ DataTable
+                var user = new UserDTO
+                {
+                    Id = Convert.ToInt64(row["Id"]),
+                    Email = row["Email"].ToString(),
+                    FullName = row["FullName"].ToString(),
+                    Role = row["Role"].ToString(),
+                    IsActive = Convert.ToBoolean(row["IsActive"])
+                };
+
+                // Tạo JWT token
+                string token = JwtHelper.GenerateToken(user);
+
+                // Trả về response thành công
+                return new LoginResponseDTO(
+                    success: true,
+                    message: $"Chào mừng {user.FullName}!",
+                    token: token,
+                    user: user
+                );
+            }
+            catch (Exception ex)
+            {
+                return new LoginResponseDTO(false, $"Lỗi đăng nhập: {ex.Message}");
+            }
+        }
+
         public bool Register(string email, string password, string confirmPassword, string fullName)
+
         {
             // Validation
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) ||

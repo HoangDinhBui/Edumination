@@ -425,4 +425,37 @@ namespace IELTS.DTO
         }
     }
 
+    // =========================================================
+    // 24. LOGIN RESPONSE DTO (cho API Login)
+    // =========================================================
+    public class LoginResponseDTO
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public string Token { get; set; }
+        public UserDTO User { get; set; }
+
+        public LoginResponseDTO()
+        {
+        }
+
+        public LoginResponseDTO(bool success, string message, string token = null, UserDTO user = null)
+        {
+            Success = success;
+            Message = message;
+            Token = token;
+            User = user;
+        }
+
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
+        public static LoginResponseDTO FromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<LoginResponseDTO>(json);
+        }
+    }
+
 }

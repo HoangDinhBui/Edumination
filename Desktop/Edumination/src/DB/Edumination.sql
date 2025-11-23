@@ -304,7 +304,7 @@ GO
 
 -- Tạo tài khoản Admin mặc định
 INSERT INTO Users (Email, PasswordHash, FullName, Role) 
-VALUES ('admin@ielts.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', N'Administrator', 'ADMIN');
+VALUES ('buidinhhoang1910@gmail.com', '$2a$12$1LVVGxzbHkrUZL6r/zRmLukRMwUHD5DKhtZ13bAxSab2tKXgfDXlO', N'Administrator', 'ADMIN');
 
 -- Tạo tài khoản Student demo
 INSERT INTO Users (Email, PasswordHash, FullName, Role) 
@@ -321,3 +321,7 @@ PRINT 'Database created successfully with 20 core tables!';
 select * from Users;
 select * from TestPapers;
 
+ALTER TABLE TestSections
+ADD PdfFileName NVARCHAR(255),
+    PdfFilePath NVARCHAR(500);
+GO
