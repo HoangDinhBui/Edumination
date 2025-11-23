@@ -35,13 +35,13 @@ namespace IELTS.BLL
             return questionDAL.CreateQuestion(sectionId, passageId, questionType, questionText, points, position);
         }
 
-        public DataTable GetChoicesByQuestionId(long questionId)
-        {
-            if (questionId <= 0)
-                throw new Exception("Question ID không hợp lệ!");
+        //public DataTable GetChoicesByQuestionId(long questionId)
+        //{
+        //    if (questionId <= 0)
+        //        throw new Exception("Question ID không hợp lệ!");
 
-            return questionDAL.GetChoicesByQuestionId(questionId);
-        }
+        //    return questionDAL.GetChoicesByQuestionId(questionId);
+        //}
 
         public bool CreateChoice(long questionId, string choiceText, bool isCorrect, int position)
         {

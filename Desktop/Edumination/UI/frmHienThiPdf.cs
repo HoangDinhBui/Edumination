@@ -74,7 +74,7 @@ namespace IELTS.UI
             try
             {
                 // Thư mục assets trong project
-                string assetsFolder = Path.Combine(Application.StartupPath, "..", "..", "UI", "assets");
+                string assetsFolder = Path.Combine(Application.StartupPath, "..", "..", "UI", "assets"); 
 
                 if (!Directory.Exists(assetsFolder))
                     Directory.CreateDirectory(assetsFolder);

@@ -1,5 +1,11 @@
 ﻿
+using Edumination.WinForms.UI.Admin;
+using Edumination.WinForms.UI.Admin.TestManager;
+using IELTS.BLL;
 using IELTS.UI;
+using IELTS.UI.Admin.DashBoard;
+using IELTS.UI.Admin.TestManager;
+
 //using IELTS.UI.IELTS.UI;
 using IELTS.UI.Login;
 
@@ -21,6 +27,14 @@ static class Program
         ApplicationConfiguration.Initialize();
         string fullPath = Path.Combine(Application.StartupPath, "UI", "assets", pdfName);
         //Application.Run(new frmHienThiPdf(fullPath));
-        Application.Run(new SignIn());
+        //Application.Run(new SignIn());
+        //Application.Run(new AddTestSectionForm(5));
+        //Application.Run(new TestForm());
+        Application.Run(new UpdateReadingTestSectionForm(5));
+
+        //AdminDashboardForm dashboard = new AdminDashboardForm();
+        //dashboard.ShowDialog();
+
+        //Application.Run(new AdminMainForm("vbhg", "fafa"));
     }
 }
