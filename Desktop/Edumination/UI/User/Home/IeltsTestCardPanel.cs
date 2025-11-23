@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace IELTS.UI.User.Home
@@ -15,6 +9,11 @@ namespace IELTS.UI.User.Home
         public IeltsTestCardPanel()
         {
             InitializeComponent();
+
+            // Gắn click cho toàn bộ card
+            this.Click += OpenTestLibrary;
+            foreach (Control c in this.Controls)
+                c.Click += OpenTestLibrary;
         }
 
         public Image Thumbnail
@@ -35,19 +34,14 @@ namespace IELTS.UI.User.Home
             set => lblRating.Text = value;
         }
 
-        private void IeltsTestCardPanel_Load(object sender, EventArgs e)
+        // Mở TestLibrary
+        private void OpenTestLibrary(object sender, EventArgs e)
         {
+            var form = new IELTS.UI.User.TestLibrary.TestLibrary();
+            form.Show();
 
-        }
-
-        private void picThumb_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblTitle_Click(object sender, EventArgs e)
-        {
-
+            Form parent = this.FindForm();
+            parent?.Hide();
         }
     }
 }
