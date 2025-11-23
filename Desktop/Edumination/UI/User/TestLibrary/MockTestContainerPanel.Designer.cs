@@ -46,16 +46,14 @@
             // 
             // panelItems
             // 
-            panelItems.Location = new Point(450, 120);
-            panelItems.Name = "panelItems";
-            panelItems.Size = new Size(1100, 300);
-            panelItems.FlowDirection = FlowDirection.LeftToRight;
-            panelItems.WrapContents = true;
             panelItems.AutoScroll = true;
-            panelItems.Padding = new Padding(10);
-            panelItems.Margin = new Padding(10);
             panelItems.BackColor = Color.White;
-
+            panelItems.Location = new Point(450, 120);
+            panelItems.Margin = new Padding(10);
+            panelItems.Name = "panelItems";
+            panelItems.Padding = new Padding(10);
+            panelItems.Size = new Size(1100, 300);
+            panelItems.TabIndex = 2;
             // 
             // MockTestContainerPanel
             // 

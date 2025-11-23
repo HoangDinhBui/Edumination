@@ -155,7 +155,7 @@ namespace IELTS.UI.User.TestTaking.SpeakingTest
             _timer.Stop();
             MessageBox.Show("Speaking test completed! (Mock)", "Submit", MessageBoxButtons.OK);
             Hide();
-            new IELTS.UI.User.TestLibrary.TestLibrary().Show();
+            
         }
     }
 }

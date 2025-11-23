@@ -42,6 +42,7 @@ import DHL from "../../assets/img/DHL.png";
 import WhyBG from "../../assets/img/WhyDifferentBG.png";
 import cardimg from "../../assets/img/cardimg.png";
 import { CheckCircle } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 /**
  * EDM — HomePage (single-file preview)
  * - TailwindCSS layout, light & airy aesthetic
@@ -108,7 +109,7 @@ const students = [
   },
 ];
 
-const Hero: React.FC = () => {
+const Hero: React.FC<{ navigate: ReturnType<typeof useNavigate> }> = ({ navigate }) => {
   const [idx, setIdx] = useState(0);
   const next = () => setIdx((prev) => (prev + 1) % students.length);
   const prev = () =>
@@ -993,6 +994,8 @@ const Footer: React.FC = () => {
 
 
 export default function HomePage() {
+  // Use navigate for programmatic navigation
+  const navigate = useNavigate();
   return (
     <div
       className="min-h-screen w-full text-slate-800"
@@ -1004,7 +1007,8 @@ export default function HomePage() {
       }}
     >
       <Navbar />
-      <Hero />
+      {/* Pass navigate to Hero so it can redirect on ranking button click */}
+      <Hero navigate={navigate} />
       <Stats />
       <WhyDifferent />
       <ProgramCards />

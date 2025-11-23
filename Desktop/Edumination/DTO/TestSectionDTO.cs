@@ -13,6 +13,9 @@ namespace IELTS.DTO
         public string Skill { get; set; } // LISTENING, READING, WRITING, SPEAKING
         public int? TimeLimitMinutes { get; set; }
         public string AudioFilePath { get; set; }
+        public string PdfFileName { get; set; }
+        public string PdfFilePath { get; set; }
+
 
         // Navigation properties
         public List<PassageDTO> Passages { get; set; }

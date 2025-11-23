@@ -1,4 +1,6 @@
 ﻿using Sunny.UI;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace IELTS.UI.User.Results
 {
@@ -6,7 +8,7 @@ namespace IELTS.UI.User.Results
     {
         private System.ComponentModel.IContainer components = null;
 
-        private UILabel lblNumber;
+        private UIButton lblNumber;
         private UILabel lblUserAnswer;
         private UILabel lblCorrectAnswer;
         private Label lblIcon;
@@ -20,66 +22,69 @@ namespace IELTS.UI.User.Results
 
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            lblNumber = new UILabel();
+            lblNumber = new UIButton();
             lblUserAnswer = new UILabel();
             lblCorrectAnswer = new UILabel();
             lblIcon = new Label();
 
             SuspendLayout();
-            // 
-            // lblNumber (vòng tròn xanh chứa số câu)
-            // 
-            lblNumber.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblNumber.ForeColor = Color.White;
-            lblNumber.BackColor = Color.FromArgb(0, 122, 204);
-            lblNumber.Size = new Size(28, 28);
-            lblNumber.Location = new Point(5, 8);
-            lblNumber.TextAlign = ContentAlignment.MiddleCenter;
-            lblNumber.Radius = 14;
-            lblNumber.Padding = new Padding(0);
-            lblNumber.Text = "1";
-            // 
-            // lblUserAnswer
-            // 
-            lblUserAnswer.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-            lblUserAnswer.ForeColor = Color.FromArgb(51, 51, 51);
-            lblUserAnswer.Location = new Point(45, 6);
-            lblUserAnswer.Size = new Size(260, 30);
-            lblUserAnswer.TextAlign = ContentAlignment.MiddleLeft;
-            lblUserAnswer.Text = "User: A";
-            // 
-            // lblCorrectAnswer
-            // 
-            lblCorrectAnswer.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-            lblCorrectAnswer.ForeColor = Color.FromArgb(120, 120, 120);
-            lblCorrectAnswer.Location = new Point(310, 6);
-            lblCorrectAnswer.Size = new Size(260, 30);
-            lblCorrectAnswer.TextAlign = ContentAlignment.MiddleLeft;
-            lblCorrectAnswer.Text = "Correct: C";
-            // 
-            // lblIcon
-            // 
-            lblIcon.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            lblIcon.Location = new Point(580, 7);
-            lblIcon.AutoSize = false;
-            lblIcon.Size = new Size(30, 30);
-            lblIcon.TextAlign = ContentAlignment.MiddleCenter;
-            lblIcon.Text = "✓";
-            lblIcon.ForeColor = Color.FromArgb(0, 160, 80);
 
-            // 
-            // AnswerRowPanel
-            // 
+            // ===================== NUMBER BADGE =====================
+            lblNumber.FillColor = Color.FromArgb(225, 240, 255);
+            lblNumber.FillHoverColor = lblNumber.FillColor;
+            lblNumber.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblNumber.ForeColor = Color.FromArgb(39, 56, 146);
+            lblNumber.Location = new Point(0, 3);
+            lblNumber.MinimumSize = new Size(1, 1);
+            lblNumber.Radius = 16;
+            lblNumber.RectColor = Color.FromArgb(210, 230, 250);
+            lblNumber.RectHoverColor = lblNumber.RectColor;
+            lblNumber.Size = new Size(32, 32);
+            lblNumber.Style = UIStyle.Custom;
+            lblNumber.TextAlign = ContentAlignment.MiddleCenter;
+            lblNumber.Text = "1";
+
+            // ===================== USER ANSWER =====================
+            lblUserAnswer.Font = new Font("Segoe UI", 10.5F, FontStyle.Regular);
+            lblUserAnswer.ForeColor = Color.FromArgb(39, 56, 146);
+            lblUserAnswer.Location = new Point(48, 3);
+            lblUserAnswer.Size = new Size(215, 32);
+            lblUserAnswer.TextAlign = ContentAlignment.MiddleLeft;
+            lblUserAnswer.Text = "1. Keiko";
+
+            // ===================== CORRECT ANSWER =====================
+            lblCorrectAnswer.Font = new Font("Segoe UI", 10.5F, FontStyle.Regular);
+            lblCorrectAnswer.ForeColor = Color.FromArgb(140, 140, 140);
+            lblCorrectAnswer.Location = new Point(265, 3);
+            lblCorrectAnswer.Size = new Size(215, 32);
+            lblCorrectAnswer.TextAlign = ContentAlignment.MiddleLeft;
+            lblCorrectAnswer.Text = "Correct: B";
+
+            // ===================== ICON ✓ / ✕ =====================
+            lblIcon.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblIcon.Location = new Point(500, 3);
+            lblIcon.Size = new Size(32, 32);
+            lblIcon.Text = "✕";
+            lblIcon.ForeColor = Color.FromArgb(235, 85, 85);
+            lblIcon.TextAlign = ContentAlignment.MiddleCenter;
+
+            // ===================== PANEL WRAPPER =====================
             AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.White;
-            BorderStyle = BorderStyle.None;
+
+            // FIX SIZE PRECISELY
+            Size = new Size(540, 38);
+            MinimumSize = new Size(540, 38);
+            MaximumSize = new Size(540, 38);
+            Margin = new Padding(0, 4, 0, 4);
+
             Controls.Add(lblNumber);
             Controls.Add(lblUserAnswer);
             Controls.Add(lblCorrectAnswer);
             Controls.Add(lblIcon);
+
             Name = "AnswerRowPanel";
-            Size = new Size(630, 45);
+
             ResumeLayout(false);
         }
     }

@@ -121,6 +121,7 @@
             btnCourse.TabIndex = 5;
             btnCourse.Text = "IELTS COURSES";
             btnCourse.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnCourse.Click += btnCourse_Click;
             // 
             // UserNavbarPanel
             // 
