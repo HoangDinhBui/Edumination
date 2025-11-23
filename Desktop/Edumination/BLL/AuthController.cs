@@ -166,6 +166,73 @@ namespace IELTS.API
                 message = "Đăng xuất thành công! Vui lòng xóa token ở client."
             });
         }
+
+        /// <summary>
+        /// API Forgot Password - POST /api/auth/forgot-password
+        /// Request Body: { "email": "user@example.com" }
+        /// Response: { "success": true/false, "message": "...", "otpToken": "..." }
+        /// </summary>
+        public string ForgotPassword(ForgotPasswordRequestDTO request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrWhiteSpace(request.Email))
+                {
+                    return JsonConvert.SerializeObject(new ForgotPasswordResponseDTO(
+                        false,
+                        "Email không được để trống!"
+                    ));
+                }
+
+                // Gọi BLL để gửi OTP
+                var response = userBLL.SendForgotPasswordOtp(request.Email);
+
+                return JsonConvert.SerializeObject(response);
+            }
+            catch (Exception ex)
+            {
+                return JsonConvert.SerializeObject(new ForgotPasswordResponseDTO(
+                    false,
+                    $"Lỗi server: {ex.Message}"
+                ));
+            }
+        }
+
+        /// <summary>
+        /// API Reset Password - POST /api/auth/reset-password
+        /// Request Body: { "email": "...", "otpCode": "...", "newPassword": "...", "confirmPassword": "..." }
+        /// Response: { "success": true/false, "message": "..." }
+        /// </summary>
+        public string ResetPassword(ResetPasswordRequestDTO request)
+        {
+            try
+            {
+                if (request == null)
+                {
+                    return JsonConvert.SerializeObject(new ForgotPasswordResponseDTO(
+                        false,
+                        "Request không hợp lệ!"
+                    ));
+                }
+
+                // Gọi BLL để reset password
+                var response = userBLL.ResetPassword(
+                    request.Email,
+                    request.OtpCode,
+                    request.NewPassword,
+                    request.ConfirmPassword
+                );
+
+                return JsonConvert.SerializeObject(response);
+            }
+            catch (Exception ex)
+            {
+                return JsonConvert.SerializeObject(new ForgotPasswordResponseDTO(
+                    false,
+                    $"Lỗi server: {ex.Message}"
+                ));
+            }
+        }
     }
 
     /// <summary>
@@ -199,6 +266,8 @@ namespace IELTS.API
             Console.WriteLine("  POST /api/auth/register");
             Console.WriteLine("  POST /api/auth/validate");
             Console.WriteLine("  POST /api/auth/logout");
+            Console.WriteLine("  POST /api/auth/forgot-password");
+            Console.WriteLine("  POST /api/auth/reset-password");
 
             // Listen for requests
             while (isRunning)
@@ -276,6 +345,16 @@ namespace IELTS.API
                 else if (path == "/api/auth/logout" && request.HttpMethod == "POST")
                 {
                     responseString = authController.Logout();
+                }
+                else if (path == "/api/auth/forgot-password" && request.HttpMethod == "POST")
+                {
+                    var forgotRequest = JsonConvert.DeserializeObject<ForgotPasswordRequestDTO>(requestBody);
+                    responseString = authController.ForgotPassword(forgotRequest);
+                }
+                else if (path == "/api/auth/reset-password" && request.HttpMethod == "POST")
+                {
+                    var resetRequest = JsonConvert.DeserializeObject<ResetPasswordRequestDTO>(requestBody);
+                    responseString = authController.ResetPassword(resetRequest);
                 }
                 else
                 {

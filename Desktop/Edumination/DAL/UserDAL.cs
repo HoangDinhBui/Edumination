@@ -21,12 +21,25 @@ namespace IELTS.DAL
               FROM Users 
               WHERE Email = @Email AND IsActive = 1", conn))
             {
-                cmd.Parameters.Add("@Email", System.Data.SqlDbType.NVarChar, 255).Value = email;
+                // Trim email để tránh khoảng trắng
+                string trimmedEmail = email?.Trim();
+                
+                cmd.Parameters.Add("@Email", System.Data.SqlDbType.NVarChar, 255).Value = trimmedEmail;
+
+                Console.WriteLine($"🔍 [UserDAL] Tìm kiếm email: '{trimmedEmail}'");
 
                 using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
                 {
                     DataTable dt = new DataTable();
                     adapter.Fill(dt);
+                    
+                    Console.WriteLine($"📊 [UserDAL] Kết quả: {dt.Rows.Count} user(s) tìm thấy");
+                    
+                    if (dt.Rows.Count > 0)
+                    {
+                        Console.WriteLine($"✅ [UserDAL] User: {dt.Rows[0]["FullName"]} ({dt.Rows[0]["Email"]})");
+                    }
+                    
                     return dt;
                 }
             }
@@ -146,6 +159,25 @@ namespace IELTS.DAL
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Cập nhật mật khẩu mới (dùng cho forgot password)
+        /// </summary>
+        public bool UpdatePassword(string email, string newPasswordHash)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                @"UPDATE Users 
+              SET PasswordHash = @PasswordHash, UpdatedAt = GETDATE()
+              WHERE Email = @Email AND IsActive = 1", conn))
+            {
+                cmd.Parameters.Add("@Email", System.Data.SqlDbType.NVarChar, 255).Value = email;
+                cmd.Parameters.Add("@PasswordHash", System.Data.SqlDbType.NVarChar, 255).Value = newPasswordHash;
+
+                conn.Open();
+                return cmd.ExecuteNonQuery() > 0;
+            }
         }
     }
 }

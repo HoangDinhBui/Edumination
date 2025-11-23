@@ -458,4 +458,51 @@ namespace IELTS.DTO
         }
     }
 
+    // =========================================================
+    // 25. FORGOT PASSWORD REQUEST DTO
+    // =========================================================
+    public class ForgotPasswordRequestDTO
+    {
+        public string Email { get; set; }
+
+        public ForgotPasswordRequestDTO() { }
+
+        public ForgotPasswordRequestDTO(string email)
+        {
+            Email = email;
+        }
+    }
+
+    // =========================================================
+    // 26. FORGOT PASSWORD RESPONSE DTO
+    // =========================================================
+    public class ForgotPasswordResponseDTO
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+        public string OtpToken { get; set; } // Token để verify OTP sau này
+
+        public ForgotPasswordResponseDTO() { }
+
+        public ForgotPasswordResponseDTO(bool success, string message, string otpToken = null)
+        {
+            Success = success;
+            Message = message;
+            OtpToken = otpToken;
+        }
+    }
+
+    // =========================================================
+    // 27. RESET PASSWORD REQUEST DTO
+    // =========================================================
+    public class ResetPasswordRequestDTO
+    {
+        public string Email { get; set; }
+        public string OtpCode { get; set; }
+        public string NewPassword { get; set; }
+        public string ConfirmPassword { get; set; }
+
+        public ResetPasswordRequestDTO() { }
+    }
+
 }

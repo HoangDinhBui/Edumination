@@ -172,6 +172,133 @@ namespace IELTS.BLL
         {
             return userDAL.GetAllUsers();
         }
+
+        /// <summary>
+        /// Gửi OTP qua email để reset password
+        /// </summary>
+        public ForgotPasswordResponseDTO SendForgotPasswordOtp(string email)
+        {
+            try
+            {
+                Console.WriteLine($"\n{'='*60}");
+                Console.WriteLine($" [FORGOT PASSWORD] Bắt đầu xử lý");
+                Console.WriteLine($" Email nhận được: '{email}'");
+                Console.WriteLine($"   Length: {email?.Length ?? 0} ký tự");
+                
+                // Validate email
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    Console.WriteLine($" Email rỗng!");
+                    return new ForgotPasswordResponseDTO(false, "Email không được để trống!");
+                }
+
+                if (!email.Contains("@"))
+                {
+                    Console.WriteLine($" Email không hợp lệ (thiếu @)!");
+                    return new ForgotPasswordResponseDTO(false, "Email không hợp lệ!");
+                }
+
+                // Kiểm tra email có tồn tại không
+                Console.WriteLine($" Đang tìm kiếm email trong database...");
+                DataTable result = userDAL.GetUserByEmail(email);
+                
+                Console.WriteLine($" Kết quả query: {result.Rows.Count} row(s)");
+                
+                if (result.Rows.Count == 0)
+                {
+                    Console.WriteLine($" Email không tồn tại trong hệ thống!");
+                    Console.WriteLine($"{'='*60}\n");
+                    return new ForgotPasswordResponseDTO(false, "Email không tồn tại trong hệ thống!");
+                }
+
+                // Lấy thông tin user
+                string fullName = result.Rows[0]["FullName"].ToString();
+
+                // Tạo mã OTP
+                string otpCode = OtpManager.GenerateOtp();
+
+                // Lưu OTP vào memory
+                OtpManager.SaveOtp(email, otpCode);
+
+                // Gửi email qua SMTP
+                EmailService emailService = new EmailService();
+                Console.WriteLine($"\nĐang gửi OTP qua email đến: {email}");
+                
+                bool emailSent = emailService.SendOtpEmail(email, otpCode, fullName);
+
+                if (emailSent)
+                {
+                    return new ForgotPasswordResponseDTO(
+                        true,
+                        "Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!",
+                        otpCode // Token để verify sau này
+                    );
+                }
+                else
+                {
+                    // Nếu gửi email thất bại, vẫn trả về OTP để có thể test
+                    Console.WriteLine($" Không gửi được email, nhưng OTP vẫn được tạo: {otpCode}");
+                    return new ForgotPasswordResponseDTO(
+                        false, 
+                        "Không thể gửi email. Vui lòng kiểm tra cấu hình email hoặc xem Console để lấy OTP."
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($" Lỗi trong SendForgotPasswordOtp: {ex.Message}");
+                return new ForgotPasswordResponseDTO(false, $"Lỗi: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Reset password sau khi verify OTP
+        /// </summary>
+        public ForgotPasswordResponseDTO ResetPassword(string email, string otpCode, string newPassword, string confirmPassword)
+        {
+            try
+            {
+                // Validate input
+                if (string.IsNullOrWhiteSpace(email))
+                    return new ForgotPasswordResponseDTO(false, "Email không được để trống!");
+
+                if (string.IsNullOrWhiteSpace(otpCode))
+                    return new ForgotPasswordResponseDTO(false, "Mã OTP không được để trống!");
+
+                if (string.IsNullOrWhiteSpace(newPassword))
+                    return new ForgotPasswordResponseDTO(false, "Mật khẩu mới không được để trống!");
+
+                if (newPassword.Length < 6)
+                    return new ForgotPasswordResponseDTO(false, "Mật khẩu phải có ít nhất 6 ký tự!");
+
+                if (newPassword != confirmPassword)
+                    return new ForgotPasswordResponseDTO(false, "Mật khẩu xác nhận không khớp!");
+
+                // Verify OTP
+                bool otpValid = OtpManager.VerifyOtp(email, otpCode);
+                if (!otpValid)
+                    return new ForgotPasswordResponseDTO(false, "Mã OTP không hợp lệ hoặc đã hết hạn!");
+
+                // Hash password mới
+                string newPasswordHash = HashPassword(newPassword);
+
+                // Cập nhật password trong database
+                bool updated = userDAL.UpdatePassword(email, newPasswordHash);
+
+                if (updated)
+                {
+                    return new ForgotPasswordResponseDTO(true, "Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.");
+                }
+                else
+                {
+                    return new ForgotPasswordResponseDTO(false, "Không thể cập nhật mật khẩu. Vui lòng thử lại!");
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ForgotPasswordResponseDTO(false, $"Lỗi: {ex.Message}");
+            }
+        }
     }
 
     // =========================================================

@@ -19,6 +19,9 @@
     <Compile Update="UI\frmHienThiPdf.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="UI\Login\ForgotPasswordForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="UI\Login\Register.cs">
       <SubType>Form</SubType>
     </Compile>

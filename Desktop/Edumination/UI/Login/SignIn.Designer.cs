@@ -13,6 +13,7 @@
         private System.Windows.Forms.TextBox txtEmail;
         private System.Windows.Forms.Label lblPassword;
         private System.Windows.Forms.TextBox txtPassword;
+        private System.Windows.Forms.LinkLabel lnkForgotPassword;
         private System.Windows.Forms.Button btnLogin;
         private System.Windows.Forms.Button btnRegister;
 
@@ -84,6 +85,19 @@
             this.txtPassword.Size = new System.Drawing.Size(350, 30);
             this.txtPassword.PasswordChar = '●';
             this.Controls.Add(this.txtPassword);
+
+            // lnkForgotPassword
+            this.lnkForgotPassword = new System.Windows.Forms.LinkLabel();
+            this.lnkForgotPassword.Name = "lnkForgotPassword";
+            this.lnkForgotPassword.Text = "Quên mật khẩu?";
+            this.lnkForgotPassword.Location = new System.Drawing.Point(50, 295);
+            this.lnkForgotPassword.Size = new System.Drawing.Size(150, 20);
+            this.lnkForgotPassword.LinkColor = System.Drawing.Color.FromArgb(80, 160, 255);
+            this.lnkForgotPassword.ActiveLinkColor = System.Drawing.Color.FromArgb(60, 140, 235);
+            this.lnkForgotPassword.VisitedLinkColor = System.Drawing.Color.FromArgb(80, 160, 255);
+            this.lnkForgotPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.lnkForgotPassword.Click += new System.EventHandler(this.lnkForgotPassword_Click);
+            this.Controls.Add(this.lnkForgotPassword);
 
             // btnLogin
             this.btnLogin = new System.Windows.Forms.Button();

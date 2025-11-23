@@ -168,5 +168,14 @@ namespace IELTS.UI.Login
             registerForm.ShowDialog();
         }
 
+        /// <summary>
+        /// Xử lý khi click vào link "Quên mật khẩu?"
+        /// </summary>
+        private void lnkForgotPassword_Click(object sender, EventArgs e)
+        {
+            ForgotPasswordForm forgotForm = new ForgotPasswordForm();
+            forgotForm.ShowDialog();
+        }
+
     }
 }
