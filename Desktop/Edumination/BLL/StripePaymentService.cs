@@ -23,15 +23,13 @@ namespace IELTS.BLL
         public StripePaymentService()
         {
             // Load biến môi trường từ file .env
-            // Lưu ý: Cần cài đặt package DotNetEnv: dotnet add package DotNetEnv
+            string envPath = null;
             try 
             {
-                // Tìm file .env từ thư mục hiện tại lùi dần ra thư mục gốc
+                // 1. Tìm file .env từ thư mục hiện tại lùi dần ra thư mục gốc
+                // 1. Tìm file .env từ thư mục hiện tại lùi dần ra thư mục gốc ổ đĩa
                 string currentDir = AppDomain.CurrentDomain.BaseDirectory;
-                string envPath = "";
-                
-                // Thử tìm trong 5 cấp thư mục cha
-                for (int i = 0; i < 5; i++)
+                while (currentDir != null)
                 {
                     string path = System.IO.Path.Combine(currentDir, ".env");
                     if (System.IO.File.Exists(path))
@@ -41,31 +39,41 @@ namespace IELTS.BLL
                     }
                     
                     var parent = System.IO.Directory.GetParent(currentDir);
-                    if (parent == null) break;
+                    if (parent == null) break; // Đã đến root ổ đĩa
                     currentDir = parent.FullName;
                 }
 
+                // Không còn sử dụng đường dẫn cứng fallback nữa
+                // Code sẽ tự động tìm thấy nếu file .env nằm trong cấu trúc thư mục cha
+
                 if (!string.IsNullOrEmpty(envPath))
                 {
-                    Console.WriteLine($"✅ Loaded .env from: {envPath}");
+                    Console.WriteLine($"✅ [Stripe] Loaded .env from: {envPath}");
                     DotNetEnv.Env.Load(envPath);
                 }
                 else
                 {
-                    Console.WriteLine("⚠️ .env file not found!");
+                    Console.WriteLine("⚠️ [Stripe] .env file not found!");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"⚠️ Không thể load file .env: {ex.Message}");
+                Console.WriteLine($"⚠️ [Stripe] Error loading .env: {ex.Message}");
             }
 
-            // Lấy Key từ biến môi trường (ưu tiên) hoặc dùng placeholder
+            // Lấy Key từ biến môi trường
             string secretKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
             
-            if (string.IsNullOrEmpty(secretKey))
+            // Debug log (chỉ hiện 10 ký tự đầu để bảo mật)
+            if (!string.IsNullOrEmpty(secretKey))
             {
-                // Fallback nếu không tìm thấy trong .env (chỉ dùng cho dev/test nếu cần)
+                string maskedKey = secretKey.Length > 10 ? secretKey.Substring(0, 10) + "..." : "***";
+                Console.WriteLine($"✅ [Stripe] Key loaded: {maskedKey}");
+            }
+            else
+            {
+                Console.WriteLine("❌ [Stripe] STRIPE_SECRET_KEY not found in environment variables!");
+                // Fallback (sẽ gây lỗi nếu không sửa code, nhưng để báo hiệu rõ ràng)
                 secretKey = "sk_test_your_secret_key_here"; 
             }
 
@@ -84,12 +92,11 @@ namespace IELTS.BLL
                 Console.WriteLine($"   Price: {priceVND:N0} VND");
                 Console.WriteLine($"   User: {userEmail}");
 
-                // Chuyển đổi VND sang USD (tỷ giá ~25,000 VND = 1 USD)
-                // Stripe yêu cầu số tiền tính bằng cents (1 USD = 100 cents)
-                decimal priceUSD = priceVND / 25000m;
-                long priceCents = (long)(priceUSD * 100);
-
-                Console.WriteLine($"   Price USD: ${priceUSD:F2} ({priceCents} cents)");
+                // Sử dụng trực tiếp VND (Stripe hỗ trợ VND)
+                // VND là zero-decimal currency, nên 1 VND = 1 unit
+                // Tuy nhiên, Stripe yêu cầu số tiền tối thiểu khoảng $0.50 USD (~12,000 VND)
+                
+                Console.WriteLine($"   Price: {priceVND:N0} VND");
 
                 var options = new SessionCreateOptions
                 {
@@ -103,7 +110,7 @@ namespace IELTS.BLL
                         {
                             PriceData = new SessionLineItemPriceDataOptions
                             {
-                                Currency = "usd",
+                                Currency = "vnd", // Sử dụng VND
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
                                     Name = courseTitle,
@@ -113,7 +120,7 @@ namespace IELTS.BLL
                                         "https://via.placeholder.com/300x200?text=IELTS+Course"
                                     }
                                 },
-                                UnitAmount = priceCents,
+                                UnitAmount = priceVND, // Giá trị VND trực tiếp
                             },
                             Quantity = 1,
                         },
@@ -164,7 +171,7 @@ namespace IELTS.BLL
                 Session session = service.Get(sessionId);
 
                 Console.WriteLine($"   Status: {session.PaymentStatus}");
-                Console.WriteLine($"   Amount: {session.AmountTotal / 100m:F2} USD");
+                Console.WriteLine($"   Amount: {session.AmountTotal:N0} VND");
 
                 bool isPaid = session.PaymentStatus == "paid";
 
@@ -202,7 +209,7 @@ namespace IELTS.BLL
                     { "user_id", session.Metadata["user_id"] },
                     { "price_vnd", session.Metadata["price_vnd"] },
                     { "payment_status", session.PaymentStatus },
-                    { "amount_total", ((session.AmountTotal ?? 0) / 100m).ToString("F2") }
+                    { "amount_total", (session.AmountTotal ?? 0).ToString() }
                 };
             }
             catch (Exception ex)

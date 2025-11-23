@@ -329,46 +329,67 @@ namespace IELTS.API
 
                 // Route requests
                 string path = request.Url.AbsolutePath.ToLower();
+                string method = request.HttpMethod.ToUpper();
+                Console.WriteLine($"[API] Received request: {method} {path}");
 
-                if (path == "/api/auth/login" && request.HttpMethod == "POST")
+                if (path == "/api/auth/login" && method == "POST")
                 {
                     var loginRequest = JsonConvert.DeserializeObject<LoginRequestDTO>(requestBody);
                     responseString = authController.Login(loginRequest);
                 }
-                else if (path == "/api/auth/register" && request.HttpMethod == "POST")
+                else if (path == "/api/auth/register" && method == "POST")
                 {
                     var registerRequest = JsonConvert.DeserializeObject<RegisterRequestDTO>(requestBody);
                     responseString = authController.Register(registerRequest);
                 }
-                else if (path == "/api/auth/validate" && request.HttpMethod == "POST")
+                else if (path == "/api/auth/validate" && method == "POST")
                 {
                     var tokenRequest = JsonConvert.DeserializeObject<dynamic>(requestBody);
                     string token = tokenRequest?.token;
                     responseString = authController.ValidateToken(token);
                 }
-                else if (path == "/api/auth/logout" && request.HttpMethod == "POST")
+                else if (path == "/api/auth/logout" && method == "POST")
                 {
                     responseString = authController.Logout();
                 }
-                else if (path == "/api/auth/forgot-password" && request.HttpMethod == "POST")
+                else if (path == "/api/auth/forgot-password" && method == "POST")
                 {
                     var forgotRequest = JsonConvert.DeserializeObject<ForgotPasswordRequestDTO>(requestBody);
                     responseString = authController.ForgotPassword(forgotRequest);
                 }
-                else if (path == "/api/auth/reset-password" && request.HttpMethod == "POST")
+                else if (path == "/api/auth/reset-password" && method == "POST")
                 {
                     var resetRequest = JsonConvert.DeserializeObject<ResetPasswordRequestDTO>(requestBody);
                     responseString = authController.ResetPassword(resetRequest);
                 }
-                else if (path == "/api/payment/create-session" && request.HttpMethod == "POST")
+                else if (path == "/api/payment/create-session" && method == "POST")
                 {
                     var paymentRequest = JsonConvert.DeserializeObject<CreatePaymentSessionRequestDTO>(requestBody);
                     responseString = paymentController.CreateSession(paymentRequest);
                 }
-                else if (path == "/api/payment/verify" && request.HttpMethod == "POST")
+                else if (path == "/api/payment/verify" && method == "POST")
                 {
                     var verifyRequest = JsonConvert.DeserializeObject<VerifyPaymentRequestDTO>(requestBody);
                     responseString = paymentController.VerifyPayment(verifyRequest);
+                }
+                // Xử lý callback từ Stripe (GET request)
+                else if (path.StartsWith("/payment/success"))
+                {
+                    string sessionId = request.QueryString["session_id"];
+                    if (!string.IsNullOrEmpty(sessionId))
+                    {
+                        // Tự động verify thanh toán
+                        var verifyRequest = new VerifyPaymentRequestDTO { SessionId = sessionId };
+                        paymentController.VerifyPayment(verifyRequest);
+                    }
+
+                    response.ContentType = "text/html";
+                    responseString = "<html><body><h1 style='color:green'>Payment Successful!</h1><p>You can return to the application now.</p><script>setTimeout(function(){window.close();}, 3000);</script></body></html>";
+                }
+                else if (path.StartsWith("/payment/cancel"))
+                {
+                    response.ContentType = "text/html";
+                    responseString = "<html><body><h1 style='color:red'>Payment Cancelled!</h1><p>You can try again later.</p><script>setTimeout(function(){window.close();}, 3000);</script></body></html>";
                 }
                 else
                 {
@@ -381,7 +402,11 @@ namespace IELTS.API
                 }
 
                 // Send response
-                response.ContentType = "application/json";
+                if (response.ContentType == null)
+                {
+                    response.ContentType = "application/json";
+                }
+                
                 response.ContentEncoding = Encoding.UTF8;
                 byte[] buffer = Encoding.UTF8.GetBytes(responseString);
                 response.ContentLength64 = buffer.Length;
@@ -390,6 +415,7 @@ namespace IELTS.API
             catch (Exception ex)
             {
                 response.StatusCode = 500;
+                response.ContentType = "application/json"; // Đảm bảo lỗi trả về JSON
                 responseString = JsonConvert.SerializeObject(new
                 {
                     success = false,
