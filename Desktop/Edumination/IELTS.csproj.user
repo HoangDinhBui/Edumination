@@ -28,6 +28,12 @@
     <Compile Update="UI\Login\SignIn.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="UI\User\Courses\CourseCardPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\User\Courses\CoursesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="UI\User\Home\Home.cs">
       <SubType>Form</SubType>
     </Compile>

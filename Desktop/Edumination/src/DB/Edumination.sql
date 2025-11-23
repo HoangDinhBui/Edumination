@@ -65,6 +65,11 @@ CREATE TABLE TestSections (
 );
 GO
 
+ALTER TABLE TestSections
+ADD PdfFileName NVARCHAR(255),
+    PdfFilePath NVARCHAR(500);
+GO
+
 -- =========================================================
 -- 4. PASSAGES (Đoạn văn cho Reading/Listening)
 -- =========================================================
@@ -320,6 +325,90 @@ PRINT 'Database created successfully with 20 core tables!';
 
 select * from Users;
 select * from TestPapers;
+
+INSERT INTO TestPapers (Code, Title, Description, IsPublished, CreatedBy)
+VALUES
+('MT2025JAN', 'IELTS Mock Test 2025 January', 'Updated Cambridge style mock test for 2025', 1, 1),
+('MT2024OCT', 'IELTS Mock Test 2024 October', 'Latest mock test 2024 Q4', 1, 1),
+('MT2024JUL', 'IELTS Mock Test 2024 July', 'Mid-year edition mock test', 1, 1),
+('MT2023DEC', 'IELTS Mock Test 2023 December', 'Updated end-year mock exam', 1, 1),
+('MT2023APR', 'IELTS Mock Test 2023 April', 'Spring edition mock test', 1, 1),
+('MT2022NOV', 'IELTS Mock Test 2022 November', 'Legacy Cambridge mock test', 1, 1),
+('MT2022SEP', 'IELTS Mock Test 2022 September', 'Classic mock test 2022', 1, 1),
+('MT2021JUN', 'IELTS Mock Test 2021 June', 'Old but gold mock test', 1, 1),
+('MT2020FEB', 'IELTS Mock Test 2020 February', 'Starter mock test for beginners', 1, 1),
+('MT2019OCT', 'IELTS Mock Test 2019 October', 'Archive version mock test', 1, 1);
+
+INSERT INTO Courses (Title, Description, Level, PriceVND, IsPublished, CreatedBy)
+VALUES
+(N'IELTS Foundation', N'For beginners starting from band 0.0', 'BEGINNER', 1200000, 1, 1),
+(N'IELTS 5.5–6.0 Booster', N'Improve to mid–intermediate band', 'INTERMEDIATE', 1800000, 1, 1),
+(N'IELTS 6.0–7.5 Intensive', N'Advanced course targeting high bands', 'ADVANCED', 2400000, 1, 1),
+(N'IELTS 7.5–9.0 Mastery', N'Elite band preparation for top scorers', 'ADVANCED', 3200000, 1, 1);
+
+INSERT INTO TestSections (PaperId, Skill, TimeLimitMinutes, AudioFilePath, PdfFileName, PdfFilePath)
+VALUES
+(1, 'LISTENING', 30, 'assets/audio/listening1.mp3', 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(1, 'READING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(1, 'WRITING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(1, 'SPEAKING', 15, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf');
+
+INSERT INTO TestSections (PaperId, Skill, TimeLimitMinutes, AudioFilePath, PdfFileName, PdfFilePath)
+VALUES
+(2, 'LISTENING', 30, 'assets/audio/listening2.mp3', 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(2, 'READING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(2, 'WRITING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(2, 'SPEAKING', 15, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf');
+
+INSERT INTO TestSections (PaperId, Skill, TimeLimitMinutes, AudioFilePath, PdfFileName, PdfFilePath)
+VALUES
+(3, 'LISTENING', 30, 'assets/audio/listening3.mp3', 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(3, 'READING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(3, 'WRITING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(3, 'SPEAKING', 15, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf');
+
+
+INSERT INTO TestPapers (Code, Title, Description, IsPublished, CreatedBy)
+VALUES
+('MT2025JAN', 'IELTS Mock Test 2025 January', 'Updated Cambridge style mock test for 2025', 1, 1),
+('MT2024OCT', 'IELTS Mock Test 2024 October', 'Latest mock test 2024 Q4', 1, 1),
+('MT2024JUL', 'IELTS Mock Test 2024 July', 'Mid-year edition mock test', 1, 1),
+('MT2023DEC', 'IELTS Mock Test 2023 December', 'Updated end-year mock exam', 1, 1),
+('MT2023APR', 'IELTS Mock Test 2023 April', 'Spring edition mock test', 1, 1),
+('MT2022NOV', 'IELTS Mock Test 2022 November', 'Legacy Cambridge mock test', 1, 1),
+('MT2022SEP', 'IELTS Mock Test 2022 September', 'Classic mock test 2022', 1, 1),
+('MT2021JUN', 'IELTS Mock Test 2021 June', 'Old but gold mock test', 1, 1),
+('MT2020FEB', 'IELTS Mock Test 2020 February', 'Starter mock test for beginners', 1, 1),
+('MT2019OCT', 'IELTS Mock Test 2019 October', 'Archive version mock test', 1, 1);
+
+INSERT INTO Courses (Title, Description, Level, PriceVND, IsPublished, CreatedBy)
+VALUES
+(N'IELTS Foundation', N'For beginners starting from band 0.0', 'BEGINNER', 1200000, 1, 1),
+(N'IELTS 5.5–6.0 Booster', N'Improve to mid–intermediate band', 'INTERMEDIATE', 1800000, 1, 1),
+(N'IELTS 6.0–7.5 Intensive', N'Advanced course targeting high bands', 'ADVANCED', 2400000, 1, 1),
+(N'IELTS 7.5–9.0 Mastery', N'Elite band preparation for top scorers', 'ADVANCED', 3200000, 1, 1);
+
+INSERT INTO TestSections (PaperId, Skill, TimeLimitMinutes, AudioFilePath, PdfFileName, PdfFilePath)
+VALUES
+(1, 'LISTENING', 30, 'assets/audio/listening1.mp3', 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(1, 'READING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(1, 'WRITING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(1, 'SPEAKING', 15, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf');
+
+INSERT INTO TestSections (PaperId, Skill, TimeLimitMinutes, AudioFilePath, PdfFileName, PdfFilePath)
+VALUES
+(2, 'LISTENING', 30, 'assets/audio/listening2.mp3', 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(2, 'READING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(2, 'WRITING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(2, 'SPEAKING', 15, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf');
+
+INSERT INTO TestSections (PaperId, Skill, TimeLimitMinutes, AudioFilePath, PdfFileName, PdfFilePath)
+VALUES
+(3, 'LISTENING', 30, 'assets/audio/listening3.mp3', 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(3, 'READING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(3, 'WRITING', 60, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf'),
+(3, 'SPEAKING', 15, NULL, 'C19-Test 4.pdf', 'assets/papers/C19-Test 4.pdf');
+
 
 ALTER TABLE TestSections
 ADD PdfFileName NVARCHAR(255),
