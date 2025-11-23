@@ -414,3 +414,44 @@ ALTER TABLE TestSections
 ADD PdfFileName NVARCHAR(255),
     PdfFilePath NVARCHAR(500);
 GO
+
+INSERT INTO Questions
+(
+    SectionId,          -- ID của phần WRITING (tự động lấy)
+    PassageId,          -- NULL vì không có passage
+    QuestionType,       -- ESSAY
+    QuestionText,       -- Đề bài
+    Points,             -- Điểm tối đa (ví dụ 9)
+    Position            -- Vị trí trong section (1 = Task 1)
+)
+SELECT
+    ts.Id,
+    NULL,
+    N'ESSAY',
+    N'You should spend about 20 minutes on this task.\n\nThe graph below shows the number of tourists visiting three different countries between 2000 and 2020.\n\nSummarise the information by selecting and reporting the main features, and make comparisons where relevant.',
+    9,
+    1
+FROM TestSections ts
+WHERE ts.PaperId = 1                -- Thay 1 bằng Id của Paper bạn muốn (ví dụ Paper 1)
+  AND ts.Skill = N'WRITING';
+
+
+INSERT INTO Questions
+(
+    SectionId,
+    PassageId,
+    QuestionType,
+    QuestionText,
+    Points,
+    Position
+)
+SELECT
+    ts.Id,
+    NULL,
+    N'ESSAY',
+    N'You should spend about 40 minutes on this task.\n\nSome people think that governments should invest more in public transportation, while others believe that the money should be spent on improving roads.\n\nDiscuss both views and give your own opinion.',
+    9,
+    2
+FROM TestSections ts
+WHERE ts.PaperId = 1                -- Thay 1 bằng Id của Paper bạn muốn
+  AND ts.Skill = N'WRITING';
