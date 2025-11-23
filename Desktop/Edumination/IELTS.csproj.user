@@ -94,6 +94,9 @@
     <Compile Update="UI\User\TestTaking\SpeakingTest\SpeakingTest.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="UI\User\TestTaking\WritingTest\WritingResultForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="UI\User\TestTaking\WritingTest\WritingTest.cs">
       <SubType>Form</SubType>
     </Compile>

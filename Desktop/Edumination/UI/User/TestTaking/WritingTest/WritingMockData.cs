@@ -11,6 +11,7 @@ namespace IELTS.UI.User.TestTaking.WritingTest
         public string PartName { get; set; }
         public string Title { get; set; }
         public string Prompt { get; set; }
+        public string Question => Prompt;
     }
 
     internal static class WritingMockData

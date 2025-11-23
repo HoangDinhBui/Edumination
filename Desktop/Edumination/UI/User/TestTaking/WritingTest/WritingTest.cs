@@ -159,23 +159,70 @@ namespace IELTS.UI.User.TestTaking.WritingTest
             }
         }
 
-        private void SubmitTest()
+        private async void SubmitTest()
         {
             SaveCurrentEssay();
+            _timer.Stop();
 
-            // MOCK SCORING: đếm số từ
-            int totalWords = _userEssays.Values
-                .Select(text => (text ?? "")
-                .Split(' ', '\n', '\r', '\t')
-                .Where(w => !string.IsNullOrWhiteSpace(w))
-                .Count())
-                .Sum();
+            // Hiển thị loading đơn giản
+            var loadingForm = new Form
+            {
+                Size = new Size(300, 100),
+                StartPosition = FormStartPosition.CenterScreen,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                ControlBox = false,
+                Text = "Please Wait"
+            };
+            var lbl = new Label
+            {
+                Text = "AI is grading your writing...\nThis may take a few seconds.",
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Segoe UI", 10)
+            };
+            loadingForm.Controls.Add(lbl);
+            loadingForm.Show(); // Show non-modal để code tiếp tục chạy (nhưng await sẽ pause)
+            // Thực tế nên dùng Task.Run để không block UI thread hoàn toàn nếu ShowDialog
 
-            MessageBox.Show(
-                $"You have written approximately {totalWords} words across all tasks.\n(Mock scoring – no band given.)",
-                "Writing Submitted",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            try
+            {
+                var groqService = new IELTS.BLL.GroqService();
+
+                // Demo: Chấm bài của Task hiện tại
+                // Trong thực tế nên chấm tất cả các task và tổng hợp lại
+                var task = _tasks[_currentTaskIndex];
+                string essay = "";
+                _userEssays.TryGetValue(task.PartName, out essay);
+
+                if (string.IsNullOrWhiteSpace(essay))
+                {
+                    loadingForm.Close();
+                    MessageBox.Show("No essay content found to grade.", "Info");
+                }
+                else
+                {
+                    // Gọi AI
+                    var result = await groqService.GradeWritingAsync(task.Prompt, essay);
+                    
+                    loadingForm.Close();
+
+                    // Hiển thị kết quả
+                    using (var resultForm = new WritingResultForm(result.BandScore, result.Feedback, result.Correction))
+                    {
+                        resultForm.ShowDialog();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                loadingForm.Close();
+                MessageBox.Show($"Error grading essay: {ex.Message}\n\nPlease check your internet connection and GROQ_API_KEY in .env file.", "Grading Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            // Sau khi xem kết quả xong thì thoát
+            Hide();
+            // Mở lại TestLibrary hoặc Home tùy logic
+            // new IELTS.UI.User.TestLibrary.TestLibrary().Show(); 
         }
     }
 }
