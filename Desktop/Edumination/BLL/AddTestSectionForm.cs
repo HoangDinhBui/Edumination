@@ -601,7 +601,7 @@ namespace IELTS.BLL
                 {
                     // Save to database
                     bool success = _testSectionBLL.SaveTestSection(
-                        3,
+                        TestPaperId,
                         "READING",
                         60,
                         pdfFileName,

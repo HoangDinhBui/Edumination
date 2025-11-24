@@ -47,7 +47,8 @@ static class Program
         ApplicationConfiguration.Initialize();
         string fullPath = Path.Combine(Application.StartupPath, "UI", "assets", pdfName);
         //Application.Run(new frmHienThiPdf(fullPath));
-        Application.Run(new Home());
+        Application.Run(new SignIn());
+        //Application.Run(new AdminMainForm("sfa","aaa"));
 
         // Stop server when app exits
         apiServer?.Stop();

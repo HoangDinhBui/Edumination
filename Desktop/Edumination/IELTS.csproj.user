@@ -40,6 +40,9 @@
     <Compile Update="UI\frmHienThiPdf.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="UI\Login\ForgotPasswordForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="UI\Login\Register.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -49,14 +52,38 @@
     <Compile Update="UI\ReportManager\ReportsPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\User\Courses\CourseCardPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\User\Courses\CoursesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\User\Home\Home.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="UI\User\Home\IeltsTestCardPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\User\Home\LessonCardPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\User\Home\UserNavbarPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\User\Results\AnswerResultForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\User\Results\AnswerRowPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\User\TestLibrary\MockTestContainerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\User\TestLibrary\MockTestItemPanel.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\User\TestLibrary\TestLibrary.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Update="UI\User\TestTaking\Controls\AnswerPanel.cs">
       <SubType>UserControl</SubType>
@@ -86,6 +113,15 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="UI\User\TestTaking\ReadingTest\ReadingTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\User\TestTaking\SpeakingTest\SpeakingTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\User\TestTaking\WritingTest\WritingResultForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\User\TestTaking\WritingTest\WritingTest.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
