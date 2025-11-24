@@ -1,55 +1,33 @@
-﻿using IELTS.UI.User.TestTaking.ReadingTest;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Media;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace IELTS.UI.User.TestTaking.Controls
 {
     public partial class AudioPlayerPanel : UserControl
     {
-        private SoundPlayer _player;
-        private string _audioPath;
-
         public AudioPlayerPanel()
         {
             InitializeComponent();
         }
 
-        // Mock: hiển thị data từ ReadingPart
-        public void DisplayPart(ReadingPart part)
+        public void LoadAudio(string audioPath)
         {
-            lblTitle.Text = part.PassageTitle;
-            lblDescription.Text = part.PassageText;
+            if (string.IsNullOrWhiteSpace(audioPath))
+            {
+                MessageBox.Show("No audio file available for this Listening test.",
+                    "Missing Audio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            // AUDIO MOCK – bạn có thể đổi sang path thật
-            _audioPath = Application.StartupPath + @"\assets\audio\mock_listening.wav";
-        }
-
-        private void btnPlay_Click(object sender, EventArgs e)
-        {
             try
             {
-                if (_player == null && System.IO.File.Exists(_audioPath))
-                    _player = new SoundPlayer(_audioPath);
-
-                _player?.Play();
+                axWindowsMediaPlayer.URL = audioPath;
+                axWindowsMediaPlayer.Ctlcontrols.stop();
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("Cannot play audio (mock): " + ex.Message);
+                MessageBox.Show("Failed to load audio file.",
+                    "Audio Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void btnStop_Click(object sender, EventArgs e)
-        {
-            _player?.Stop();
         }
     }
 }
