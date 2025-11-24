@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -7,11 +6,19 @@ namespace IELTS.UI.User.TestLibrary
 {
     public partial class MockTestItemPanel : UserControl
     {
-        public string Skill { get; set; }   // ⭐ Lưu skill để filter
+        public long PaperId { get; set; }
+        public long SectionId { get; set; }
+        public string Skill { get; set; }
 
         public MockTestItemPanel()
         {
             InitializeComponent();
+
+            this.Cursor = Cursors.Hand;
+
+            this.Click += OpenTest;
+            foreach (Control c in this.Controls)
+                c.Click += OpenTest;
         }
 
         public void SetData(string skill, string title, string taken, long sectionId = 0)
@@ -68,7 +75,8 @@ namespace IELTS.UI.User.TestLibrary
         }
 
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
-        private static extern IntPtr CreateRoundRectRgn(int left, int top, int right, int bottom,
+        private static extern IntPtr CreateRoundRectRgn(
+            int left, int top, int right, int bottom,
             int width, int height);
     }
 }

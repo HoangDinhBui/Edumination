@@ -1,59 +1,135 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using IELTS.DAL;
 using IELTS.UI.User.TestTaking.Controls;
-
 
 namespace IELTS.UI.User.TestTaking.ReadingTest
 {
     public partial class ReadingTest : Form
     {
-        private readonly List<ReadingPart> _parts;
-        private int _currentPartIndex = 0;
+        // ====== FIELDS ======
+        private readonly long _paperId;
+        private readonly long _sectionId;
 
         private int _remainingSeconds;
         private readonly System.Windows.Forms.Timer _timer;
 
-        // Lưu câu trả lời của user cho tất cả câu
-        private readonly Dictionary<int, string> _userAnswers = new();
-
-
-        public ReadingTest()
+        // ====== CONSTRUCTOR ======
+        public ReadingTest(long paperId, long sectionId)
         {
+            _paperId = paperId;
+            _sectionId = sectionId;
+
             InitializeComponent();
-            // Full screen
+
             this.WindowState = FormWindowState.Maximized;
+            this.StartPosition = FormStartPosition.CenterScreen;
 
-            // Load mock data
-            _parts = ReadingMockData.GetParts();
-            _remainingSeconds = ReadingMockData.TotalTimeSeconds;
-
-            // Timer
+            // ⭐ KHỞI TẠO TIMER — bắt buộc
             _timer = new System.Windows.Forms.Timer();
             _timer.Interval = 1000;
             _timer.Tick += Timer_Tick;
         }
+
+        // Designer cần constructor rỗng → gọi về constructor chính
+        public ReadingTest() : this(0, 0) { }
+
         private void ReadingTest_Load(object sender, EventArgs e)
         {
-            testNavBar.OnExitRequested += TestNavBar_OnExitRequested;
-            testNavBar.OnSubmitRequested += TestNavBar_OnSubmitRequested;
-            testFooter.OnPartSelected += TestFooter_OnPartSelected;
+            if (_sectionId <= 0)
+            {
+                MessageBox.Show(
+                    "No Reading section specified. Please open this test from Test Library.",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
 
-            // Load footer từ mockdata
-            testFooter.LoadParts(_parts.Select(p => p.PartName));
+                Close();
+                return;
+            }
 
-            ShowPart(0);
+            // Load từ DB
+            if (!LoadSectionFromDatabase())
+            {
+                Close();
+                return;
+            }
 
             UpdateTimeLabel();
             _timer.Start();
         }
 
+        // ====== LOAD DB ======
+        private bool LoadSectionFromDatabase()
+        {
+            string skill = "READING";
+            int? timeLimitMinutes = null;
+            string pdfPath = null;
+
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Skill, TimeLimitMinutes, PdfFilePath
+                                        FROM TestSections
+                                        WHERE Id = @Id";
+                    cmd.Parameters.AddWithValue("@Id", _sectionId);
+
+                    conn.Open();
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        if (!r.Read())
+                        {
+                            MessageBox.Show(
+                                "Reading section not found in database.",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                            return false;
+                        }
+
+                        skill = r["Skill"]?.ToString() ?? "READING";
+
+                        if (r["TimeLimitMinutes"] != DBNull.Value)
+                            timeLimitMinutes = Convert.ToInt32(r["TimeLimitMinutes"]);
+
+                        if (r["PdfFilePath"] != DBNull.Value)
+                            pdfPath = r["PdfFilePath"].ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error loading section from database:\r\n" + ex.Message,
+                    "DB Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return false;
+            }
+
+            // Default time
+            if (!timeLimitMinutes.HasValue || timeLimitMinutes.Value <= 0)
+                timeLimitMinutes = 60;
+
+            _remainingSeconds = timeLimitMinutes.Value * 60;
+
+            this.Text = $"IELTS Reading – {skill}";
+
+            // Show PDF
+            pdfViewer.ShowPdf(
+                pdfPath,
+                title: $"{skill} Section",
+                fallbackText: "No PDF is configured for this section in the database."
+            );
+
+            return true;
+        }
+
+        // ====== TIMER ======
         private void Timer_Tick(object sender, EventArgs e)
         {
             _remainingSeconds--;
@@ -62,8 +138,12 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
             {
                 _timer.Stop();
                 UpdateTimeLabel();
-                MessageBox.Show("Time is up! The test will be submitted.", "Time up",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                MessageBox.Show(
+                    "Time is up! The test will be submitted.",
+                    "Time up",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
 
                 SubmitTest();
                 return;
@@ -76,154 +156,22 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
         {
             int minutes = _remainingSeconds / 60;
             int seconds = _remainingSeconds % 60;
-            testNavBar.SetTimeText($"{minutes:D2}:{seconds:D2} minutes remaining");
+
+            string t = $"{minutes:D2}:{seconds:D2} minutes remaining";
+
+            this.Text = $"IELTS Reading – {t}";
         }
 
-        private void ShowPart(int index)
-        {
-            if (index < 0 || index >= _parts.Count)
-                return;
-
-            // Lưu câu trả lời đang hiển thị trước khi chuyển part
-            SaveAnswersFromCurrentView();
-
-            _currentPartIndex = index;
-            var part = _parts[_currentPartIndex];
-
-            // Hiển thị passage
-            pdfViewer.DisplayPart(part);
-
-            // Hiển thị câu hỏi & điền lại các câu đã trả lời
-            answerPanel.LoadPart(part, _userAnswers);
-
-            // Cập nhật highlight footer
-            testFooter.SetActivePart(part.PartName);
-        }
-
-        private void SaveAnswersFromCurrentView()
-        {
-            // merge answers từ view vào dictionary
-            var partAnswers = answerPanel.CollectAnswers();
-            foreach (var kv in partAnswers)
-            {
-                _userAnswers[kv.Key] = kv.Value;
-            }
-        }
-
-        private void TestNavBar_OnExitRequested()
-        {
-            var confirm = MessageBox.Show(
-                "Are you sure you want to exit this test?",
-                "Exit Test",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning
-            );
-
-            if (confirm == DialogResult.Yes)
-            {
-                _timer.Stop();
-
-                this.Hide();  // ẨN form ReadingTest, không đóng app
-
-                var library = new IELTS.UI.User.TestLibrary.TestLibrary();
-                library.Show();
-            }
-        }
-
-        private void TestNavBar_OnSubmitRequested()
-        {
-            var result = MessageBox.Show(
-                "Do you want to submit your answers now?",
-                "Submit test",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
-            {
-                _timer.Stop();
-                SubmitTest();
-
-                this.Hide();  // ẨN form ReadingTest, không đóng app
-
-                var library = new IELTS.UI.User.TestLibrary.TestLibrary();
-                library.Show();
-            }
-        }
-
-        private void TestFooter_OnPartSelected(string partName)
-        {
-            int index = _parts.FindIndex(p => p.PartName == partName);
-            if (index >= 0)
-            {
-                ShowPart(index);
-            }
-        }
-
+        // ====== SUBMIT ======
         private void SubmitTest()
         {
-            SaveAnswersFromCurrentView();
+            MessageBox.Show(
+                "Submit test (grading & saving result will be implemented later).",
+                "Submit",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
 
-            var allQuestions = _parts.SelectMany(p => p.Questions).ToList();
-            int total = allQuestions.Count;
-            int correct = 0;
-
-            foreach (var q in allQuestions)
-            {
-                _userAnswers.TryGetValue(q.Number, out var ansRaw);
-                string userAns = (ansRaw ?? "").Trim().ToLower();
-                string correctAns = (q.CorrectAnswer ?? "").Trim().ToLower();
-
-                if (!string.IsNullOrEmpty(correctAns) && userAns == correctAns)
-                    correct++;
-            }
-
-            int timeTaken = ReadingMockData.TotalTimeSeconds - _remainingSeconds;
-
-            // Build ExamResult
-            var exam = new IELTS.UI.User.Results.ExamResult
-            {
-                Skill = "Reading",
-                UserName = "Tran Dung",            // TODO: lấy từ Session nếu có
-                AvatarPath = null,                 // hoặc đường dẫn avatar
-                CorrectCount = correct,
-                TotalQuestions = total,
-                TimeTakenSeconds = timeTaken
-            };
-
-            // Build Parts
-            foreach (var part in _parts)
-            {
-                var partReview = new IELTS.UI.User.Results.PartReview
-                {
-                    PartName = part.PartName
-                };
-
-                foreach (var q in part.Questions)
-                {
-                    _userAnswers.TryGetValue(q.Number, out var ansRaw);
-                    var review = new IELTS.UI.User.Results.QuestionReview
-                    {
-                        Number = q.Number,
-                        PartName = part.PartName,
-                        CorrectAnswer = q.CorrectAnswer,
-                        UserAnswer = ansRaw ?? "",
-                        IsCorrect = string.Equals(
-                            (ansRaw ?? "").Trim(),
-                            (q.CorrectAnswer ?? "").Trim(),
-                            StringComparison.OrdinalIgnoreCase)
-                    };
-                    partReview.Questions.Add(review);
-                }
-
-                exam.Parts.Add(partReview);
-            }
-
-            // Mở form kết quả
-            var resultForm = new IELTS.UI.User.Results.AnswerResultForm(exam);
-            resultForm.Show();
-
-            // Ẩn / đóng ReadingTest
-            this.Hide();
+            Close();
         }
     }
 }
