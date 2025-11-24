@@ -418,6 +418,41 @@ namespace IELTS.BLL
 
             return courseDAL.GetEnrolledCoursesByUserId(userId);
         }
+
+        private readonly CourseDAL _dal = new CourseDAL();
+
+        public List<CourseDTO> GetAll(string keyword)
+        {
+            return courseDAL.GetListCourses(keyword);
+        }
+
+        public string AddCourse(CourseDTO course)
+        {
+            if (string.IsNullOrWhiteSpace(course.Title)) return "Tiêu đề khóa học không được để trống!";
+            if (course.PriceVND < 0) return "Giá tiền không hợp lệ!";
+
+            // Mặc định người tạo là 1 (Admin) nếu chưa có session
+            if (course.CreatedBy == 0) course.CreatedBy = 1;
+
+            if (courseDAL.AddCourse(course))
+                return ""; // Thành công
+            return "Lỗi thêm khóa học!";
+        }
+
+        public string UpdateCourse(CourseDTO course)
+        {
+            if (string.IsNullOrWhiteSpace(course.Title)) return "Tiêu đề khóa học không được để trống!";
+            if (course.PriceVND < 0) return "Giá tiền không hợp lệ!";
+
+            if (courseDAL.UpdateCourse(course))
+                return ""; // Thành công
+            return "Lỗi cập nhật khóa học!";
+        }
+
+        public bool DeleteCourse(long id)
+        {
+            return courseDAL.DeleteCourse(id);
+        }
     }
 
     // =========================================================
