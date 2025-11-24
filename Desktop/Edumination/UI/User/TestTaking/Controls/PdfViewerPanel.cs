@@ -66,7 +66,7 @@ namespace IELTS.UI.User.TestTaking.Controls
         {
             base.OnResize(e);
 
-            int fixedWidth = this.Width;   // ⭐ 1/3 màn hình
+            int fixedWidth = this.Width;  
 
             axPdfViewer.Width = fixedWidth;
             axPdfViewer.Height = this.Height - 80;

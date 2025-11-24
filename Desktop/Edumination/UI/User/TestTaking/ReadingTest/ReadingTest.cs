@@ -9,14 +9,12 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
 {
     public partial class ReadingTest : Form
     {
-        // ====== FIELDS ======
         private readonly long _paperId;
         private readonly long _sectionId;
 
         private int _remainingSeconds;
         private readonly System.Windows.Forms.Timer _timer;
 
-        // ====== CONSTRUCTOR ======
         public ReadingTest(long paperId, long sectionId)
         {
             _paperId = paperId;
@@ -24,18 +22,15 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
 
             InitializeComponent();
 
-            this.WindowState = FormWindowState.Maximized;
-            this.StartPosition = FormStartPosition.CenterScreen;
+            WindowState = FormWindowState.Maximized;
+            StartPosition = FormStartPosition.CenterScreen;
 
-            // ⭐ KHỞI TẠO TIMER — bắt buộc
             _timer = new System.Windows.Forms.Timer();
             _timer.Interval = 1000;
             _timer.Tick += Timer_Tick;
         }
 
-        // Designer cần constructor rỗng → gọi về constructor chính
         public ReadingTest() : this(0, 0) { }
-
 
         private void ReadingTest_Load(object sender, EventArgs e)
         {
@@ -46,19 +41,20 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
                 return;
             }
 
+            // Thêm event Exit + Submit giống Listening
+            testNavBar.OnExitRequested += TestNavBar_OnExitRequested;
+            testNavBar.OnSubmitRequested += TestNavBar_OnSubmitRequested;
+
             if (_sectionId <= 0)
             {
                 MessageBox.Show(
                     "No Reading section specified. Please open this test from Test Library.",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                 Close();
                 return;
             }
 
-            // Load từ DB
             if (!LoadSectionFromDatabase())
             {
                 Close();
@@ -69,7 +65,48 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
             _timer.Start();
         }
 
-        // ====== LOAD DB ======
+        // ================================
+        // EXIT — GIỐNG LISTENING
+        // ================================
+        private void TestNavBar_OnExitRequested()
+        {
+            var confirm = MessageBox.Show(
+                "Are you sure you want to exit this Reading test?",
+                "Exit Test",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm == DialogResult.Yes)
+            {
+                _timer.Stop();
+                Hide();
+                new IELTS.UI.User.TestLibrary.TestLibrary().Show();
+            }
+        }
+
+        // ================================
+        // SUBMIT — GIỐNG LISTENING
+        // ================================
+        private void TestNavBar_OnSubmitRequested()
+        {
+            var confirm = MessageBox.Show(
+                "Do you want to submit your answers now?",
+                "Submit Test",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm == DialogResult.Yes)
+            {
+                _timer.Stop();
+                SubmitTest();
+                Hide();
+                new IELTS.UI.User.TestLibrary.TestLibrary().Show();
+            }
+        }
+
+        // ================================
+        // LOAD SECTION
+        // ================================
         private bool LoadSectionFromDatabase()
         {
             string skill = "READING";
@@ -84,6 +121,7 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
                     cmd.CommandText = @"SELECT Skill, TimeLimitMinutes, PdfFilePath
                                         FROM TestSections
                                         WHERE Id = @Id";
+
                     cmd.Parameters.AddWithValue("@Id", _sectionId);
 
                     conn.Open();
@@ -119,7 +157,6 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
                 return false;
             }
 
-            // Default time
             if (!timeLimitMinutes.HasValue || timeLimitMinutes.Value <= 0)
                 timeLimitMinutes = 60;
 
@@ -127,17 +164,18 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
 
             this.Text = $"IELTS Reading – {skill}";
 
-            // Show PDF
             pdfViewer.ShowPdf(
                 pdfPath,
-                title: $"{skill} Section",
-                fallbackText: "No PDF is configured for this section in the database."
+                $"{skill} Section",
+                "No PDF is configured for this section in the database."
             );
 
             return true;
         }
 
-        // ====== TIMER ======
+        // ================================
+        // TIMER
+        // ================================
         private void Timer_Tick(object sender, EventArgs e)
         {
             _remainingSeconds--;
@@ -149,9 +187,7 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
 
                 MessageBox.Show(
                     "Time is up! The test will be submitted.",
-                    "Time up",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                    "Time up", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 SubmitTest();
                 return;
@@ -170,16 +206,14 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
             this.Text = $"IELTS Reading – {t}";
         }
 
-        // ====== SUBMIT ======
+        // ================================
+        // SUBMIT
+        // ================================
         private void SubmitTest()
         {
             MessageBox.Show(
                 "Submit test (grading & saving result will be implemented later).",
-                "Submit",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-
-            Close();
+                "Submit", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
