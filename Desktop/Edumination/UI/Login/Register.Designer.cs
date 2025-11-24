@@ -14,13 +14,11 @@
         private System.Windows.Forms.Label lblConfirmPassword;
         private System.Windows.Forms.TextBox txtConfirmPassword;
         private System.Windows.Forms.Button btnRegister;
+        private System.Windows.Forms.Timer timerSlide;
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
@@ -28,102 +26,175 @@
 
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.SuspendLayout();
-
-            // Form properties
-            this.ClientSize = new System.Drawing.Size(1920, 1020);
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Đăng ký tài khoản - IELTS Learning";
-            this.BackColor = System.Drawing.Color.White;
-            this.MaximizeBox = false;
-
-            int controlWidth = 400;
-            int controlHeight = 40;
-            int labelHeight = 25;
-            int xCenter = 760; // 1920/2 - 400/2, căn giữa
-
-            // Title
-            lblTitle = new System.Windows.Forms.Label();
+            components = new System.ComponentModel.Container();
+            lblTitle = new Label();
+            lblFullName = new Label();
+            txtFullName = new TextBox();
+            lblEmail = new Label();
+            txtEmail = new TextBox();
+            lblPassword = new Label();
+            txtPassword = new TextBox();
+            lblConfirmPassword = new Label();
+            txtConfirmPassword = new TextBox();
+            btnRegister = new Button();
+            panel1 = new Panel();
+            pictureBoxSlide = new PictureBox();
+            panelDots = new Panel();
+            panel1.SuspendLayout();
+            timerSlide = new System.Windows.Forms.Timer(components);
+            ((System.ComponentModel.ISupportInitialize)pictureBoxSlide).BeginInit();
+            SuspendLayout();
+            // 
+            // lblTitle
+            // 
+            lblTitle.Font = new Font("Microsoft Sans Serif", 20F, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(80, 160, 255);
+            lblTitle.Location = new Point(160, 235);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(440, 50);
+            lblTitle.TabIndex = 0;
             lblTitle.Text = "📝 ĐĂNG KÝ TÀI KHOẢN";
-            lblTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold);
-            lblTitle.ForeColor = System.Drawing.Color.FromArgb(80, 160, 255);
-            lblTitle.Size = new System.Drawing.Size(controlWidth, 50);
-            lblTitle.Location = new System.Drawing.Point(xCenter, 80);
-            lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.Controls.Add(lblTitle);
-
-            // Full Name
-            lblFullName = new System.Windows.Forms.Label();
+            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // lblFullName
+            // 
+            lblFullName.Location = new Point(182, 307);
+            lblFullName.Name = "lblFullName";
+            lblFullName.Size = new Size(400, 25);
+            lblFullName.TabIndex = 1;
             lblFullName.Text = "Họ và tên:";
-            lblFullName.Size = new System.Drawing.Size(controlWidth, labelHeight);
-            lblFullName.Location = new System.Drawing.Point(xCenter, 150);
-            this.Controls.Add(lblFullName);
-
-            txtFullName = new System.Windows.Forms.TextBox();
+            // 
+            // txtFullName
+            // 
+            txtFullName.Location = new Point(182, 337);
             txtFullName.Name = "txtFullName";
-            txtFullName.Size = new System.Drawing.Size(controlWidth, controlHeight);
-            txtFullName.Location = new System.Drawing.Point(xCenter, 180);
-            this.Controls.Add(txtFullName);
-
-            // Email
-            lblEmail = new System.Windows.Forms.Label();
+            txtFullName.Size = new Size(400, 27);
+            txtFullName.TabIndex = 2;
+            // 
+            // lblEmail
+            // 
+            lblEmail.Location = new Point(182, 397);
+            lblEmail.Name = "lblEmail";
+            lblEmail.Size = new Size(400, 25);
+            lblEmail.TabIndex = 3;
             lblEmail.Text = "Email:";
-            lblEmail.Size = new System.Drawing.Size(controlWidth, labelHeight);
-            lblEmail.Location = new System.Drawing.Point(xCenter, 240);
-            this.Controls.Add(lblEmail);
-
-            txtEmail = new System.Windows.Forms.TextBox();
+            // 
+            // txtEmail
+            // 
+            txtEmail.Location = new Point(182, 427);
             txtEmail.Name = "txtEmail";
-            txtEmail.Size = new System.Drawing.Size(controlWidth, controlHeight);
-            txtEmail.Location = new System.Drawing.Point(xCenter, 270);
-            this.Controls.Add(txtEmail);
-
-            // Password
-            lblPassword = new System.Windows.Forms.Label();
+            txtEmail.Size = new Size(400, 27);
+            txtEmail.TabIndex = 4;
+            // 
+            // lblPassword
+            // 
+            lblPassword.Location = new Point(182, 487);
+            lblPassword.Name = "lblPassword";
+            lblPassword.Size = new Size(400, 25);
+            lblPassword.TabIndex = 5;
             lblPassword.Text = "Mật khẩu:";
-            lblPassword.Size = new System.Drawing.Size(controlWidth, labelHeight);
-            lblPassword.Location = new System.Drawing.Point(xCenter, 330);
-            this.Controls.Add(lblPassword);
-
-            txtPassword = new System.Windows.Forms.TextBox();
+            // 
+            // txtPassword
+            // 
+            txtPassword.Location = new Point(182, 517);
             txtPassword.Name = "txtPassword";
-            txtPassword.Size = new System.Drawing.Size(controlWidth, controlHeight);
-            txtPassword.Location = new System.Drawing.Point(xCenter, 360);
             txtPassword.PasswordChar = '●';
-            this.Controls.Add(txtPassword);
-
-            // Confirm Password
-            lblConfirmPassword = new System.Windows.Forms.Label();
+            txtPassword.Size = new Size(400, 27);
+            txtPassword.TabIndex = 6;
+            // 
+            // lblConfirmPassword
+            // 
+            lblConfirmPassword.Location = new Point(182, 577);
+            lblConfirmPassword.Name = "lblConfirmPassword";
+            lblConfirmPassword.Size = new Size(400, 25);
+            lblConfirmPassword.TabIndex = 7;
             lblConfirmPassword.Text = "Xác nhận mật khẩu:";
-            lblConfirmPassword.Size = new System.Drawing.Size(controlWidth, labelHeight);
-            lblConfirmPassword.Location = new System.Drawing.Point(xCenter, 420);
-            this.Controls.Add(lblConfirmPassword);
-
-            txtConfirmPassword = new System.Windows.Forms.TextBox();
+            // 
+            // txtConfirmPassword
+            // 
+            txtConfirmPassword.Location = new Point(182, 607);
             txtConfirmPassword.Name = "txtConfirmPassword";
-            txtConfirmPassword.Size = new System.Drawing.Size(controlWidth, controlHeight);
-            txtConfirmPassword.Location = new System.Drawing.Point(xCenter, 450);
             txtConfirmPassword.PasswordChar = '●';
-            this.Controls.Add(txtConfirmPassword);
-
-            // Register Button
-            btnRegister = new System.Windows.Forms.Button();
-            btnRegister.Text = "Đăng ký";
-            btnRegister.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold);
-            btnRegister.Size = new System.Drawing.Size(controlWidth, 50);
-            btnRegister.Location = new System.Drawing.Point(xCenter, 520);
-            btnRegister.BackColor = System.Drawing.Color.FromArgb(80, 160, 255);
-            btnRegister.ForeColor = System.Drawing.Color.White;
-            btnRegister.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            txtConfirmPassword.Size = new Size(400, 27);
+            txtConfirmPassword.TabIndex = 8;
+            // 
+            // btnRegister
+            // 
+            btnRegister.BackColor = Color.FromArgb(80, 160, 255);
             btnRegister.FlatAppearance.BorderSize = 0;
-            btnRegister.Click += new System.EventHandler(this.btnRegister_Click);
-            this.Controls.Add(btnRegister);
-
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            btnRegister.FlatStyle = FlatStyle.Flat;
+            btnRegister.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold);
+            btnRegister.ForeColor = Color.White;
+            btnRegister.Location = new Point(182, 677);
+            btnRegister.Name = "btnRegister";
+            btnRegister.Size = new Size(400, 50);
+            btnRegister.TabIndex = 9;
+            btnRegister.Text = "Đăng ký";
+            btnRegister.UseVisualStyleBackColor = false;
+            btnRegister.Click += btnRegister_Click;
+            // 
+            // panel1
+            // 
+            panel1.Controls.Add(pictureBoxSlide);
+            panel1.Controls.Add(panelDots);
+            panel1.Location = new Point(800, 8);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1090, 953);
+            panel1.TabIndex = 10;
+            // 
+            // pictureBoxSlide
+            // 
+            pictureBoxSlide.Dock = DockStyle.Fill;
+            pictureBoxSlide.Location = new Point(0, 0);
+            pictureBoxSlide.Name = "pictureBoxSlide";
+            pictureBoxSlide.Size = new Size(1090, 913);
+            pictureBoxSlide.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBoxSlide.TabIndex = 4;
+            pictureBoxSlide.TabStop = false;
+            // 
+            // panelDots
+            // 
+            panelDots.BackColor = Color.Transparent;
+            panelDots.Dock = DockStyle.Bottom;
+            panelDots.Location = new Point(0, 913);
+            panelDots.Name = "panelDots";
+            panelDots.Size = new Size(1090, 40);
+            panelDots.TabIndex = 5;
+            // 
+            // timerSlide
+            // 
+            timerSlide.Interval = 4000;
+            timerSlide.Tick += TimerSlide_Tick;
+            // 
+            // Register
+            // 
+            BackColor = Color.White;
+            ClientSize = new Size(1902, 973);
+            Controls.Add(panel1);
+            Controls.Add(lblTitle);
+            Controls.Add(lblFullName);
+            Controls.Add(txtFullName);
+            Controls.Add(lblEmail);
+            Controls.Add(txtEmail);
+            Controls.Add(lblPassword);
+            Controls.Add(txtPassword);
+            Controls.Add(lblConfirmPassword);
+            Controls.Add(txtConfirmPassword);
+            Controls.Add(btnRegister);
+            MaximizeBox = false;
+            Name = "Register";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Đăng ký tài khoản - IELTS Learning";
+            panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)pictureBoxSlide).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private Panel panel1;
+        private PictureBox pictureBoxSlide;
+        private Panel panelDots;
     }
 }

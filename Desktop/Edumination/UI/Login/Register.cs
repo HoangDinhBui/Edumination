@@ -15,9 +15,20 @@ namespace IELTS.UI.Login
     public partial class Register : Form
     {
         private UserBLL userBLL = new UserBLL();
+        private List<Image> slides;
+        private int currentSlide = 0;
         public Register()
         {
             InitializeComponent();
+            slides = new List<Image>
+            {
+                Image.FromFile("assets/img/adv.jpg"),
+                Image.FromFile("assets/img/adv1.jpg"),
+                Image.FromFile("assets/img/adv2.jpg")
+            };
+
+            pictureBoxSlide.Image = slides[0];
+            timerSlide.Start();
         }
 
         private void btnRegister_Click(object sender, EventArgs e)
@@ -44,9 +55,16 @@ namespace IELTS.UI.Login
             }
             catch (Exception ex)
             {
-;                MessageBox.Show($"Đăng ký thất bại!\n{ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ; MessageBox.Show($"Đăng ký thất bại!\n{ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void TimerSlide_Tick(object sender, EventArgs e)
+        {
+            currentSlide = (currentSlide + 1) % slides.Count;
+            pictureBoxSlide.Image = slides[currentSlide];
+        }
+
     }
 
 
