@@ -1,5 +1,8 @@
 ﻿using Edumination.WinForms.UI.Admin.TestManager;
 using IELTS.UI.Admin.DashBoard;
+using IELTS.UI.Admin.AccountManager;
+using IELTS.UI.Admin.CoursesManager;
+using IELTS.UI.Admin.ReportManager;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 
 namespace Edumination.WinForms.UI.Admin
 {
@@ -63,7 +67,7 @@ namespace Edumination.WinForms.UI.Admin
                     break;
 
                 case "courses":
-                    //LoadContent(new CoursesPanel());
+                    LoadContent(new CoursesPanel());
                     break;
 
                 case "tests":
@@ -79,11 +83,11 @@ namespace Edumination.WinForms.UI.Admin
                     break;
 
                 case "accounts":
-                    //LoadContent(new AccountsPanel());
+                    LoadContent(new AccountsPanel());
                     break;
 
                 case "reports":
-                    //LoadContent(new ReportsPanel());
+                    LoadContent(new ReportsPanel());
                     break;
 
                 case "settings":

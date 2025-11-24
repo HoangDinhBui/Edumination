@@ -59,7 +59,7 @@ namespace IELTS.UI.User.TestTaking.Controls
             txtPrompt.FillColor = Color.White;
             txtPrompt.RectColor = Color.FromArgb(230, 230, 230);
             txtPrompt.Radius = 10;
-            txtPrompt.Text = "Task description...";
+            txtPrompt.Text = "";
             // 
             // WritingPromptPanel
             // 

@@ -18,10 +18,13 @@ namespace IELTS.UI.User.TestTaking.Controls
             InitializeComponent();
         }
 
+        // Display the writing task (title + prompt)
         public void DisplayTask(WritingTask task)
         {
+            // lblTitle and txtPrompt are defined in the Designer file
             lblTitle.Text = task.Title;
-            txtPrompt.Text = task.Prompt;
+            var formatted = task.Prompt?.Replace("\\n", Environment.NewLine) ?? string.Empty;
+            txtPrompt.Text = formatted; // show the prompt in the read‑only UITextBox
         }
     }
 }

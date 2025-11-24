@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using IELTS.BLL;
+using IELTS.UI.User.TestTaking.Controls;
 
 namespace IELTS.UI.User.TestTaking.WritingTest
 {
     public partial class WritingTest : Form
     {
-        private readonly List<WritingTask> _tasks;
+        private List<WritingTask> _tasks;
         private int _currentTaskIndex = 0;
 
         private int _remainingSeconds;
@@ -19,14 +21,19 @@ namespace IELTS.UI.User.TestTaking.WritingTest
         // Lưu bài theo từng PartName (Task 1 / Task 2 ...)
         private readonly Dictionary<string, string> _userEssays = new();
 
-        public WritingTest()
+        private readonly long _sectionId;
+        private readonly QuestionBLL _questionBLL = new QuestionBLL();
+
+        public WritingTest(long sectionId)
         {
             InitializeComponent();
 
+            _sectionId = sectionId;
+            LoadTaskFromDatabase();
+
             WindowState = FormWindowState.Maximized;
 
-            // Load mockdata
-            _tasks = WritingMockData.GetTasks();
+
             _remainingSeconds = WritingMockData.TotalTimeSeconds;
 
             // FIX: dùng Forms.Timer
@@ -223,6 +230,27 @@ namespace IELTS.UI.User.TestTaking.WritingTest
             Hide();
             // Mở lại TestLibrary hoặc Home tùy logic
             // new IELTS.UI.User.TestLibrary.TestLibrary().Show(); 
+        }
+
+        private void LoadTaskFromDatabase()
+            {
+                var dt = _questionBLL.GetQuestionsBySectionId(_sectionId);
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("Không tìm thấy đề Writing cho phần này.", "Error");
+                    Close();
+                return;
+            }
+
+            var row = dt.Rows[0];
+            var task = new WritingTask
+            {
+                PartName = "Task 1",
+                Title = "Writing Test",
+                Prompt = row["QuestionText"].ToString()
+            };
+            _tasks = new List<WritingTask> { task };
+            ShowTask(0);
         }
     }
 }

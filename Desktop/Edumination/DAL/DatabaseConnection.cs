@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace IELTS.DAL
 {
+    using IELTS.DTO;
     // 1. DATABASE CONNECTION CLASS
     // =========================================================
     using Microsoft.Data.SqlClient;
@@ -148,6 +149,107 @@ namespace IELTS.DAL
                 DataTable dt = new DataTable();
                 adapter.Fill(dt);
                 return dt;
+            }
+        }
+
+        public List<CourseDTO> GetListCourses(string keyword = "")
+        {
+            var list = new List<CourseDTO>();
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+                string sql = @"SELECT c.*, u.FullName as CreatedByName 
+                               FROM Courses c
+                               LEFT JOIN Users u ON c.CreatedBy = u.Id
+                               WHERE c.Title LIKE @Key OR c.Description LIKE @Key 
+                               ORDER BY c.CreatedAt DESC";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Key", "%" + keyword + "%");
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            list.Add(new CourseDTO
+                            {
+                                Id = Convert.ToInt64(reader["Id"]),
+                                Title = reader["Title"].ToString(),
+                                Description = reader["Description"] != DBNull.Value ? reader["Description"].ToString() : "",
+                                Level = reader["Level"].ToString(),
+                                PriceVND = Convert.ToInt32(reader["PriceVND"]),
+                                IsPublished = Convert.ToBoolean(reader["IsPublished"]),
+                                CreatedBy = Convert.ToInt64(reader["CreatedBy"]),
+                                CreatedByName = reader["CreatedByName"] != DBNull.Value ? reader["CreatedByName"].ToString() : "Unknown",
+                                CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                            });
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+        public bool AddCourse(CourseDTO course)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                @"INSERT INTO Courses (Title, Description, Level, PriceVND, IsPublished, CreatedBy, CreatedAt) 
+          VALUES (@Title, @Desc, @Level, @Price, @Published, @CreatedBy, GETDATE())", conn))
+            {
+                cmd.Parameters.AddWithValue("@Title", course.Title);
+                cmd.Parameters.AddWithValue("@Desc", (object)course.Description ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Level", course.Level); // DB: NVARCHAR(30)
+                cmd.Parameters.AddWithValue("@Price", course.PriceVND); // DB: INT
+                cmd.Parameters.AddWithValue("@Published", course.IsPublished);
+                cmd.Parameters.AddWithValue("@CreatedBy", course.CreatedBy);
+
+                conn.Open();
+                return cmd.ExecuteNonQuery() > 0;
+            }
+        }
+
+        public bool UpdateCourse(CourseDTO course)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                @"UPDATE Courses 
+                  SET Title=@Title, Description=@Desc, Level=@Level, PriceVND=@Price, IsPublished=@Published
+                  WHERE Id=@Id", conn))
+            {
+                cmd.Parameters.AddWithValue("@Id", course.Id);
+                cmd.Parameters.AddWithValue("@Title", course.Title);
+                cmd.Parameters.AddWithValue("@Desc", (object)course.Description ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Level", course.Level);
+                cmd.Parameters.AddWithValue("@Price", course.PriceVND);
+                cmd.Parameters.AddWithValue("@Published", course.IsPublished);
+
+                conn.Open();
+                return cmd.ExecuteNonQuery() > 0;
+            }
+        }
+
+        public bool DeleteCourse(long id)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM Courses WHERE Id = @Id", conn))
+            {
+                cmd.Parameters.AddWithValue("@Id", id);
+                conn.Open();
+                try
+                {
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+                catch (SqlException ex)
+                {
+                    // Mã lỗi 547 là lỗi vi phạm khóa ngoại (Foreign Key)
+                    if (ex.Number == 547)
+                    {
+                        // Ném lỗi ra để BLL/UI bắt được và hiện thông báo
+                        throw new Exception("Khóa học này đã có học viên đăng ký hoặc đơn hàng, không thể xóa!");
+                    }
+                    throw; // Ném các lỗi khác nếu có
+                }
             }
         }
     }
