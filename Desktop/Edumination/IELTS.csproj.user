@@ -4,6 +4,9 @@
     <Compile Update="BLL\AddTestSectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="UI\Admin\AccountManager\AccountsPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Admin\AdminMainForm.cs">
       <SubType>Form</SubType>
     </Compile>

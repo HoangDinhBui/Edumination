@@ -299,6 +299,58 @@ namespace IELTS.BLL
                 return new ForgotPasswordResponseDTO(false, $"Lỗi: {ex.Message}");
             }
         }
+
+        // --- PHẦN BỔ SUNG CHO ADMIN (Thêm vào class UserBLL) ---
+
+        // 1. Lấy danh sách UserDTO cho GridView
+        public List<UserDTO> GetAll(string keyword = "")
+        {
+            return userDAL.GetListUsersDTO(keyword);
+        }
+
+        // 2. Admin thêm user mới
+        public string AddUser(UserDTO user, string rawPassword)
+        {
+            // Validate cơ bản
+            if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.FullName))
+                return "Vui lòng nhập Email và Họ tên.";
+
+            // Kiểm tra email trùng (Optional: Bạn có thể thêm hàm CheckEmailExist trong DAL nếu cần)
+            var existingUser = userDAL.GetUserByEmail(user.Email);
+            if (existingUser != null && existingUser.Rows.Count > 0)
+                return "Email này đã tồn tại trong hệ thống!";
+
+            // Hash mật khẩu
+            user.PasswordHash = HashPassword(rawPassword);
+
+            // Gọi DAL
+            if (userDAL.Admin_AddUser(user))
+                return ""; // Rỗng = Thành công
+
+            return "Lỗi thêm dữ liệu vào SQL.";
+        }
+
+        // 3. Admin cập nhật user
+        public string UpdateUser(UserDTO user, string newPassword)
+        {
+            bool isChangePass = !string.IsNullOrEmpty(newPassword);
+
+            if (isChangePass)
+            {
+                user.PasswordHash = HashPassword(newPassword);
+            }
+
+            if (userDAL.Admin_UpdateUser(user, isChangePass))
+                return ""; // Thành công
+
+            return "Lỗi cập nhật dữ liệu!";
+        }
+
+        // 4. Admin xóa user
+        public bool DeleteUser(long id)
+        {
+            return userDAL.DeleteUser(id);
+        }
     }
 
     // =========================================================

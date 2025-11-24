@@ -27,6 +27,30 @@
       <Lcid>0</Lcid>
       <Isolated>false</Isolated>
     </COMReference>
+    <COMReference Include="FileViewLib">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>a4214abb-6c96-4566-accb-9a6767afb285</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="WebView2">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>26d34152-879f-4065-bea2-3daa2cfadfb8</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="{e64169b3-3592-47d2-816e-602c5c13f328}">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>1</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>e64169b3-3592-47d2-816e-602c5c13f328</Guid>
+    </COMReference>
   </ItemGroup>
 
   <ItemGroup>
