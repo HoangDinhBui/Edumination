@@ -1,4 +1,5 @@
 ﻿using Edumination.WinForms.UI.Admin.TestManager;
+using IELTS.UI.Admin.DashBoard;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -58,7 +59,7 @@ namespace Edumination.WinForms.UI.Admin
             switch (menu)
             {
                 case "dashboard":
-                    //LoadContent(new DashboardPanel());
+                    LoadContent(new AdminDashboardControl());
                     break;
 
                 case "courses":

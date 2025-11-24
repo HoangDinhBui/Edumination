@@ -10,20 +10,20 @@ namespace IELTS.DAL
 {
     public class TestSectionDAL
     {
-        //public DataTable GetSectionsByPaperId(long paperId)
-        //{
-        //    using (SqlConnection conn = DatabaseConnection.GetConnection())
-        //    {
-        //        string query = "SELECT * FROM TestSections WHERE PaperId = @PaperId ORDER BY Skill";
-        //        SqlCommand cmd = new SqlCommand(query, conn);
-        //        cmd.Parameters.AddWithValue("@PaperId", paperId);
+        public DataTable GetSectionsByPaperId(long paperId)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                string query = "SELECT * FROM TestSections WHERE PaperId = @PaperId ORDER BY Skill";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@PaperId", paperId);
 
-        //        SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-        //        DataTable dt = new DataTable();
-        //        adapter.Fill(dt);
-        //        return dt;
-        //    }
-        //}
+                SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                adapter.Fill(dt);
+                return dt;
+            }
+        }
 
         public long InsertTestSection(TestSectionDTO section)
         {

@@ -69,6 +69,11 @@ namespace Edumination.WinForms.UI.Admin.TestManager
                 {
                     UpdateReadingTestSectionForm form = new UpdateReadingTestSectionForm(p.Id);
                     form.ShowDialog();
+                    //if (form)
+                    //{
+                    //    form.ShowDialog();
+                    //}
+
                 };
 
                 flowPanelMockTests.Controls.Add(btn);

@@ -461,6 +461,10 @@ namespace IELTS.UI.Admin.TestManager
                 return;
 
             string selectedType = cboQuestionType.SelectedItem?.ToString();
+
+            if (string.IsNullOrEmpty(selectedType))
+                return;
+
             string questionText;
 
             // ⭐ Tạo tiêu đề phù hợp cho câu hỏi nhóm hoặc đơn
@@ -474,9 +478,14 @@ namespace IELTS.UI.Admin.TestManager
                 questionText = "Question " + questionNum;
             }
 
-            string savedAnswer = (questionNum >= 1 && questionNum <= 40)
-                ? answers[questionNum]
-                : null;
+            // ⭐ Chỉ load saved answer nếu câu này đã có dữ liệu VÀ cùng loại
+            string savedAnswer = null;
+            if (questionNum >= 1 && questionNum <= 40 &&
+                !string.IsNullOrEmpty(answerTypes[questionNum]) &&
+                answerTypes[questionNum] == selectedType)
+            {
+                savedAnswer = answers[questionNum];
+            }
 
             // Show/Hide end position control
             bool isGroupQuestion = IsGroupQuestion(selectedType);
@@ -530,17 +539,16 @@ namespace IELTS.UI.Admin.TestManager
             int.TryParse(txtSelectedButton.Text, out int start);
             int end = (int)nmEnd.Value;
 
-
             // Tạo danh sách options A, B, C, D...
-            int count =10;
-            //List<string> options = new List<string>();
-            //for (int i = 0; i < count; i++)
-            //{
-            //    options.Add(((char)('A' + i)).ToString());
-            //}
+            int count = end - start + 1;
+            List<string> options = new List<string>();
+            for (int i = 0; i < count; i++)
+            {
+                options.Add(((char)('A' + i)).ToString());
+            }
 
             formCard = QuestionCardGenerator.CreateQuestionCard(
-                1, "MULTI_SELECT", questionText, count, savedAnswer);
+                1, "MULTI_SELECT", questionText, options, savedAnswer);
             formCard.Location = new Point(10, 0);
             pnlDynamic.Controls.Add(formCard);
         }
@@ -730,6 +738,11 @@ namespace IELTS.UI.Admin.TestManager
             {
                 string answer = QuestionCardGenerator.GetStudentAnswer(formCard, selectedValue);
 
+                // ⭐ Kiểm tra xem câu này có thuộc nhóm cũ không
+                bool wasInGroup = questionGroupStart[i] > 0 && questionGroupEnd[i] > 0;
+                int oldGroupStart = questionGroupStart[i];
+                int oldGroupEnd = questionGroupEnd[i];
+
                 // Handle group questions
                 bool isGroupQuestion = IsGroupQuestion(selectedValue);
 
@@ -744,9 +757,15 @@ namespace IELTS.UI.Admin.TestManager
                         return;
                     }
 
+                    // ⭐ Clear old group nếu có
+                    if (wasInGroup)
+                    {
+                        ClearGroupQuestions(oldGroupStart, oldGroupEnd);
+                    }
+
                     questionRanges[start] = endPos;
 
-                    // Lưu cho tất cả các câu trong nhóm
+                    // Lưu cho tất cả các câu trong nhóm mới
                     for (int pos = start; pos <= endPos; pos++)
                     {
                         answerTypes[pos] = selectedValue;
@@ -766,6 +785,14 @@ namespace IELTS.UI.Admin.TestManager
                 }
                 else
                 {
+                    // ⭐ Lưu câu đơn - Clear old group nếu có
+                    if (wasInGroup)
+                    {
+                        // Clear entire old group
+                        ClearGroupQuestions(oldGroupStart, oldGroupEnd);
+                    }
+
+                    // Lưu câu đơn hiện tại
                     answerTypes[i] = selectedValue;
                     answers[i] = answer;
                     questionGroupStart[i] = 0;
@@ -786,6 +813,32 @@ namespace IELTS.UI.Admin.TestManager
             {
                 MessageBox.Show($"Error saving: {ex.Message}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Clear thông tin của tất cả câu hỏi trong một nhóm
+        /// </summary>
+        private void ClearGroupQuestions(int start, int end)
+        {
+            for (int pos = start; pos <= end; pos++)
+            {
+                answerTypes[pos] = null;
+                answers[pos] = null;
+                questionGroupStart[pos] = 0;
+                questionGroupEnd[pos] = 0;
+
+                Button btn = this.Controls.Find($"btnQ{pos}", true).FirstOrDefault() as Button;
+                if (btn != null)
+                {
+                    btn.BackColor = SystemColors.Control;
+                }
+            }
+
+            // Remove from questionRanges
+            if (questionRanges.ContainsKey(start))
+            {
+                questionRanges.Remove(start);
             }
         }
 
@@ -946,5 +999,7 @@ namespace IELTS.UI.Admin.TestManager
         }
 
         #endregion
+
+        
     }
 }

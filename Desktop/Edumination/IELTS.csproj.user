@@ -10,10 +10,19 @@
     <Compile Update="UI\Admin\AdminNavBarPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\Admin\DashBoard\AdminDashboardControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Admin\DashBoard\AdminDashboardForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="UI\Admin\TestManager\AddSectionButtonControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Admin\TestManager\AllSkillsTestControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\CreateTestPaperControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\Admin\TestManager\TestManagerControl.cs">
@@ -55,11 +64,20 @@
     <Compile Update="UI\User\TestTaking\Controls\TestFooterPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\User\TestTaking\Controls\TestNavBarPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\User\TestTaking\Controls\WritingAnswerPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\User\TestTaking\Controls\WritingPromptPanel.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\User\TestTaking\ListeningTest\ListeningTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\User\TestTaking\ReadingTest\ReadingTest.cs">
+      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
 </Project>

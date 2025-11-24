@@ -41,8 +41,8 @@ namespace Edumination.WinForms.UI.Admin.TestManager
 
                 case "MULTI_SELECT":
 
-                    int optionCount = optionsData != null ? (int)optionsData : 4;
-                    CreateMultiSelectAnswer(answerPanel, questionNumber, optionCount, savedAnswer);
+                    //int optionCount = optionsData != null ? (int)optionsData : 4;
+                    CreateMultiSelectAnswer(answerPanel, questionNumber, 10, savedAnswer);
                     break;
 
                 case "FILL_BLANK":

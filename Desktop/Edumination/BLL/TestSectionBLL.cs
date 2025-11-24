@@ -16,7 +16,13 @@ namespace IELTS.BLL
         private readonly TestSectionDAL _sectionDAL;
         private readonly QuestionDAL _questionDAL;
         private readonly QuestionAnswerKeyDAL _answerKeyDAL;
+        public DataTable GetSectionsByPaperId(long paperId)
+        {
+            if (paperId <= 0)
+                throw new Exception("Paper ID không hợp lệ!");
 
+            return _sectionDAL.GetSectionsByPaperId(paperId);
+        }
         public TestSectionBLL()
         {
             _sectionDAL = new TestSectionDAL();

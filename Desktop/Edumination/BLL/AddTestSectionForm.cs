@@ -37,7 +37,7 @@ namespace IELTS.BLL
             TestPaperId = testPaperId;
             _testSectionBLL = new TestSectionBLL();
             LoadQuestionTypes();
-            this.Controls.Add(scrollPanel);
+            //this.Controls.Add(scrollPanel);
             this.Controls.Add(pnlDynamic);
             pnlDynamic.AutoScroll = true;
             pnlDynamic.BackColor = Color.White;
@@ -68,6 +68,10 @@ namespace IELTS.BLL
                 return;
 
             string selectedType = cboQuestionType.SelectedItem?.ToString();
+
+            if (string.IsNullOrEmpty(selectedType))
+                return;
+
             string questionText;
 
             // ⭐ Tạo tiêu đề phù hợp cho câu hỏi nhóm hoặc đơn
@@ -81,8 +85,14 @@ namespace IELTS.BLL
                 questionText = "Question " + questionNum;
             }
 
-            // ⭐ Lấy saved answer nếu có
-            string savedAnswer = (questionNum >= 1 && questionNum <= 40) ? answers[questionNum] : null;
+            // ⭐ Chỉ lấy saved answer nếu câu này đã có dữ liệu VÀ cùng loại
+            string savedAnswer = null;
+            if (questionNum >= 1 && questionNum <= 40 &&
+                !string.IsNullOrEmpty(answerTypes[questionNum]) &&
+                answerTypes[questionNum] == selectedType)
+            {
+                savedAnswer = answers[questionNum];
+            }
 
             switch (selectedType)
             {
@@ -205,18 +215,18 @@ namespace IELTS.BLL
             end = (int)nmEnd.Value;
 
             // Tạo danh sách options A, B, C, D...
-            int count = 10;
-            //List<string> options = new List<string>();
-            //for (int i = 0; i < count; i++)
-            //{
-            //    options.Add(((char)('A' + i)).ToString());
-            //}
+            int count = end - start + 1;
+            List<string> options = new List<string>();
+            for (int i = 0; i < count; i++)
+            {
+                options.Add(((char)('A' + i)).ToString());
+            }
 
             formCard = QuestionCardGenerator.CreateQuestionCard(
                 1,
                 "MULTI_SELECT",
                 questionText,
-                count,
+                options,
                 savedAnswer
             );
             formCard.Location = new Point(10, 0);
@@ -415,6 +425,14 @@ namespace IELTS.BLL
 
             try
             {
+                // Lấy đáp án từ form
+                answer = QuestionCardGenerator.GetStudentAnswer(formCard, selectedValue);
+
+                // ⭐ Kiểm tra xem câu này có thuộc nhóm cũ không
+                bool wasInGroup = questionGroupStart[i] > 0 && questionGroupEnd[i] > 0;
+                int oldGroupStart = questionGroupStart[i];
+                int oldGroupEnd = questionGroupEnd[i];
+
                 // ⭐ Nếu là câu hỏi nhóm (MULTI_SELECT, MATCHING, ORDERING)
                 if (IsGroupQuestionType(selectedValue))
                 {
@@ -427,8 +445,11 @@ namespace IELTS.BLL
                         return;
                     }
 
-                    // Lấy đáp án từ form
-                    answer = QuestionCardGenerator.GetStudentAnswer(formCard, selectedValue);
+                    // ⭐ Clear old group nếu có và khác group mới
+                    if (wasInGroup && (oldGroupStart != start || oldGroupEnd != end))
+                    {
+                        ClearGroupQuestions(oldGroupStart, oldGroupEnd);
+                    }
 
                     // Lưu cho tất cả các câu trong nhóm
                     for (int x = start; x <= end; x++)
@@ -453,9 +474,14 @@ namespace IELTS.BLL
                 }
                 else
                 {
-                    // ⭐ Câu hỏi đơn lẻ
+                    // ⭐ Câu hỏi đơn lẻ - Clear old group nếu có
+                    if (wasInGroup)
+                    {
+                        ClearGroupQuestions(oldGroupStart, oldGroupEnd);
+                    }
+
+                    // Lưu câu đơn
                     answerTypes[i] = selectedValue;
-                    answer = QuestionCardGenerator.GetStudentAnswer(formCard, selectedValue);
                     answers[i] = answer;
                     questionGroupStart[i] = 0;
                     questionGroupEnd[i] = 0;
@@ -476,6 +502,27 @@ namespace IELTS.BLL
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi khi lưu: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Clear thông tin của tất cả câu hỏi trong một nhóm
+        /// </summary>
+        private void ClearGroupQuestions(int start, int end)
+        {
+            for (int pos = start; pos <= end; pos++)
+            {
+                answerTypes[pos] = null;
+                answers[pos] = null;
+                questionGroupStart[pos] = 0;
+                questionGroupEnd[pos] = 0;
+
+                string buttonName = "btnQ" + pos;
+                Control[] found = this.Controls.Find(buttonName, true);
+                if (found.Length > 0 && found[0] is Button btn)
+                {
+                    btn.BackColor = SystemColors.Control;
+                }
             }
         }
 
@@ -554,7 +601,7 @@ namespace IELTS.BLL
                 {
                     // Save to database
                     bool success = _testSectionBLL.SaveTestSection(
-                        TestPaperId,
+                        3,
                         "READING",
                         60,
                         pdfFileName,
@@ -631,154 +678,5 @@ namespace IELTS.BLL
                 return "";
             }
         }
-
-        private void LoadQuestionTypes()
-        {
-            cboQuestionType.Items.AddRange(new string[]
-            {
-        "MCQ",
-        "FILL_BLANK",
-        "MATCHING",
-        "ESSAY",
-        "SPEAKING"
-            });
-
-                cboQuestionType.SelectedIndexChanged += CboQuestionType_SelectedIndexChanged;
-        }
-
-        private void CboQuestionType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            pnlDynamic.Controls.Clear();
-
-            switch (cboQuestionType.SelectedItem.ToString())
-            {
-                case "MCQ":
-                    LoadUI_MCQ();
-                    break;
-
-                case "FILL_BLANK":
-                    LoadUI_FillBlank();
-                    break;
-
-                case "MATCHING":
-                    LoadUI_Matching();
-                    break;
-
-                case "ESSAY":
-                    LoadUI_Essay();
-                    break;
-
-                case "SPEAKING":
-                    LoadUI_Speaking();
-                    break;
-            }
-        }
-
-
-        private FlowLayoutPanel flpChoices;
-
-        private void LoadUI_MCQ()
-        {
-            flpChoices = new FlowLayoutPanel()
-            {
-                Dock = DockStyle.Fill,
-                AutoScroll = true,
-                FlowDirection = FlowDirection.TopDown,
-                WrapContents = false
-            };
-
-            Button btnAddChoice = new Button()
-            {
-                Text = "Add Choice",
-                Width = 120
-            };
-            btnAddChoice.Click += (s, e) => AddMCQChoice();
-
-            pnlDynamic.Controls.Add(btnAddChoice);
-            pnlDynamic.Controls.Add(flpChoices);
-
-            AddMCQChoice();
-        }
-
-        private void AddMCQChoice()
-        {
-            Panel p = new Panel() { Width = 400, Height = 30 };
-
-            RadioButton rd = new RadioButton() { Left = 0, Top = 5 };
-            TextBox txt = new TextBox() { Left = 25, Width = 300 };
-
-            p.Controls.Add(rd);
-            p.Controls.Add(txt);
-            flpChoices.Controls.Add(p);
-        }
-
-        private void LoadUI_FillBlank()
-        {
-            Label lbl = new Label()
-            {
-                Text = "Correct Answer:",
-                Top = 10
-            };
-
-            TextBox txt = new TextBox()
-            {
-                Top = 35,
-                Width = 300,
-                Name = "txtFillAnswer"
-            };
-
-            pnlDynamic.Controls.Add(lbl);
-            pnlDynamic.Controls.Add(txt);
-        }
-
-        private DataGridView dgvMatching;
-
-        private void LoadUI_Matching()
-        {
-            dgvMatching = new DataGridView()
-            {
-                Dock = DockStyle.Fill,
-                AutoGenerateColumns = false
-            };
-
-            dgvMatching.Columns.Add("LeftItem", "Left");
-            dgvMatching.Columns.Add("RightItem", "Right");
-
-            pnlDynamic.Controls.Add(dgvMatching);
-        }
-
-        private void LoadUI_Essay()
-        {
-            TextBox txtEssay = new TextBox()
-            {
-                Multiline = true,
-                Dock = DockStyle.Fill
-            };
-
-            pnlDynamic.Controls.Add(txtEssay);
-        }
-
-        private void LoadUI_Speaking()
-        {
-            Label lbl = new Label()
-            {
-                Text = "Prompt Text:",
-                Top = 10
-            };
-
-            TextBox txt = new TextBox()
-            {
-                Top = 35,
-                Width = 400,
-                Height = 100,
-                Multiline = true,
-                Name = "txtSpeakingPrompt"
-            };
-
-            pnlDynamic.Controls.Add(lbl);
-            pnlDynamic.Controls.Add(txt);
-        }
-
-
     }
 }

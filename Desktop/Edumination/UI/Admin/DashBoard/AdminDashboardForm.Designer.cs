@@ -551,6 +551,7 @@
             Name = "AdminDashboardForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Admin Dashboard - IELTS Learning System";
+            Load += AdminDashboardForm_Load;
             pnlHeader.ResumeLayout(false);
             pnlStudentCard.ResumeLayout(false);
             pnlTestCard.ResumeLayout(false);

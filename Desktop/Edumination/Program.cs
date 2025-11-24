@@ -9,6 +9,7 @@ using System.Threading;
 using System;
 using System.Windows.Forms;
 using System.IO;
+using Edumination.WinForms.UI.Admin;
 
 namespace Edumination.WinForms;
 
@@ -47,7 +48,9 @@ static class Program
         string fullPath = Path.Combine(Application.StartupPath, "UI", "assets", pdfName);
         //Application.Run(new frmHienThiPdf(fullPath));
         Application.Run(new SignIn());
-        
+
+        //Application.Run(new AdminMainForm("Lam","ADMIN"));
+
         // Stop server when app exits
         apiServer?.Stop();
     }

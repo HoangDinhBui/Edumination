@@ -151,5 +151,21 @@ namespace IELTS.DAL
 
             return list;
         }
+
+        public int GetMaxTestPaperId()
+        {
+            string query = "SELECT ISNULL(MAX(Id), 0) FROM TestPapers";
+
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+
+                    return Convert.ToInt32(result);
+                }
+            }
+        }
     }
 }

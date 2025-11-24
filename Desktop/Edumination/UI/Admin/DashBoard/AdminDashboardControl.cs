@@ -12,19 +12,19 @@ using System.Windows.Forms;
 
 namespace IELTS.UI.Admin.DashBoard
 {
-    public partial class AdminDashboardForm : Form
+    public partial class AdminDashboardControl : UserControl
     {
         private DashboardBLL _dashboardBLL;
         private DashboardStatisticsDTO _statistics;
 
-        public AdminDashboardForm()
+        public AdminDashboardControl()
         {
             InitializeComponent();
             _dashboardBLL = new DashboardBLL();
             LoadDashboardData();
         }
 
-        private void LoadDashboardData()
+        public void LoadDashboardData()
         {
             try
             {
@@ -249,11 +249,6 @@ namespace IELTS.UI.Admin.DashBoard
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadDashboardData();
-        }
-
-        private void AdminDashboardForm_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }
