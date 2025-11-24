@@ -48,8 +48,6 @@ static class Program
         string fullPath = Path.Combine(Application.StartupPath, "UI", "assets", pdfName);
         //Application.Run(new frmHienThiPdf(fullPath));
         Application.Run(new SignIn());
-        //Application.Run(new AdminMainForm("sfa","aaa"));
-
         // Stop server when app exits
         apiServer?.Stop();
     }

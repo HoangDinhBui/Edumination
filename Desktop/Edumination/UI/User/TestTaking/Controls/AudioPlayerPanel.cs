@@ -1,55 +1,60 @@
-﻿using IELTS.UI.User.TestTaking.ReadingTest;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Media;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Windows.Forms;
 
 namespace IELTS.UI.User.TestTaking.Controls
 {
     public partial class AudioPlayerPanel : UserControl
     {
-        private SoundPlayer _player;
-        private string _audioPath;
-
         public AudioPlayerPanel()
         {
             InitializeComponent();
         }
 
-        // Mock: hiển thị data từ ReadingPart
-        public void DisplayPart(ReadingPart part)
+        /// <summary>
+        /// Tải file âm thanh vào trình phát
+        /// </summary>
+        /// <param name="audioPath">Đường dẫn file mp3/wav</param>
+        public void LoadAudio(string audioPath)
         {
-            lblTitle.Text = part.PassageTitle;
-            lblDescription.Text = part.PassageText;
+            if (string.IsNullOrWhiteSpace(audioPath))
+            {
+                MessageBox.Show("No audio file available for this Listening test.",
+                    "Missing Audio", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            // AUDIO MOCK – bạn có thể đổi sang path thật
-            _audioPath = Application.StartupPath + @"\assets\audio\mock_listening.wav";
-        }
-
-        private void btnPlay_Click(object sender, EventArgs e)
-        {
             try
             {
-                if (_player == null && System.IO.File.Exists(_audioPath))
-                    _player = new SoundPlayer(_audioPath);
+                // Gán URL cho Windows Media Player
+                axWindowsMediaPlayer.URL = audioPath;
 
-                _player?.Play();
+                // Dừng ngay lập tức để người dùng tự bấm Play khi sẵn sàng
+                axWindowsMediaPlayer.Ctlcontrols.stop();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Cannot play audio (mock): " + ex.Message);
+                MessageBox.Show("Failed to load audio file.\nError: " + ex.Message,
+                    "Audio Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void btnStop_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Dừng phát nhạc (Dùng khi thoát bài thi hoặc hết giờ)
+        /// </summary>
+        public void StopAudio()
         {
-            _player?.Stop();
+            try
+            {
+                // Kiểm tra null để tránh lỗi nếu control chưa khởi tạo xong hoặc đã bị hủy
+                if (axWindowsMediaPlayer != null)
+                {
+                    axWindowsMediaPlayer.Ctlcontrols.stop();
+                }
+            }
+            catch
+            {
+                // Bỏ qua lỗi nếu quá trình dừng gặp trục trặc (không quan trọng)
+            }
         }
     }
 }

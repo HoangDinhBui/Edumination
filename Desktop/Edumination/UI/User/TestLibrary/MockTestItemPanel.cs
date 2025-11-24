@@ -7,7 +7,7 @@ namespace IELTS.UI.User.TestLibrary
 {
     public partial class MockTestItemPanel : UserControl
     {
-        public string Skill { get; set; }   // ⭐ Lưu skill để filter
+        public string Skill { get; set; }   // Lưu skill để filter
 
         public MockTestItemPanel()
         {
@@ -54,7 +54,7 @@ namespace IELTS.UI.User.TestLibrary
                     break;
 
                 case "SPEAKING":
-                    //testForm = new IELTS.UI.User.TestTaking.SpeakingTest.SpeakingTest(SectionId);
+                    testForm = new IELTS.UI.User.TestTaking.SpeakingTest.SpeakingTest(SectionId);
                     break;
 
                 default:

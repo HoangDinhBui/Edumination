@@ -1,41 +1,34 @@
-﻿using IELTS.UI.User.TestTaking.ReadingTest;
+﻿using IELTS.BLL;
+using IELTS.DAL;
+using IELTS.DTO;
+using IELTS.UI.User.TestTaking.Controls;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
 
 namespace IELTS.UI.User.TestTaking.ListeningTest
 {
     public partial class ListeningTest : Form
     {
-        private readonly List<ReadingPart> _parts;
-        private int _currentPartIndex = 0;
-        private int _remainingSeconds;
-
-        private readonly System.Windows.Forms.Timer _timer;
-        private readonly Dictionary<int, string> _userAnswers = new();
+        // --- Fields ---
         private readonly long _paperId;
         private readonly long _sectionId;
 
+        private int _remainingSeconds;
+        private readonly System.Windows.Forms.Timer _timer = new System.Windows.Forms.Timer();
 
-        public ListeningTest()
-        {
-            InitializeComponent();
-            WindowState = FormWindowState.Maximized;
+        private string _audioPath = null;
+        private string _pdfPath = null;
 
-            _parts = ListeningMockData.GetParts();
-            _remainingSeconds = ListeningMockData.TotalTimeSeconds;
+        // Service AI
+        private readonly GroqService _aiService;
 
-            _timer = new System.Windows.Forms.Timer();
-            _timer.Interval = 1000;
-            _timer.Tick += Timer_Tick;
-        }
-
+        // --- Constructor ---
         public ListeningTest(long paperId, long sectionId)
         {
             _paperId = paperId;
@@ -43,23 +36,50 @@ namespace IELTS.UI.User.TestTaking.ListeningTest
 
             InitializeComponent();
 
+            // Cấu hình Form
             WindowState = FormWindowState.Maximized;
 
-            _timer = new System.Windows.Forms.Timer();
+            // Khởi tạo AI Service
+            _aiService = new GroqService();
+
+            // Cấu hình Timer
             _timer.Interval = 1000;
             _timer.Tick += Timer_Tick;
         }
 
+        // --- Events ---
         private void ListeningTest_Load(object sender, EventArgs e)
         {
+            // Gán sự kiện cho NavBar
             testNavBar.OnExitRequested += TestNavBar_OnExitRequested;
             testNavBar.OnSubmitRequested += TestNavBar_OnSubmitRequested;
 
-            testFooter.OnPartSelected += TestFooter_OnPartSelected;
-            testFooter.LoadParts(_parts.Select(p => p.PartName));
+            if (_sectionId <= 0)
+            {
+                MessageBox.Show("Lỗi: Không tìm thấy ID phần thi Listening.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Close();
+                return;
+            }
 
-            ShowPart(0);
+            // 1. Load thông tin cơ bản (Audio, PDF, Thời gian)
+            if (!LoadSectionMetadata())
+            {
+                Close();
+                return;
+            }
 
+            // 2. Load danh sách câu hỏi lên AnswerPanel (Để người dùng nhập)
+            LoadQuestionsIntoAnswerPanel();
+
+            // 3. Hiển thị Audio và PDF
+            audioPanel.LoadAudio(_audioPath);
+            pdfViewer.ShowPdf(
+                _pdfPath,
+                "Listening Question Sheet",
+                "Không tìm thấy file đề bài PDF."
+            );
+
+            // 4. Bắt đầu tính giờ
             UpdateTimeLabel();
             _timer.Start();
         }
@@ -67,155 +87,249 @@ namespace IELTS.UI.User.TestTaking.ListeningTest
         private void Timer_Tick(object sender, EventArgs e)
         {
             _remainingSeconds--;
+
             if (_remainingSeconds <= 0)
             {
                 _timer.Stop();
                 UpdateTimeLabel();
-                MessageBox.Show("Time is up! The listening test will be submitted.",
-                    "Time up", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Hết giờ làm bài!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                SubmitTest();
-                Hide();
-                new IELTS.UI.User.TestLibrary.TestLibrary().Show();
-                return;
+                // Tự động nộp bài khi hết giờ
+                SubmitTestWithAI();
             }
-
-            UpdateTimeLabel();
+            else
+            {
+                UpdateTimeLabel();
+            }
         }
 
         private void UpdateTimeLabel()
         {
-            int minutes = _remainingSeconds / 60;
-            int seconds = _remainingSeconds % 60;
-            testNavBar.SetTimeText($"{minutes:D2}:{seconds:D2} minutes remaining");
+            int min = _remainingSeconds / 60;
+            int sec = _remainingSeconds % 60;
+            testNavBar.SetTimeText($"{min:D2}:{sec:D2} remaining");
         }
 
-        private void ShowPart(int index)
-        {
-            if (index < 0 || index >= _parts.Count)
-                return;
-
-            SaveAnswersFromCurrentView();
-
-            _currentPartIndex = index;
-            var part = _parts[_currentPartIndex];
-
-            audioPanel.DisplayPart(part);
-            answerPanel.LoadPart(part, _userAnswers);
-            testFooter.SetActivePart(part.PartName);
-        }
-
-        private void SaveAnswersFromCurrentView()
-        {
-            var partAnswers = answerPanel.CollectAnswers();
-            foreach (var kv in partAnswers)
-                _userAnswers[kv.Key] = kv.Value;
-        }
-
+        // --- Navigation Handlers ---
         private void TestNavBar_OnExitRequested()
         {
             var confirm = MessageBox.Show(
-                "Are you sure you want to exit this listening test?",
-                "Exit Test",
+                "Bạn có chắc muốn thoát bài thi? Kết quả sẽ không được lưu.",
+                "Thoát bài thi",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
             if (confirm == DialogResult.Yes)
             {
                 _timer.Stop();
-                Hide();
-                new IELTS.UI.User.TestLibrary.TestLibrary().Show();
+                if (audioPanel != null) audioPanel.StopAudio(); // Dừng nhạc
+                this.Close();
             }
         }
 
+        // --- XỬ LÝ NỘP BÀI VÀ CHẤM ĐIỂM AI (QUAN TRỌNG) ---
         private void TestNavBar_OnSubmitRequested()
         {
             var confirm = MessageBox.Show(
-                "Do you want to submit your answers now?",
-                "Submit Test",
+                "Bạn có muốn nộp bài và để AI chấm điểm ngay lập tức không?",
+                "Nộp bài",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
             if (confirm == DialogResult.Yes)
             {
-                _timer.Stop();
-                SubmitTest();
-                Hide();
-                new IELTS.UI.User.TestLibrary.TestLibrary().Show();
+                SubmitTestWithAI();
             }
         }
 
-        private void TestFooter_OnPartSelected(string partName)
+        private async void SubmitTestWithAI()
         {
-            int index = _parts.FindIndex(p => p.PartName == partName);
-            if (index >= 0)
-                ShowPart(index);
-        }
+            _timer.Stop();
+            if (audioPanel != null) audioPanel.StopAudio();
 
-        private void SubmitTest()
-        {
-            SaveAnswersFromCurrentView(); // nếu có
+            // Khóa giao diện để tránh bấm lung tung
+            this.Enabled = false;
+            testNavBar.SetTimeText("AI đang chấm điểm... Vui lòng chờ...");
 
-            var allQuestions = _parts.SelectMany(p => p.Questions).ToList();
-            int total = allQuestions.Count;
-            int correct = 0;
-
-            foreach (var q in allQuestions)
+            try
             {
-                _userAnswers.TryGetValue(q.Number, out var ansRaw);
-                string userAns = (ansRaw ?? "").Trim().ToUpperInvariant();
-                string correctAns = (q.CorrectAnswer ?? "").Trim().ToUpperInvariant();
+                // 1. Lấy đáp án người dùng nhập từ UI
+                Dictionary<int, string> userAnswers = answerPanel.CollectAnswers();
 
-                if (!string.IsNullOrEmpty(correctAns) && userAns == correctAns)
-                    correct++;
-            }
+                // 2. Lấy đáp án đúng (Answer Key) từ Database
+                Dictionary<int, string> correctKeys = GetCorrectKeysFromDB(_sectionId);
 
-            int timeTaken = ListeningMockData.TotalTimeSeconds - _remainingSeconds;
-
-            var exam = new IELTS.UI.User.Results.ExamResult
-            {
-                Skill = "Listening",
-                UserName = "Tran Dung",    // TODO
-                AvatarPath = null,
-                CorrectCount = correct,
-                TotalQuestions = total,
-                TimeTakenSeconds = timeTaken
-            };
-
-            foreach (var part in _parts)
-            {
-                var partReview = new IELTS.UI.User.Results.PartReview
+                if (correctKeys.Count == 0)
                 {
-                    PartName = part.PartName
-                };
-
-                foreach (var q in part.Questions)
-                {
-                    _userAnswers.TryGetValue(q.Number, out var ansRaw);
-
-                    var review = new IELTS.UI.User.Results.QuestionReview
-                    {
-                        Number = q.Number,
-                        PartName = part.PartName,
-                        QuestionText = q.Prompt, // nếu có
-                        CorrectAnswer = q.CorrectAnswer,
-                        UserAnswer = ansRaw ?? "",
-                        IsCorrect = string.Equals(
-                            (ansRaw ?? "").Trim(),
-                            (q.CorrectAnswer ?? "").Trim(),
-                            StringComparison.OrdinalIgnoreCase)
-                    };
-
-                    partReview.Questions.Add(review);
+                    throw new Exception("Không tìm thấy đáp án trong CSDL để chấm điểm.");
                 }
 
-                exam.Parts.Add(partReview);
+                // 3. Gọi Groq AI Service
+                ListeningGradeResult result = await _aiService.GradeListeningAsync(userAnswers, correctKeys);
+
+                // 4. Hiển thị kết quả
+                ShowResultDialog(result);
+
+                // Sau khi xem kết quả thì đóng form
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi trong quá trình chấm điểm: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Enabled = true; // Mở lại nếu lỗi để người dùng thử lại
+                _timer.Start(); // Chạy lại giờ nếu muốn
+            }
+        }
+
+        // --- DATABASE HELPERS ---
+
+        // 1. Load thông tin bài thi (Metadata)
+        private bool LoadSectionMetadata()
+        {
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+                    string sql = "SELECT TimeLimitMinutes, AudioFilePath, PdfFilePath FROM TestSections WHERE Id = @Id";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", _sectionId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            if (!r.Read()) return false;
+
+                            int limit = r["TimeLimitMinutes"] != DBNull.Value ? Convert.ToInt32(r["TimeLimitMinutes"]) : 30;
+                            _remainingSeconds = limit * 60;
+
+                            if (r["AudioFilePath"] != DBNull.Value) _audioPath = r["AudioFilePath"].ToString();
+                            if (r["PdfFilePath"] != DBNull.Value) _pdfPath = r["PdfFilePath"].ToString();
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("DB Error: " + ex.Message);
+                return false;
+            }
+        }
+
+        // 2. Load câu hỏi để tạo ô nhập liệu (Dynamic UI)
+        private void LoadQuestionsIntoAnswerPanel()
+        {
+            // Giả lập tạo đối tượng ReadingPart/ListeningPart để tái sử dụng hàm LoadPart của AnswerPanel
+            // Vì AnswerPanel của bạn cần một object chứa danh sách câu hỏi
+
+            var questionsList = new List<ReadingTest.ReadingQuestion>(); // Tạm dùng class ReadingQuestion hoặc tạo class ListeningQuestion tương đương
+
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+                    // Lấy danh sách câu hỏi sắp xếp theo thứ tự
+                    string sql = "SELECT Position, QuestionText, QuestionType FROM Questions WHERE SectionId = @Id ORDER BY Position";
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Id", _sectionId);
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
+                            {
+                                // Map data từ DB sang Object
+                                var q = new ReadingTest.ReadingQuestion
+                                {
+                                    Number = Convert.ToInt32(r["Position"]),
+                                    Prompt = r["QuestionText"].ToString(),
+                                    // Mapping kiểu câu hỏi (Giản lược)
+                                    Type = r["QuestionType"].ToString() == "TRUE_FALSE" ?
+                                           ReadingTest.QuestionType.TrueFalse :
+                                           ReadingTest.QuestionType.ShortAnswer
+                                };
+                                questionsList.Add(q);
+                            }
+                        }
+                    }
+                }
+
+                // Tạo một object Part giả để truyền vào AnswerPanel
+                var partWrapper = new ReadingTest.ReadingPart { Questions = questionsList };
+
+                // Gọi hàm LoadPart của AnswerPanel
+                // (Tham số thứ 2 là userAnswers, ban đầu để null)
+                answerPanel.LoadPart(partWrapper, null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải câu hỏi: " + ex.Message);
+            }
+        }
+
+        // 3. Lấy đáp án đúng từ DB để gửi cho AI
+        private Dictionary<int, string> GetCorrectKeysFromDB(long sectionId)
+        {
+            var keys = new Dictionary<int, string>();
+            using (var conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+                // Join bảng Questions và QuestionAnswerKeys để lấy đáp án theo số thứ tự câu hỏi (Position)
+                string sql = @"
+                    SELECT q.Position, k.AnswerData 
+                    FROM Questions q
+                    JOIN QuestionAnswerKeys k ON q.Id = k.QuestionId
+                    WHERE q.SectionId = @SectionId
+                    ORDER BY q.Position";
+
+                using (var cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@SectionId", sectionId);
+                    using (var r = cmd.ExecuteReader())
+                    {
+                        while (r.Read())
+                        {
+                            int number = Convert.ToInt32(r["Position"]);
+                            string jsonAns = r["AnswerData"].ToString();
+                            // Gửi nguyên chuỗi JSON (ví dụ: ["Sunday", "Sun"]) cho AI tự xử lý
+                            keys[number] = jsonAns;
+                        }
+                    }
+                }
+            }
+            return keys;
+        }
+
+        // --- HIỂN THỊ KẾT QUẢ ---
+        private void ShowResultDialog(ListeningGradeResult result)
+        {
+            // Format chuỗi hiển thị chi tiết
+            string detailStr = "";
+            foreach (var d in result.Details)
+            {
+                string icon = d.IsCorrect ? "✅" : "❌";
+                detailStr += $"{icon} Câu {d.QuestionNumber}: Bạn chọn '{d.UserAnswer}' | Đáp án đúng: {d.CorrectKey}\n";
+                if (!d.IsCorrect && !string.IsNullOrEmpty(d.Explanation))
+                {
+                    detailStr += $"   -> Giải thích: {d.Explanation}\n";
+                }
+                detailStr += "--------------------------------------------------\n";
             }
 
-            var resultForm = new IELTS.UI.User.Results.AnswerResultForm(exam);
-            resultForm.Show();
+            string summaryMsg = $"🎉 KẾT QUẢ BÀI THI\n\n" +
+                                $"✅ Số câu đúng: {result.TotalCorrect} / {result.TotalQuestions}\n" +
+                                $"🏆 Band Score ước tính: {result.BandScore}\n\n" +
+                                $"💡 Nhận xét chung của AI:\n{result.Feedback}\n\n" +
+                                $"Bạn có muốn xem chi tiết từng câu sai không?";
 
-            this.Hide();
+            var dialogResult = MessageBox.Show(summaryMsg, "Kết quả AI Chấm", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+
+            if (dialogResult == DialogResult.Yes)
+            {
+                // Hiển thị form chi tiết (Tạm thời dùng MessageBox, tốt nhất là tạo 1 Form mới có GridView)
+                // Vì MessageBox có giới hạn chiều dài, nếu dài quá nên lưu ra file text hoặc hiện Form mới.
+                MessageBox.Show(detailStr, "Chi tiết đáp án", MessageBoxButtons.OK, MessageBoxIcon.None);
+            }
         }
     }
 }
