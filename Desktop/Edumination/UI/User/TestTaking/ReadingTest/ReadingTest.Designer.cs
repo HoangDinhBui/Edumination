@@ -12,7 +12,7 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
         private PdfViewerPanel pdfViewer;
         private AnswerPanel answerPanel;
 
-  
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && components != null)

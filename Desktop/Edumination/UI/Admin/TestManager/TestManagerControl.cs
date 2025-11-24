@@ -1,4 +1,5 @@
 ﻿
+using IELTS.UI.Admin.TestManager;
 using Sunny.UI; // Giữ lại Sunny.UI cho các controls khác như UILabel, UITabControlMenu, v.v.
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,26 @@ namespace Edumination.WinForms.UI.Admin.TestManager
         public Panel MainPanel => pnlMain; // pnlMain làm container chuẩn
         //private pnlTestInfo pnlTestInfo;
         private AllSkillsTestControl allSkillsTestControl;
+        private CreateTestPaperControl createTestPaperControl;
+        public CreateTestPaperControl GetCreateTestPaperControl()
+        {
+            return createTestPaperControl;
+        }
+        public void SetCreatTestPaperControl(CreateTestPaperControl createTestPaperControl)
+        {
+            this.createTestPaperControl = createTestPaperControl;
+        }
+        private AddSectionButtonControl addSectionButtonControl;
 
+        public AddSectionButtonControl GetAddSectionButtonControl()
+        {
+            return addSectionButtonControl;
+        }
+
+        public void SetAddSectionButtonControl(AddSectionButtonControl addSectionButtonControl)
+        {
+            this.addSectionButtonControl = addSectionButtonControl;
+        }
         //public pnlTestInfo TestInfoPanel => pnlTestInfo;
         public AllSkillsTestControl AllSkillsControl => allSkillsTestControl;
 
@@ -25,13 +45,19 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             InitializeComponent();
             //pnlTestInfo = new pnlTestInfo();
             allSkillsTestControl = new AllSkillsTestControl();
-
+            createTestPaperControl = new CreateTestPaperControl();
+            addSectionButtonControl= new AddSectionButtonControl();
             // Dock fill để chiếm toàn bộ pnlMain
             //pnlTestInfo.Dock = DockStyle.Fill;
             allSkillsTestControl.Dock = DockStyle.Fill;
+            createTestPaperControl.Dock = DockStyle.Fill;
+            addSectionButtonControl.Dock = DockStyle.Fill;
 
             // Add vào pnlMain
             pnlMain.Controls.Add(allSkillsTestControl);
+            pnlMain.Controls.Add(createTestPaperControl);
+            createTestPaperControl.SetTestPaperControl(this);
+            pnlMain.Controls.Add(addSectionButtonControl);
             //pnlMain.Controls.Add(pnlTestInfo);
 
             // Chỉ hiển thị pnlAllSkillTest lúc đầu
@@ -41,7 +67,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
         }
 
         // Hàm tiện ích để show 1 UserControl, ẩn tất cả panel khác
-        private void ShowPanel(UserControl uc)
+        public void ShowPanel(UserControl uc)
         {
             foreach (Control c in pnlMain.Controls)
                 c.Visible = false;
@@ -65,7 +91,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
                 MessageBox.Show("ok");
                 btnAllSkills.BackColor = Color.FromArgb(80, 160, 255);
             }
-            
+
             try
             {
                 if (allSkillsTestControl != null)
@@ -83,5 +109,10 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             }
         }
 
+        private void btnCreateTestPaper_Click(object sender, EventArgs e)
+        {
+            createTestPaperControl.ResetForm();
+            ShowPanel(createTestPaperControl);
+        }
     }
 }

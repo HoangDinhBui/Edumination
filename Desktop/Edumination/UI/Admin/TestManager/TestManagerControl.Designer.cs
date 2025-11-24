@@ -16,7 +16,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            //if (disposing && (components != null))
+            if (disposing && (components != null))
             {
                 components.Dispose();
             }
@@ -42,6 +42,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             uiButton1 = new UIButton();
             btnAllSkills = new UIButton();
             pnlMain = new Panel();
+            btnCreateTestPaper = new UIButton();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -220,20 +221,33 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             // 
             // pnlMain
             // 
-            pnlMain.Location = new Point(120, 269);
+            pnlMain.Location = new Point(120, 307);
             pnlMain.Name = "pnlMain";
-            pnlMain.Size = new Size(1430, 748);
+            pnlMain.Size = new Size(1430, 710);
             pnlMain.TabIndex = 8;
             // 
-            // pnlTestManager
+            // btnCreateTestPaper
+            // 
+            btnCreateTestPaper.Font = new Font("Microsoft Sans Serif", 12F);
+            btnCreateTestPaper.Location = new Point(1217, 257);
+            btnCreateTestPaper.MinimumSize = new Size(1, 1);
+            btnCreateTestPaper.Name = "btnCreateTestPaper";
+            btnCreateTestPaper.Size = new Size(333, 35);
+            btnCreateTestPaper.TabIndex = 10;
+            btnCreateTestPaper.Text = "Create New Test Paper";
+            btnCreateTestPaper.TipsFont = new Font("Microsoft Sans Serif", 9F);
+            btnCreateTestPaper.Click += btnCreateTestPaper_Click;
+            // 
+            // TestManagerControl
             // 
             AutoScaleMode = AutoScaleMode.None;
+            Controls.Add(btnCreateTestPaper);
             Controls.Add(pnlMain);
             Controls.Add(panel1);
             Controls.Add(uiComboBoxSort);
             Controls.Add(uiTextBoxSearch);
             Controls.Add(uiLabelTitle);
-            Name = "pnlTestManager";
+            Name = "TestManagerControl";
             Size = new Size(1670, 1020);
             panel1.ResumeLayout(false);
             ResumeLayout(false);
@@ -260,5 +274,6 @@ namespace Edumination.WinForms.UI.Admin.TestManager
         private UIButton uiButton2;
         private UIButton uiButton1;
         private Panel pnlMain;
+        private UIButton btnCreateTestPaper;
     }
 }

@@ -92,5 +92,10 @@ namespace IELTS.BLL
 
             return papers;
         }
+
+        public int GetLatestTestPaperId()
+        {
+            return paperDAL.GetMaxTestPaperId();
+        }
     }
 }
