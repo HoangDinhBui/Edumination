@@ -1,10 +1,11 @@
-﻿using System;
+﻿using IELTS.DTO;
+using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
 namespace IELTS.DAL
 {
     public class QuestionDAL
@@ -83,5 +84,121 @@ namespace IELTS.DAL
                 return cmd.ExecuteNonQuery() > 0;
             }
         }
+
+        /// <summary>
+        /// Thêm Question mới
+        /// </summary>
+        public long InsertQuestion(QuestionDTO question)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+
+                string query = @"
+                    INSERT INTO Questions (SectionId, PassageId, QuestionType, QuestionText, Points, Position)
+                    VALUES (@SectionId, @PassageId, @QuestionType, @QuestionText, @Points, @Position);
+                    SELECT CAST(SCOPE_IDENTITY() AS BIGINT);";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@SectionId", question.SectionId);
+                    cmd.Parameters.AddWithValue("@PassageId", (object)question.PassageId ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@QuestionType", question.QuestionType);
+                    cmd.Parameters.AddWithValue("@QuestionText", question.QuestionText);
+                    cmd.Parameters.AddWithValue("@Points", question.Points);
+                    cmd.Parameters.AddWithValue("@Position", question.Position);
+
+                    return (long)cmd.ExecuteScalar();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Lấy tất cả Questions của một Section
+        /// </summary>
+        public List<QuestionDTO> GetQuestionsBySectionIdDTO(long sectionId)
+        {
+            List<QuestionDTO> questions = new List<QuestionDTO>();
+
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+
+                string query = @"
+                    SELECT Id, SectionId, PassageId, QuestionType, QuestionText, Points, Position
+                    FROM Questions
+                    WHERE SectionId = @SectionId
+                    ORDER BY Position";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@SectionId", sectionId);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            questions.Add(new QuestionDTO
+                            {
+                                Id = reader.GetInt64(0),
+                                SectionId = reader.GetInt64(1),
+                                PassageId = reader.IsDBNull(2) ? (long?)null : reader.GetInt64(2),
+                                QuestionType = reader.GetString(3),
+                                QuestionText = reader.GetString(4),
+                                Points = reader.GetDecimal(5),
+                                Position = reader.GetInt32(6)
+                            });
+                        }
+                    }
+                }
+            }
+            return questions;
+        }
+
+        /// <summary>
+        /// Xóa Question
+        /// </summary>
+        public bool DeleteQuestion(long id)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+                string query = "DELETE FROM Questions WHERE Id = @Id";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        public List<long> GetQuestionIdsBySectionId(long sectionId)
+        {
+            List<long> ids = new List<long>();
+
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+
+                string query = @"SELECT Id FROM Questions WHERE SectionId = @SectionId ORDER BY Position";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@SectionId", sectionId);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ids.Add(reader.GetInt64(0));
+                        }
+                    }
+                }
+            }
+
+            return ids;
+        }
+
     }
 }

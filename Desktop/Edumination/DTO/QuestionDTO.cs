@@ -11,14 +11,17 @@ namespace IELTS.DTO
         public long Id { get; set; }
         public long SectionId { get; set; }
         public long? PassageId { get; set; }
-        public string PassageTitle { get; set; }
-        public string QuestionType { get; set; } // MCQ, FILL_BLANK, MATCHING, ESSAY, SPEAKING
+        public string QuestionType { get; set; } // MCQ, MULTI_SELECT, FILL_BLANK, MATCHING, ORDERING, SHORT_ANSWER, ESSAY, SPEAK_PROMPT
         public string QuestionText { get; set; }
         public decimal Points { get; set; }
         public int Position { get; set; }
 
-        // Navigation properties
+        // Đáp án cho các loại câu hỏi
+        public string AnswerData { get; set; } // JSON format
+
+        // Navigation
         public List<QuestionChoiceDTO> Choices { get; set; }
+
         public QuestionAnswerKeyDTO AnswerKey { get; set; }
 
         public QuestionDTO()

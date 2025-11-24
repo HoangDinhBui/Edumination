@@ -134,13 +134,13 @@
             lblTest.TabIndex = 4;
             lblTest.Text = "Latest IELTS test releases:";
 
-            
+
             // ---- btnPrevTest ----
             btnPrevTest.Text = "<";
             btnPrevTest.Font = new Font("Segoe UI", 18, FontStyle.Bold);
             btnPrevTest.Size = new Size(50, 70);
             int testMidY = panelTests.Location.Y + (panelTests.Height / 2) - (btnPrevTest.Height / 2);
-            btnPrevTest.Location = new Point(panelTests.Location.X - 60, testMidY); 
+            btnPrevTest.Location = new Point(panelTests.Location.X - 60, testMidY);
             btnPrevTest.Click += btnPrevTest_Click;
 
             // ---- btnNextTest ----

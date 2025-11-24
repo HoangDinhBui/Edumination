@@ -179,5 +179,122 @@ namespace IELTS.DAL
                 return cmd.ExecuteNonQuery() > 0;
             }
         }
+
+        public List<UserDTO> GetListUsersDTO(string keyword = "")
+        {
+            var list = new List<UserDTO>();
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+                string sql = @"SELECT Id, Email, FullName, Role, IsActive, CreatedAt, Phone, DateOfBirth, PasswordHash 
+                               FROM Users 
+                               WHERE Email LIKE @Key OR FullName LIKE @Key 
+                               ORDER BY CreatedAt DESC";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Key", "%" + keyword + "%");
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var user = new UserDTO();
+                            user.Id = Convert.ToInt64(reader["Id"]);
+                            user.Email = reader["Email"].ToString();
+                            user.FullName = reader["FullName"].ToString();
+                            user.Role = reader["Role"].ToString();
+                            user.IsActive = Convert.ToBoolean(reader["IsActive"]);
+                            user.CreatedAt = Convert.ToDateTime(reader["CreatedAt"]);
+                            user.PasswordHash = reader["PasswordHash"].ToString(); // Cần lấy để verify update
+
+                            if (reader["Phone"] != DBNull.Value) user.Phone = reader["Phone"].ToString();
+                            if (reader["DateOfBirth"] != DBNull.Value) user.DateOfBirth = Convert.ToDateTime(reader["DateOfBirth"]);
+
+                            list.Add(user);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// [ADMIN] Thêm user với đầy đủ quyền hạn
+        /// </summary>
+        public bool Admin_AddUser(UserDTO user)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(
+                @"INSERT INTO Users (Email, PasswordHash, FullName, Role, IsActive, Phone, DateOfBirth, CreatedAt) 
+                  VALUES (@Email, @PasswordHash, @FullName, @Role, @IsActive, @Phone, @Dob, GETDATE())", conn))
+            {
+                cmd.Parameters.AddWithValue("@Email", user.Email);
+                cmd.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
+                cmd.Parameters.AddWithValue("@FullName", user.FullName);
+                cmd.Parameters.AddWithValue("@Role", user.Role);
+                cmd.Parameters.AddWithValue("@IsActive", user.IsActive);
+                cmd.Parameters.AddWithValue("@Phone", (object)user.Phone ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Dob", (object)user.DateOfBirth ?? DBNull.Value);
+
+                conn.Open();
+                return cmd.ExecuteNonQuery() > 0;
+            }
+        }
+
+        /// <summary>
+        /// [ADMIN] Cập nhật thông tin user (bao gồm cả Role, Active)
+        /// </summary>
+        public bool Admin_UpdateUser(UserDTO user, bool isChangePassword)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                string sql;
+                if (isChangePassword)
+                {
+                    sql = @"UPDATE Users 
+                            SET FullName=@Name, Email=@Email, PasswordHash=@Pass, Role=@Role, IsActive=@Active, 
+                                Phone=@Phone, DateOfBirth=@Dob, UpdatedAt=GETDATE() 
+                            WHERE Id=@Id";
+                }
+                else
+                {
+                    sql = @"UPDATE Users 
+                            SET FullName=@Name, Email=@Email, Role=@Role, IsActive=@Active, 
+                                Phone=@Phone, DateOfBirth=@Dob, UpdatedAt=GETDATE() 
+                            WHERE Id=@Id";
+                }
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", user.Id);
+                    cmd.Parameters.AddWithValue("@Name", user.FullName);
+                    cmd.Parameters.AddWithValue("@Email", user.Email);
+                    cmd.Parameters.AddWithValue("@Role", user.Role);
+                    cmd.Parameters.AddWithValue("@Active", user.IsActive);
+                    cmd.Parameters.AddWithValue("@Phone", (object)user.Phone ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Dob", (object)user.DateOfBirth ?? DBNull.Value);
+
+                    if (isChangePassword)
+                        cmd.Parameters.AddWithValue("@Pass", user.PasswordHash);
+
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// [ADMIN] Xóa user
+        /// </summary>
+        public bool DeleteUser(long id)
+        {
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            using (SqlCommand cmd = new SqlCommand("DELETE FROM Users WHERE Id = @Id", conn))
+            {
+                cmd.Parameters.AddWithValue("@Id", id);
+                conn.Open();
+                return cmd.ExecuteNonQuery() > 0;
+            }
+        }
     }
 }

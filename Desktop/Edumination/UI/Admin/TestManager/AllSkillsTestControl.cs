@@ -1,6 +1,7 @@
 ﻿using IELTS.BLL;
 using IELTS.DAL;
 using IELTS.DTO;
+using IELTS.UI.Admin.TestManager;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -66,8 +67,13 @@ namespace Edumination.WinForms.UI.Admin.TestManager
 
                 btn.Click += async (s, e) =>
                 {
-                    if (OnMockTestSelected != null)
-                        await OnMockTestSelected(p.Id);
+                    UpdateReadingTestSectionForm form = new UpdateReadingTestSectionForm(p.Id);
+                    form.ShowDialog();
+                    //if (form)
+                    //{
+                    //    form.ShowDialog();
+                    //}
+
                 };
 
                 flowPanelMockTests.Controls.Add(btn);

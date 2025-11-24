@@ -101,10 +101,11 @@ namespace IELTS.UI.User.TestLibrary
                 var container = new MockTestContainerPanel();
                 container.SetTitle(title);
 
-                // 🔥 Loop qua từng section
+                // Loop qua từng section
                 foreach (DataRow s in dtSection.Rows)
                 {
                     string skill = s["Skill"].ToString().Trim().ToUpper();  // LISTENING, READING...
+                    long sectionId = Convert.ToInt64(s["Id"]);
 
                     int? time = s["TimeLimitMinutes"] != DBNull.Value
                         ? Convert.ToInt32(s["TimeLimitMinutes"])
@@ -114,9 +115,10 @@ namespace IELTS.UI.User.TestLibrary
                     if (time.HasValue)
                         testName += $" – {time.Value} minutes";
 
-                    // 🔥 Đây là dòng QUAN TRỌNG NHẤT
-                    // Truyền đúng thứ tự (skill, title, taken)
-                    container.AddItem(skill, testName, "Available");
+                    // Truyền đúng thứ tự (skill, title, taken, sectionId) cho Writing
+                    // TẤT CẢ các skill đều cần truyền sectionId
+                    container.AddItem(skill, testName, "Available", sectionId);
+
                 }
 
                 allMockTests.Add(container);
@@ -154,7 +156,8 @@ namespace IELTS.UI.User.TestLibrary
 
                 foreach (var it in matchedItems)
                 {
-                    filteredContainer.AddItem(it.Skill, it.DisplayText, it.TakenText);
+                    // Preserve SectionId khi sao chép
+                    filteredContainer.AddItem(it.Skill, it.DisplayText, it.TakenText, it.SectionId);
                 }
 
                 flowMain.Controls.Add(filteredContainer);

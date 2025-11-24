@@ -23,22 +23,27 @@ namespace IELTS.UI.User.TestLibrary
             lblTitle.Text = title;
         }
 
-        public void AddItem(string skill, string title, string taken)
+        // 2. MockTestContainerPanel.cs
+        public void AddItem(string skill, string title, string taken, long sectionId = 0)
         {
             var item = new MockTestItemPanel();
-            item.SetData(skill, title, taken);   // ⭐ truyền SKILL
-
+            item.SetData(skill, title, taken, sectionId);
             panelItems.Controls.Add(item);
-
             Items.Add(new MockSectionItem
             {
                 Skill = skill,
                 DisplayText = title,
-                TakenText = taken
+                TakenText = taken,
+                SectionId = sectionId
             });
-
-            if (!Skills.Contains(skill))
-                Skills.Add(skill);
+            if (!Skills.Contains(skill)) Skills.Add(skill);
+        }
+        public class MockSectionItem
+        {
+            public string Skill { get; set; }
+            public string DisplayText { get; set; }
+            public string TakenText { get; set; }
+            public long SectionId { get; set; }
         }
 
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
@@ -51,5 +56,6 @@ namespace IELTS.UI.User.TestLibrary
         public string Skill { get; set; }
         public string DisplayText { get; set; }
         public string TakenText { get; set; }
+        public long SectionId { get; set; }   // mới
     }
 }

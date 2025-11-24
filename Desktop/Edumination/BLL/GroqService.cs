@@ -60,7 +60,7 @@ namespace IELTS.BLL
 
             var requestBody = new
             {
-                model = "llama-3.3-70b-versatile", // Cập nhật model mới nhất
+                model = "llama-3.3-70b-versatile",
                 messages = new[]
                 {
                     new { role = "system", content = "You are an expert IELTS Writing examiner. Grade the following essay based on IELTS criteria (Task Achievement/Response, Coherence & Cohesion, Lexical Resource, Grammatical Range & Accuracy). Provide the output in JSON format with keys: 'band_score' (number), 'feedback' (string), 'correction' (string - rewritten version or specific corrections)." },

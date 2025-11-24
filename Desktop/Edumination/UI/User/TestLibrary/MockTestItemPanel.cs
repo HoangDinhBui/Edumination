@@ -7,24 +7,26 @@ namespace IELTS.UI.User.TestLibrary
 {
     public partial class MockTestItemPanel : UserControl
     {
-        public string Skill { get; set; }   // ⭐ Lưu skill để filter
+        public string Skill { get; set; }   // Lưu skill để filter
 
         public MockTestItemPanel()
         {
             InitializeComponent();
         }
 
-        public void SetData(string skill, string title, string taken)
+        public void SetData(string skill, string title, string taken, long sectionId = 0)
         {
-            Skill = skill;       // ⭐ Lưu skill vào item
+            Skill = skill;
             lblTitle.Text = title;
             lblTaken.Text = taken;
+            SectionId = sectionId;   // lưu ID để truyền
 
-            // Gán sự kiện Click cho panel và các label con
+            // gán sự kiện click
             this.Click += OnItemClicked;
             lblTitle.Click += OnItemClicked;
             lblTaken.Click += OnItemClicked;
         }
+        public long SectionId { get; private set; }
 
         private void OnItemClicked(object sender, EventArgs e)
         {
@@ -40,29 +42,27 @@ namespace IELTS.UI.User.TestLibrary
             switch (Skill?.ToUpper())
             {
                 case "WRITING":
-                    testForm = new IELTS.UI.User.TestTaking.WritingTest.WritingTest();
+                    testForm = new IELTS.UI.User.TestTaking.WritingTest.WritingTest(SectionId);
                     break;
+
                 case "READING":
-                    testForm = new IELTS.UI.User.TestTaking.ReadingTest.ReadingTest();
-                    // MessageBox.Show("Reading test is coming soon!", "Info");
-                    //parentForm.Show();
-                    //return;
+                    testForm = new IELTS.UI.User.TestTaking.ReadingTest.ReadingTest(0, SectionId);
                     break;
+
                 case "LISTENING":
-                    // testForm = new IELTS.UI.User.TestTaking.ListeningTest.ListeningTest();
-                    MessageBox.Show("Listening test is coming soon!", "Info");
-                    parentForm.Show();
-                    return;
+                    testForm = new IELTS.UI.User.TestTaking.ListeningTest.ListeningTest(0, SectionId);
+                    break;
+
                 case "SPEAKING":
-                    // testForm = new IELTS.UI.User.TestTaking.SpeakingTest.SpeakingTest();
-                    MessageBox.Show("Speaking test is coming soon!", "Info");
-                    parentForm.Show();
-                    return;
+                    testForm = new IELTS.UI.User.TestTaking.SpeakingTest.SpeakingTest(SectionId);
+                    break;
+
                 default:
                     MessageBox.Show($"Test for skill '{Skill}' is not implemented yet.", "Info");
                     parentForm.Show();
                     return;
             }
+
 
             if (testForm != null)
             {

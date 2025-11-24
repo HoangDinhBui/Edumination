@@ -8,7 +8,7 @@ namespace IELTS.UI.User.TestTaking.SpeakingTest
 {
     public partial class SpeakingTest : Form
     {
-        private readonly List<SpeakingPart> _parts;
+        private List<SpeakingPart> _parts;
         private int _currentPartIndex = 0;
 
         private readonly System.Windows.Forms.Timer _timer;
@@ -16,23 +16,42 @@ namespace IELTS.UI.User.TestTaking.SpeakingTest
 
         private int questionIndex = 0;
 
-        public SpeakingTest()
+        private readonly long _sectionId;
+
+        public SpeakingTest(long sectionId)
         {
             InitializeComponent();
-
             WindowState = FormWindowState.Maximized;
+            _sectionId = sectionId;
 
-            // Load mockdata
-            _parts = SpeakingMockData.GetParts();
-            _remainingSeconds = SpeakingMockData.TotalTimeSeconds;
-
-            // Timer
             _timer = new System.Windows.Forms.Timer();
             _timer.Interval = 1000;
             _timer.Tick += Timer_Tick;
+            _remainingSeconds = 15 * 60;
+        } // hoặc lấy từ DB nếu cần
+        private void LoadPartsFromDatabase()
+        {
+            var questionBLL = new IELTS.BLL.QuestionBLL();
+            var dt = questionBLL.GetQuestionsBySectionId(_sectionId);
+            if (dt == null || dt.Rows.Count == 0)
+            {
+                _parts = new List<SpeakingPart>();
+                return;
+            }
 
-            // Khi phóng to – giữ audio panel ở giữa
-            //this.Resize += (s, e) => CenterAudioPanel();
+            _parts = new List<SpeakingPart>();
+            int pos = 1;
+            foreach (System.Data.DataRow row in dt.Rows)
+            {
+                var part = new SpeakingPart
+                {
+                    PartName = $"Part {pos}",
+                    Title = "Speaking Test",
+                    Questions = new List<string> { row["QuestionText"].ToString() }
+                };
+                _parts.Add(part);
+                pos++;
+            }
         }
 
         // =============================
@@ -47,6 +66,20 @@ namespace IELTS.UI.User.TestTaking.SpeakingTest
 
         private void SpeakingTest_Load(object sender, EventArgs e)
         {
+            LoadPartsFromDatabase();
+            
+            if (testNavBar == null || testFooter == null || audioPanel == null)
+            {
+                MessageBox.Show("UI controls are not initialized properly.", "Error");
+                return;
+            }
+
+            if (_parts == null || _parts.Count == 0)
+            {
+                MessageBox.Show("Không tìm thấy câu hỏi cho phần Speaking này!\nVui lòng kiểm tra lại dữ liệu trong database.", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             // NAV
             testNavBar.OnExitRequested += Exit_Click;
             testNavBar.OnSubmitRequested += Submit_Click;
@@ -78,7 +111,6 @@ namespace IELTS.UI.User.TestTaking.SpeakingTest
 
         // =============================
         // TIMER
-        // =============================
         private void Timer_Tick(object sender, EventArgs e)
         {
             _remainingSeconds--;

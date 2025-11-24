@@ -299,6 +299,58 @@ namespace IELTS.BLL
                 return new ForgotPasswordResponseDTO(false, $"Lỗi: {ex.Message}");
             }
         }
+
+        // --- PHẦN BỔ SUNG CHO ADMIN (Thêm vào class UserBLL) ---
+
+        // 1. Lấy danh sách UserDTO cho GridView
+        public List<UserDTO> GetAll(string keyword = "")
+        {
+            return userDAL.GetListUsersDTO(keyword);
+        }
+
+        // 2. Admin thêm user mới
+        public string AddUser(UserDTO user, string rawPassword)
+        {
+            // Validate cơ bản
+            if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.FullName))
+                return "Vui lòng nhập Email và Họ tên.";
+
+            // Kiểm tra email trùng (Optional: Bạn có thể thêm hàm CheckEmailExist trong DAL nếu cần)
+            var existingUser = userDAL.GetUserByEmail(user.Email);
+            if (existingUser != null && existingUser.Rows.Count > 0)
+                return "Email này đã tồn tại trong hệ thống!";
+
+            // Hash mật khẩu
+            user.PasswordHash = HashPassword(rawPassword);
+
+            // Gọi DAL
+            if (userDAL.Admin_AddUser(user))
+                return ""; // Rỗng = Thành công
+
+            return "Lỗi thêm dữ liệu vào SQL.";
+        }
+
+        // 3. Admin cập nhật user
+        public string UpdateUser(UserDTO user, string newPassword)
+        {
+            bool isChangePass = !string.IsNullOrEmpty(newPassword);
+
+            if (isChangePass)
+            {
+                user.PasswordHash = HashPassword(newPassword);
+            }
+
+            if (userDAL.Admin_UpdateUser(user, isChangePass))
+                return ""; // Thành công
+
+            return "Lỗi cập nhật dữ liệu!";
+        }
+
+        // 4. Admin xóa user
+        public bool DeleteUser(long id)
+        {
+            return userDAL.DeleteUser(id);
+        }
     }
 
     // =========================================================
@@ -365,6 +417,41 @@ namespace IELTS.BLL
                 throw new Exception("User ID không hợp lệ!");
 
             return courseDAL.GetEnrolledCoursesByUserId(userId);
+        }
+
+        private readonly CourseDAL _dal = new CourseDAL();
+
+        public List<CourseDTO> GetAll(string keyword)
+        {
+            return courseDAL.GetListCourses(keyword);
+        }
+
+        public string AddCourse(CourseDTO course)
+        {
+            if (string.IsNullOrWhiteSpace(course.Title)) return "Tiêu đề khóa học không được để trống!";
+            if (course.PriceVND < 0) return "Giá tiền không hợp lệ!";
+
+            // Mặc định người tạo là 1 (Admin) nếu chưa có session
+            if (course.CreatedBy == 0) course.CreatedBy = 1;
+
+            if (courseDAL.AddCourse(course))
+                return ""; // Thành công
+            return "Lỗi thêm khóa học!";
+        }
+
+        public string UpdateCourse(CourseDTO course)
+        {
+            if (string.IsNullOrWhiteSpace(course.Title)) return "Tiêu đề khóa học không được để trống!";
+            if (course.PriceVND < 0) return "Giá tiền không hợp lệ!";
+
+            if (courseDAL.UpdateCourse(course))
+                return ""; // Thành công
+            return "Lỗi cập nhật khóa học!";
+        }
+
+        public bool DeleteCourse(long id)
+        {
+            return courseDAL.DeleteCourse(id);
         }
     }
 

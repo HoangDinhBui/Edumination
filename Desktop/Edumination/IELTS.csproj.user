@@ -4,17 +4,38 @@
     <Compile Update="BLL\AddTestSectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="UI\Admin\AccountManager\AccountsPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Admin\AdminMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="UI\Admin\AdminNavBarPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\Admin\CoursesManager\CoursesPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\DashBoard\AdminDashboardControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\DashBoard\AdminDashboardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\AddSectionButtonControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Admin\TestManager\AllSkillsTestControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\CreateTestPaperControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\Admin\TestManager\TestManagerControl.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\UpdateReadingTestSectionForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Update="UI\frmHienThiPdf.cs">
       <SubType>Form</SubType>
@@ -27,6 +48,9 @@
     </Compile>
     <Compile Update="UI\Login\SignIn.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\ReportManager\ReportsPanel.cs">
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\User\Courses\CourseCardPanel.cs">
       <SubType>UserControl</SubType>

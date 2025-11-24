@@ -16,7 +16,6 @@ namespace IELTS.DTO
         public string PdfFileName { get; set; }
         public string PdfFilePath { get; set; }
 
-
         // Navigation properties
         public List<PassageDTO> Passages { get; set; }
         public List<QuestionDTO> Questions { get; set; }

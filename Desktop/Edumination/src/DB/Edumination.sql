@@ -415,9 +415,6 @@ ADD PdfFileName NVARCHAR(255),
     PdfFilePath NVARCHAR(500);
 GO
 
-/* --------------------------------------------------------------
-   1️⃣  Câu hỏi Writing – Task 1 (Miêu tả biểu đồ / đồ thị)
-   -------------------------------------------------------------- */
 INSERT INTO Questions
 (
     SectionId,          -- ID của phần WRITING (tự động lấy)
@@ -439,9 +436,6 @@ WHERE ts.PaperId = 1                -- Thay 1 bằng Id của Paper bạn muốn
   AND ts.Skill = N'WRITING';
 
 
-/* --------------------------------------------------------------
-   2️⃣  Câu hỏi Writing – Task 2 (Bài luận luận điểm)
-   -------------------------------------------------------------- */
 INSERT INTO Questions
 (
     SectionId,
@@ -461,5 +455,3 @@ SELECT
 FROM TestSections ts
 WHERE ts.PaperId = 1                -- Thay 1 bằng Id của Paper bạn muốn
   AND ts.Skill = N'WRITING';
-
-

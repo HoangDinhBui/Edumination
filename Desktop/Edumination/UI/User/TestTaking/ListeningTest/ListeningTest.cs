@@ -19,8 +19,10 @@ namespace IELTS.UI.User.TestTaking.ListeningTest
 
         private readonly System.Windows.Forms.Timer _timer;
         private readonly Dictionary<int, string> _userAnswers = new();
+        private readonly long _paperId;
+        private readonly long _sectionId;
 
-     
+
         public ListeningTest()
         {
             InitializeComponent();
@@ -28,6 +30,20 @@ namespace IELTS.UI.User.TestTaking.ListeningTest
 
             _parts = ListeningMockData.GetParts();
             _remainingSeconds = ListeningMockData.TotalTimeSeconds;
+
+            _timer = new System.Windows.Forms.Timer();
+            _timer.Interval = 1000;
+            _timer.Tick += Timer_Tick;
+        }
+
+        public ListeningTest(long paperId, long sectionId)
+        {
+            _paperId = paperId;
+            _sectionId = sectionId;
+
+            InitializeComponent();
+
+            WindowState = FormWindowState.Maximized;
 
             _timer = new System.Windows.Forms.Timer();
             _timer.Interval = 1000;
