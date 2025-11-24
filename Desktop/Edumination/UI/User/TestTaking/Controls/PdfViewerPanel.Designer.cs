@@ -1,7 +1,5 @@
-﻿using Sunny.UI;
-using System.Drawing;
-using System.Windows.Forms;
-using AxAcroPDFLib;
+﻿using AxAcroPDFLib;
+using Sunny.UI;
 
 namespace IELTS.UI.User.TestTaking.Controls
 {
@@ -11,9 +9,9 @@ namespace IELTS.UI.User.TestTaking.Controls
 
         private UIPanel panelWrapper;
         private UILabel lblTitle;
+        private AxAcroPDF axPdfViewer;
         private UIPanel panelScroll;
         private UILabel lblPassage;
-        private AxAcroPDF axPdfViewer;
 
         protected override void Dispose(bool disposing)
         {
@@ -38,50 +36,61 @@ namespace IELTS.UI.User.TestTaking.Controls
             panelScroll.SuspendLayout();
             SuspendLayout();
 
-            // ========== PDF VIEWER ==========
+            // axPdfViewer
             axPdfViewer.Enabled = true;
-            axPdfViewer.OcxState = (AxHost.State)resources.GetObject("axPdfViewer.OcxState");
-            axPdfViewer.Location = new Point(10, 60);  // sẽ auto Resize sau
             axPdfViewer.Name = "axPdfViewer";
-            axPdfViewer.Visible = false;
-            axPdfViewer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            axPdfViewer.OcxState = (AxHost.State)resources.GetObject("axPdfViewer.OcxState");
 
-            // ========== PANEL WRAPPER ==========
+            axPdfViewer.Location = new Point(10, 60);
+            axPdfViewer.Size = new Size(400, 740);
+
+            axPdfViewer.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            axPdfViewer.Visible = false;
+
+            // panelWrapper
+            panelWrapper.Controls.Add(lblTitle);
+            panelWrapper.Controls.Add(panelScroll);
+            panelWrapper.Controls.Add(axPdfViewer);
+
             panelWrapper.Dock = DockStyle.Fill;
+            panelWrapper.FillColor = Color.White;
             panelWrapper.Padding = new Padding(20);
             panelWrapper.RectColor = Color.LightGray;
-            panelWrapper.FillColor = Color.White;
-            panelWrapper.Controls.Add(lblTitle);
-            panelWrapper.Controls.Add(axPdfViewer);
-            panelWrapper.Controls.Add(panelScroll);
+            panelWrapper.Name = "panelWrapper";
+            panelWrapper.Size = new Size(900, 850);
 
-            // ========== LABEL TITLE ==========
-            lblTitle.Text = "Passage Title";
+            // lblTitle
+            lblTitle.AutoSize = true;
             lblTitle.Font = new Font("Noto Serif SC", 18F, FontStyle.Bold);
             lblTitle.ForeColor = Color.FromArgb(41, 69, 99);
-            lblTitle.AutoSize = true;
             lblTitle.Location = new Point(10, 10);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Text = "Passage Title";
 
-            // ========== PANEL TEXT SCROLL ==========
-            panelScroll.FillColor = Color.White;
-            panelScroll.RectColor = Color.White;
+            // panelScroll
             panelScroll.AutoScroll = true;
-            panelScroll.Padding = new Padding(5);
-            panelScroll.Location = new Point(10, 60);
             panelScroll.Controls.Add(lblPassage);
+            panelScroll.FillColor = Color.White;
 
-            // ========== TEXT LABEL ==========
+            panelScroll.Location = new Point(10, 60);
+            panelScroll.Size = new Size(400, 740);
+
+            panelScroll.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            panelScroll.RectColor = Color.White;
+            panelScroll.Name = "panelScroll";
+
+            // lblPassage
             lblPassage.AutoSize = true;
             lblPassage.Font = new Font("Segoe UI", 12F);
             lblPassage.ForeColor = Color.Black;
-            lblPassage.MaximumSize = new Size(900, 0);
+            lblPassage.MaximumSize = new Size(380, 0);
+            lblPassage.Location = new Point(0, 0);
+            lblPassage.Name = "lblPassage";
 
-            // ========== ADD CONTROLS ==========
+            // PdfViewerPanel
             Controls.Add(panelWrapper);
-            this.Resize += PdfViewerPanel_Resize;
-
             Name = "PdfViewerPanel";
-            Size = new Size(1200, 850);
+            Size = new Size(900, 850);
 
             ((System.ComponentModel.ISupportInitialize)axPdfViewer).EndInit();
             panelWrapper.ResumeLayout(false);

@@ -36,6 +36,7 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
         // Designer cần constructor rỗng → gọi về constructor chính
         public ReadingTest() : this(0, 0) { }
 
+
         private void ReadingTest_Load(object sender, EventArgs e)
         {
             if (_sectionId <= 0)

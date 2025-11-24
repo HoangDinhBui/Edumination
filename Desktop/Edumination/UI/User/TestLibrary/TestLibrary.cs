@@ -36,11 +36,13 @@ namespace IELTS.UI.User.TestLibrary
         private void CenterSkillButtons()
         {
             int totalWidth = 0;
+
             foreach (Control c in panelSkills.Controls)
                 totalWidth += c.Width + c.Margin.Left + c.Margin.Right;
 
             panelSkills.Padding = new Padding((panelSkills.Width - totalWidth) / 2, 0, 0, 0);
         }
+
 
         private void BuildSkillButtons()
         {
@@ -77,6 +79,7 @@ namespace IELTS.UI.User.TestLibrary
             CenterSkillButtons();
         }
 
+
         private void LoadPapersFromDatabase()
         {
             flowMain.Controls.Clear();
@@ -87,28 +90,22 @@ namespace IELTS.UI.User.TestLibrary
             foreach (DataRow row in dt.Rows)
             {
                 long paperId = Convert.ToInt64(row["Id"]);
-                string paperTitle = row["Title"].ToString();
+                string title = row["Title"].ToString();
 
                 var dtSection = _sectionBLL.GetSectionsByPaperId(paperId);
 
+                // Nếu paper không có section thì bỏ qua
                 if (dtSection.Rows.Count == 0)
                     continue;
 
                 var container = new MockTestContainerPanel();
-                container.SetTitle(paperTitle);
+                container.SetTitle(title);
 
-<<<<<<< HEAD
                 // Loop qua từng section
                 foreach (DataRow s in dtSection.Rows)
                 {
                     string skill = s["Skill"].ToString().Trim().ToUpper();  // LISTENING, READING...
                     long sectionId = Convert.ToInt64(s["Id"]);
-=======
-                foreach (DataRow s in dtSection.Rows)
-                {
-                    long sectionId = Convert.ToInt64(s["Id"]);
-                    string skill = s["Skill"].ToString().Trim().ToUpper();
->>>>>>> feat/tests
 
                     int? time = s["TimeLimitMinutes"] != DBNull.Value
                         ? Convert.ToInt32(s["TimeLimitMinutes"])
@@ -118,28 +115,17 @@ namespace IELTS.UI.User.TestLibrary
                     if (time.HasValue)
                         testName += $" – {time.Value} minutes";
 
-<<<<<<< HEAD
                     // Truyền đúng thứ tự (skill, title, taken, sectionId) cho Writing
-                    if (skill == "WRITING")
-                        container.AddItem(skill, testName, "Available", sectionId);
-                    else
-                        container.AddItem(skill, testName, "Available");
-=======
-                    // ⭐ TRUYỀN ĐÚNG 5 THAM SỐ MỚI
-                    container.AddItem(
-                        paperId,
-                        sectionId,
-                        skill,
-                        testName,
-                        "Available"
-                    );
->>>>>>> feat/tests
+                    // TẤT CẢ các skill đều cần truyền sectionId
+                    container.AddItem(skill, testName, "Available", sectionId);
+
                 }
 
                 allMockTests.Add(container);
                 flowMain.Controls.Add(container);
             }
         }
+
 
         private void FilterMockTests()
         {
@@ -156,35 +142,28 @@ namespace IELTS.UI.User.TestLibrary
 
             foreach (var container in allMockTests)
             {
+                // Lấy danh sách item phù hợp
                 var matchedItems = container.Items
                     .Where(i => i.Skill.ToUpper() == filterSkill)
                     .ToList();
 
                 if (matchedItems.Count == 0)
-                    continue;
+                    continue;   // paper này không có section theo skill
 
+                // tạo container mới chỉ chứa section phù hợp
                 var filteredContainer = new MockTestContainerPanel();
                 filteredContainer.SetTitle(container.TitleText);
 
                 foreach (var it in matchedItems)
                 {
-<<<<<<< HEAD
                     // Preserve SectionId khi sao chép
                     filteredContainer.AddItem(it.Skill, it.DisplayText, it.TakenText, it.SectionId);
-=======
-                    filteredContainer.AddItem(
-                        it.PaperId,
-                        it.SectionId,
-                        it.Skill,
-                        it.DisplayText,
-                        it.TakenText
-                    );
->>>>>>> feat/tests
                 }
 
                 flowMain.Controls.Add(filteredContainer);
             }
 
+            // Không có kết quả
             if (flowMain.Controls.Count == 0)
             {
                 flowMain.Controls.Add(new Label()
@@ -198,20 +177,17 @@ namespace IELTS.UI.User.TestLibrary
             }
         }
 
+
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn(int left, int top, int right, int bottom,
             int width, int height);
-
-        private void txtSearch_TextChanged(object sender, EventArgs e)
-        {
-
-        }
 
         private void txtSearch_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
+
                 string keyword = txtSearch.Text.Trim().ToLower();
                 flowMain.Controls.Clear();
 
@@ -248,6 +224,12 @@ namespace IELTS.UI.User.TestLibrary
                 foreach (var f in filtered)
                     flowMain.Controls.Add(f);
             }
+        }
+
+
+        private void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

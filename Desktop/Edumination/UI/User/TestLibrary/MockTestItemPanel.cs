@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -6,19 +7,11 @@ namespace IELTS.UI.User.TestLibrary
 {
     public partial class MockTestItemPanel : UserControl
     {
-        public long PaperId { get; set; }
-        public long SectionId { get; set; }
-        public string Skill { get; set; }
+        public string Skill { get; set; }   // ⭐ Lưu skill để filter
 
         public MockTestItemPanel()
         {
             InitializeComponent();
-
-            this.Cursor = Cursors.Hand;
-
-            this.Click += OpenTest;
-            foreach (Control c in this.Controls)
-                c.Click += OpenTest;
         }
 
         public void SetData(string skill, string title, string taken, long sectionId = 0)
@@ -51,20 +44,25 @@ namespace IELTS.UI.User.TestLibrary
                 case "WRITING":
                     testForm = new IELTS.UI.User.TestTaking.WritingTest.WritingTest(SectionId);
                     break;
+
                 case "READING":
-                    testForm = new IELTS.UI.User.TestTaking.ReadingTest.ReadingTest();
+                    testForm = new IELTS.UI.User.TestTaking.ReadingTest.ReadingTest(0, SectionId);
                     break;
+
                 case "LISTENING":
-                    testForm = new IELTS.UI.User.TestTaking.ListeningTest.ListeningTest();
+                    testForm = new IELTS.UI.User.TestTaking.ListeningTest.ListeningTest(0, SectionId);
                     break;
+
                 case "SPEAKING":
-                    testForm = new IELTS.UI.User.TestTaking.SpeakingTest.SpeakingTest();
+                    //testForm = new IELTS.UI.User.TestTaking.SpeakingTest.SpeakingTest(SectionId);
                     break;
+
                 default:
                     MessageBox.Show($"Test for skill '{Skill}' is not implemented yet.", "Info");
                     parentForm.Show();
                     return;
             }
+
 
             if (testForm != null)
             {
@@ -75,8 +73,7 @@ namespace IELTS.UI.User.TestLibrary
         }
 
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
-        private static extern IntPtr CreateRoundRectRgn(
-            int left, int top, int right, int bottom,
+        private static extern IntPtr CreateRoundRectRgn(int left, int top, int right, int bottom,
             int width, int height);
     }
 }

@@ -7,7 +7,6 @@
         private Panel card;
         private Label lblTitle;
         private Label lblTaken;
-        private Label lblSkill;     // ⭐ THÊM LABEL SKILL
         private PictureBox icon;
 
         protected override void Dispose(bool disposing)
@@ -22,7 +21,6 @@
             this.card = new Panel();
             this.lblTitle = new Label();
             this.lblTaken = new Label();
-            this.lblSkill = new Label();       // ⭐ NEW
             this.icon = new PictureBox();
 
             this.SuspendLayout();
@@ -32,7 +30,6 @@
             this.card.Size = new Size(320, 110);
             this.card.Padding = new Padding(15);
             this.card.Location = new Point(0, 0);
-            this.card.Cursor = Cursors.Hand;
 
             // Border + Radius + Shadow
             this.card.Paint += (s, e) =>
@@ -60,23 +57,17 @@
             lblTitle.ForeColor = Color.FromArgb(40, 60, 90);
             lblTitle.AutoSize = false;
             lblTitle.Location = new Point(10, 10);
-            lblTitle.Size = new Size(290, 40);
-
-            // ⭐ SKILL LABEL
-            lblSkill.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            lblSkill.ForeColor = Color.FromArgb(80, 80, 120);
-            lblSkill.AutoSize = true;
-            lblSkill.Location = new Point(12, 55);  // nằm trên TAKEN
+            lblTitle.Size = new Size(290, 45);
 
             // ICON
             icon.Size = new Size(18, 18);
-            icon.Location = new Point(12, 75);
+            icon.Location = new Point(12, 70);
             icon.SizeMode = PictureBoxSizeMode.Zoom;
 
             // TAKEN TEXT
             lblTaken.Font = new Font("Segoe UI", 9.5F);
             lblTaken.ForeColor = Color.Gray;
-            lblTaken.Location = new Point(35, 75);
+            lblTaken.Location = new Point(35, 70);
             lblTaken.AutoSize = true;
 
             // HOVER EFFECT
@@ -92,17 +83,9 @@
                 card.Invalidate();
             };
 
-            // ***** CLICK => MỞ TEST *****
-            this.card.Click += OpenTest;
-            this.lblTitle.Click += OpenTest;
-            this.lblTaken.Click += OpenTest;
-            this.lblSkill.Click += OpenTest;
-            this.icon.Click += OpenTest;
-
             // ADD TO CONTROL
             this.Controls.Add(card);
             card.Controls.Add(lblTitle);
-            card.Controls.Add(lblSkill);    // ⭐ ADD LABEL
             card.Controls.Add(lblTaken);
             card.Controls.Add(icon);
 

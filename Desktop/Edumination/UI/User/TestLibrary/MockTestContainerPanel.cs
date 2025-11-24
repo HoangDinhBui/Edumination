@@ -31,8 +31,6 @@ namespace IELTS.UI.User.TestLibrary
             panelItems.Controls.Add(item);
             Items.Add(new MockSectionItem
             {
-                PaperId = paperId,
-                SectionId = sectionId,
                 Skill = skill,
                 DisplayText = title,
                 TakenText = taken,
@@ -49,15 +47,12 @@ namespace IELTS.UI.User.TestLibrary
         }
 
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
-        private static extern IntPtr CreateRoundRectRgn(
-            int left, int top, int right, int bottom,
+        private static extern IntPtr CreateRoundRectRgn(int left, int top, int right, int bottom,
             int width, int height);
     }
 
     public class MockSectionItem
     {
-        public long PaperId { get; set; }
-        public long SectionId { get; set; }
         public string Skill { get; set; }
         public string DisplayText { get; set; }
         public string TakenText { get; set; }

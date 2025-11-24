@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Sunny.UI;
+using System;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
+using AxAcroPDFLib;
 
 namespace IELTS.UI.User.TestTaking.Controls
 {
@@ -13,62 +14,69 @@ namespace IELTS.UI.User.TestTaking.Controls
         }
 
         /// <summary>
-        /// Hiển thị PDF nếu có, nếu không thì hiển thị text fallback.
+        /// Hiển thị văn bản passage (Reading dạng text)
         /// </summary>
-        public void ShowPdf(string pdfPath, string title, string fallbackText)
+        public void ShowPassage(string title, string content)
         {
             lblTitle.Text = title;
+            lblPassage.Text = content;
 
-            if (!string.IsNullOrWhiteSpace(pdfPath) && File.Exists(pdfPath))
-            {
-                panelScroll.Visible = false;
-                axPdfViewer.Visible = true;
+            lblPassage.Visible = true;
+            panelScroll.Visible = true;
 
-                try
-                {
-                    axPdfViewer.LoadFile(pdfPath);
-                    axPdfViewer.setView("FitH");
-                }
-                catch
-                {
-                    axPdfViewer.Visible = false;
-                    panelScroll.Visible = true;
-                    lblPassage.Text = "PDF cannot be opened.";
-                }
-            }
-            else
-            {
-                axPdfViewer.Visible = false;
-                panelScroll.Visible = true;
-
-                lblPassage.Text = fallbackText;
-            }
-
-            ResizeLayout();
+            axPdfViewer.Visible = false;
         }
 
         /// <summary>
-        /// Chia bố cục PDF = 40% và Text = 55%
+        /// Hiển thị file PDF
         /// </summary>
-        private void ResizeLayout()
+        public void ShowPdf(string pdfPath, string title = "PDF Viewer", string fallbackText = "")
         {
-            int pdfWidth = (int)(this.Width * 0.90);
-            int textWidth = (int)(this.Width * 0.95);
+            lblTitle.Text = title;
 
-            // PDF
-            axPdfViewer.Width = pdfWidth;
-            axPdfViewer.Height = this.Height - 80;
-            axPdfViewer.Location = new Point(10, 60);
+            panelScroll.Visible = false;
+            lblPassage.Visible = false;
 
-            // TEXT
-            panelScroll.Width = textWidth;
-            panelScroll.Height = this.Height - 80;
-            panelScroll.Location = new Point(axPdfViewer.Right + 20, 60);
+            axPdfViewer.Visible = true;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(pdfPath) && System.IO.File.Exists(pdfPath))
+                {
+                    axPdfViewer.LoadFile(pdfPath);
+                    axPdfViewer.setView("FitW");
+                    axPdfViewer.setShowToolbar(false);
+                    axPdfViewer.setPageMode("none");
+                }
+                else
+                {
+                    MessageBox.Show("PDF file not found:\n" + pdfPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading PDF:\n" + ex.Message);
+            }
         }
 
-        private void PdfViewerPanel_Resize(object sender, EventArgs e)
+        /// <summary>
+        /// Cố định PDF chiếm 1/3 panel trái
+        /// </summary>
+        protected override void OnResize(EventArgs e)
         {
-            ResizeLayout();
+            base.OnResize(e);
+
+            int fixedWidth = this.Width;   // ⭐ 1/3 màn hình
+
+            axPdfViewer.Width = fixedWidth;
+            axPdfViewer.Height = this.Height - 80;
+            axPdfViewer.Left = 10;
+            axPdfViewer.Top = 60;
+
+            panelScroll.Width = fixedWidth;
+            panelScroll.Height = this.Height - 80;
+            panelScroll.Left = 10;
+            panelScroll.Top = 60;
         }
     }
 }
