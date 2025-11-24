@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using DotNetEnv;
 using System.IO;
+using IELTS.DTO;
 
 namespace IELTS.BLL
 {
@@ -44,6 +45,9 @@ namespace IELTS.BLL
             _httpClient.Timeout = TimeSpan.FromMinutes(5); // Tăng timeout cho audio
         }
 
+        // ==========================================
+        // WRITING GRADING
+        // ==========================================
         public async Task<WritingGradeResult> GradeWritingAsync(string taskPrompt, string userEssay)
         {
             if (string.IsNullOrEmpty(_apiKey))
@@ -100,6 +104,9 @@ namespace IELTS.BLL
             }
         }
 
+        // ==========================================
+        // SPEAKING GRADING
+        // ==========================================
         public async Task<SpeakingGradeResult> GradeSpeakingAsync(string taskPrompt, string audioFilePath)
         {
             if (string.IsNullOrEmpty(_apiKey))
@@ -307,8 +314,89 @@ Use this exact structure:
                 throw new Exception($"Failed to grade speaking from transcript: {ex.Message}");
             }
         }
+
+        // ==========================================
+        // LISTENING GRADING
+        // ==========================================
+        public async Task<ListeningGradeResult> GradeListeningAsync(
+            Dictionary<int, string> userAnswers,
+            Dictionary<int, string> correctKeys)
+        {
+            if (string.IsNullOrEmpty(_apiKey))
+                throw new Exception("GROQ_API_KEY not found.");
+
+            // 1. Chuẩn bị dữ liệu gửi đi
+            var dataPayload = new
+            {
+                UserAnswers = userAnswers,
+                AnswerKeys = correctKeys
+            };
+
+            // 2. Viết Prompt cho AI
+            string prompt = $@"
+You are an IELTS Listening Examiner. Grade the student's answers based on the official Answer Keys.
+Data: {JsonConvert.SerializeObject(dataPayload)}
+
+Rules:
+1. Compare 'UserAnswer' vs 'AnswerKey' for each Question ID.
+2. Ignore Case (case-insensitive).
+3. Accept standard variations (e.g., '10 dollars' == '$10', '14th July' == 'July 14').
+4. If UserAnswer is empty/blank, it is wrong.
+5. Calculate IELTS Band Score based on the number of correct answers (out of 40 usually).
+
+Output JSON format ONLY:
+{{
+  ""TotalCorrect"": (int),
+  ""TotalQuestions"": (int),
+  ""BandScore"": (double),
+  ""Feedback"": ""Short summary of performance"",
+  ""Details"": [
+    {{ ""QuestionNumber"": 1, ""UserAnswer"": ""..."", ""CorrectKey"": ""..."", ""IsCorrect"": true/false, ""Explanation"": ""Only if wrong, explain why"" }}
+  ]
+}}
+";
+
+            var requestBody = new
+            {
+                model = "llama-3.3-70b-versatile", // Model này xử lý logic rất tốt
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a strict JSON output machine." },
+                    new { role = "user", content = prompt }
+                },
+                temperature = 0, // Nhiệt độ = 0 để chấm chính xác tuyệt đối
+                response_format = new { type = "json_object" }
+            };
+
+            var json = JsonConvert.SerializeObject(requestBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
+
+            try
+            {
+                var response = await _httpClient.PostAsync(_chatApiUrl, content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                    throw new Exception($"Groq Error: {responseString}");
+
+                dynamic result = JsonConvert.DeserializeObject(responseString);
+                string contentStr = result.choices[0].message.content;
+
+                return JsonConvert.DeserializeObject<ListeningGradeResult>(contentStr);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"AI Grading Failed: {ex.Message}");
+            }
+        }
     }
 
+    // ==========================================
+    // RESULT CLASSES
+    // ==========================================
     public class WritingGradeResult
     {
         [JsonProperty("band_score")]

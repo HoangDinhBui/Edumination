@@ -18,10 +18,20 @@ namespace IELTS.UI.Login
     public partial class SignIn : Form
     {
         private UserBLL userBLL = new UserBLL();
-
+        private List<Image> slides;
+        private int currentSlide = 0;
         public SignIn()
         {
             InitializeComponent();
+            slides = new List<Image>
+            {
+                Image.FromFile("assets/img/adv.jpg"),
+                Image.FromFile("assets/img/adv1.jpg"),
+                Image.FromFile("assets/img/adv2.jpg")
+            };
+
+            pictureBoxSlide.Image = slides[0];
+            timerSlide.Start();
         }
 
         /// <summary>
@@ -177,5 +187,10 @@ namespace IELTS.UI.Login
             forgotForm.ShowDialog();
         }
 
+        private void TimerSlide_Tick(object sender, EventArgs e)
+        {
+            currentSlide = (currentSlide + 1) % slides.Count;
+            pictureBoxSlide.Image = slides[currentSlide];
+        }
     }
 }
