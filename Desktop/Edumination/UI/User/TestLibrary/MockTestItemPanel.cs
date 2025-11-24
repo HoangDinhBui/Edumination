@@ -43,10 +43,11 @@ namespace IELTS.UI.User.TestLibrary
                     testForm = new IELTS.UI.User.TestTaking.WritingTest.WritingTest();
                     break;
                 case "READING":
-                    // testForm = new IELTS.UI.User.TestTaking.ReadingTest.ReadingTest();
-                    MessageBox.Show("Reading test is coming soon!", "Info");
-                    parentForm.Show();
-                    return;
+                    testForm = new IELTS.UI.User.TestTaking.ReadingTest.ReadingTest();
+                    // MessageBox.Show("Reading test is coming soon!", "Info");
+                    //parentForm.Show();
+                    //return;
+                    break;
                 case "LISTENING":
                     // testForm = new IELTS.UI.User.TestTaking.ListeningTest.ListeningTest();
                     MessageBox.Show("Listening test is coming soon!", "Info");
