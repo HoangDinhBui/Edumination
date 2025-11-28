@@ -461,7 +461,7 @@ const WritingTestPage = () => {
           <div className="bg-white rounded-xl shadow-lg px-8 py-10 flex flex-col items-center gap-4">
             <Loader2 className="w-16 h-16 animate-spin text-orange-500" />
             <p className="text-lg font-semibold text-orange-600">
-              Đang chấm bài, vui lòng chờ...
+              Grading, please wait...
             </p>
           </div>
         </div>
