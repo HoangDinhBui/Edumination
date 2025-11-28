@@ -6,6 +6,9 @@ public record SubmitSpeakingResponse
     public long SectionAttemptId { get; set; }
     public long AudioAssetId { get; set; }
     public string Status { get; set; }
+    public decimal? OverallBand { get; set; }
+    public string? Transcript { get; set; }
+    public string? Feedback { get; set; }
 
     public SubmitSpeakingResponse(long submissionId, long sectionAttemptId, long audioAssetId, string status)
     {

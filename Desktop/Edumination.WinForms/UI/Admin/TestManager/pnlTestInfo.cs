@@ -9,6 +9,27 @@ using System.Windows.Forms;
 
 namespace Edumination.WinForms.UI.Admin.TestManager
 {
+        private void OpenSkillTest(string skill, long sectionId)
+        {
+            MessageBox.Show($"Skill: {skill}, SectionId: {sectionId}");
+            Form testForm = null;
+            switch (skill.ToUpper())
+            {
+                case "READING":
+                    testForm = new Edumination.WinForms.UI.Forms.TestTaking.ReadingTest.ReadingTest(sectionId);
+                    break;
+                case "LISTENING":
+                    testForm = new Edumination.WinForms.UI.Forms.TestTaking.ListeningTest.ListeningTest(sectionId);
+                    break;
+                case "SPEAKING":
+                    testForm = new Edumination.WinForms.UI.Forms.TestTaking.SpeakingTest.SpeakingTest(sectionId);
+                    break;
+                default:
+                    MessageBox.Show($"Skill '{skill}' is not supported.");
+                    return;
+            }
+            testForm?.Show();
+        }
     public partial class pnlTestInfo : UserControl
     {
         private static readonly HttpClient client = new HttpClient();
@@ -127,6 +148,17 @@ namespace Edumination.WinForms.UI.Admin.TestManager
                             flowSections.Controls.Add(lblPassage);
                         }
                     }
+                        // Add skill button for navigation
+                        Button btnOpenTest = new Button();
+                        btnOpenTest.Text = $"Open {sec.Skill} Test";
+                        btnOpenTest.Tag = new Tuple<string, long>(sec.Skill, sec.Id);
+                        btnOpenTest.Margin = new Padding(10, 5, 10, 10);
+                        btnOpenTest.Click += (s, e) =>
+                        {
+                            var tag = (Tuple<string, long>)((Button)s).Tag;
+                            OpenSkillTest(tag.Item1, tag.Item2);
+                        };
+                        flowSections.Controls.Add(btnOpenTest);
                 }
             }
             else

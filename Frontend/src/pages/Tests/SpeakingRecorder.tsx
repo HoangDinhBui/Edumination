@@ -195,18 +195,7 @@ export const SpeakingRecorder: React.FC<SpeakingRecorderProps> = ({
         </div>
       )}
 
-      {isSubmitting && (
-        <div className="grading-progress">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Processing...</span>
-          </div>
-          <p className="grading-text">
-            Transcribing and grading your response using AI...
-            <br />
-            This may take 30-60 seconds.
-          </p>
-        </div>
-      )}
+      {/* Removed blocking grading-progress overlay: results appear when backend returns */}
     </div>
   );
 };

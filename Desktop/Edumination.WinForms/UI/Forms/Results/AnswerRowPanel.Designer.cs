@@ -6,7 +6,7 @@ namespace Edumination.WinForms.UI.Forms.Results
     {
         private System.ComponentModel.IContainer components = null;
 
-        private UILabel lblNumber;
+        private UISymbolLabel lblNumber;
         private UILabel lblUserAnswer;
         private UILabel lblCorrectAnswer;
         private Label lblIcon;
@@ -21,7 +21,7 @@ namespace Edumination.WinForms.UI.Forms.Results
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            lblNumber = new UILabel();
+            lblNumber = new UISymbolLabel();
             lblUserAnswer = new UILabel();
             lblCorrectAnswer = new UILabel();
             lblIcon = new Label();

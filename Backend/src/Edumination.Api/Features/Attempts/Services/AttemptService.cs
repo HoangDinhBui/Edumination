@@ -22,19 +22,22 @@ public class AttemptService : IAttemptService
     
     // Inject MongoDB Database (Thay vì Collection cứng)
     private readonly IMongoDatabase _mongoDb;
+    private readonly Edumination.Api.Features.Attempts.Services.ISpeakingGradingService _speakingGradingService;
 
     public AttemptService(
         AppDbContext db, 
         IStorageService storageService, 
         IAssetService assetService, 
         ILogger<AttemptService> logger,
-        IMongoDatabase mongoDb) // Inject Mongo Database
+        IMongoDatabase mongoDb, // Inject Mongo Database
+        Edumination.Api.Features.Attempts.Services.ISpeakingGradingService speakingGradingService)
     {
         _db = db;
         _storageService = storageService;
         _assetService = assetService;
         _logger = logger;
         _mongoDb = mongoDb;
+        _speakingGradingService = speakingGradingService;
     }
 
     // Helper: Lấy Collection động theo Skill
@@ -384,12 +387,49 @@ public class AttemptService : IAttemptService
 
         await _db.SaveChangesAsync(ct);
 
-        return new SubmitSpeakingResponse(
-            speakingSubmission.Id,
-            sectionAttempt.Id,
-            asset.Id,
-            sectionAttempt.Status
-        );
+        // Process grading asynchronously (blocking here for simplicity)
+        try
+        {
+            var grading = await _speakingGradingService.ProcessSpeakingSubmissionAsync(storageUrl, ct);
+
+            // Save grading results
+            speakingSubmission.AsrText = grading.TranscribedText;
+            speakingSubmission.WordsCount = grading.WordCount;
+            speakingSubmission.FluencyScore = grading.FluencyScore;
+            speakingSubmission.LexicalScore = grading.LexicalScore;
+            speakingSubmission.GrammarScore = grading.GrammarScore;
+            speakingSubmission.PronunciationScore = grading.PronunciationScore;
+            speakingSubmission.OverallBand = grading.OverallBand;
+            speakingSubmission.AiFeedback = grading.Feedback;
+            speakingSubmission.GradedAt = DateTime.UtcNow;
+
+            // Update section attempt scaled band based on AI overall
+            sectionAttempt.ScaledBand = grading.OverallBand;
+
+            await _db.SaveChangesAsync(ct);
+
+            return new SubmitSpeakingResponse(
+                speakingSubmission.Id,
+                sectionAttempt.Id,
+                asset.Id,
+                sectionAttempt.Status)
+            {
+                OverallBand = grading.OverallBand,
+                Transcript = grading.TranscribedText,
+                Feedback = grading.Feedback
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while grading speaking submission");
+            // Return without grading
+            return new SubmitSpeakingResponse(
+                speakingSubmission.Id,
+                sectionAttempt.Id,
+                asset.Id,
+                sectionAttempt.Status
+            );
+        }
     }
 
     public async Task<SubmitWritingResponse> SubmitWritingAsync(long attemptId, long sectionId, SubmitWritingRequest request, long userId, CancellationToken ct)

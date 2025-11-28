@@ -73,6 +73,31 @@ namespace Edumination.WinForms.UI.Forms.TestTaking.Controls
 
                 inputControl = cb;
             }
+            else if (q.Type == QuestionType.ShortAnswer && q.Choices != null && q.Choices.Count > 0)
+            {
+                // MCQ: show radio buttons
+                var group = new GroupBox
+                {
+                    Location = new Point(10, 55),
+                    Size = new Size(600, 40 + 30 * q.Choices.Count),
+                    Text = "Choices"
+                };
+                int y = 20;
+                foreach (var choice in q.Choices)
+                {
+                    var radio = new RadioButton
+                    {
+                        Text = choice,
+                        Location = new Point(10, y),
+                        AutoSize = true,
+                        Checked = prev == choice
+                    };
+                    radio.Tag = q.Number;
+                    group.Controls.Add(radio);
+                    y += 30;
+                }
+                inputControl = group;
+            }
             else
             {
                 var txt = new UITextBox
