@@ -9,6 +9,7 @@ namespace Edumination.WinForms.UI.Forms.TestTaking.SpeakingTest
     public partial class SpeakingTest : Form
     {
         private readonly List<SpeakingPart> _parts;
+        private long _sectionId;
         private int _currentPartIndex = 0;
 
         private readonly System.Windows.Forms.Timer _timer;
@@ -16,23 +17,43 @@ namespace Edumination.WinForms.UI.Forms.TestTaking.SpeakingTest
 
         private int questionIndex = 0;
 
-        public SpeakingTest()
+        public SpeakingTest(long sectionId)
         {
             InitializeComponent();
-
             WindowState = FormWindowState.Maximized;
+            _sectionId = sectionId;
 
-            // Load mockdata
-            _parts = SpeakingMockData.GetParts();
-            _remainingSeconds = SpeakingMockData.TotalTimeSeconds;
+            // Load real data from BLL
+            var questionBll = new IELTS.BLL.QuestionBLL();
+            _parts = new List<SpeakingPart>();
 
-            // Timer
+            // Load questions for this section
+            var questionsTable = questionBll.GetQuestionsBySectionId(sectionId);
+            var part = new SpeakingPart
+            {
+                PartName = "Speaking",
+                Title = "Speaking Test",
+                VideoPath = "",
+                Questions = new List<string>()
+            };
+            foreach (DataRow qRow in questionsTable.Rows)
+            {
+                part.Questions.Add(qRow["QuestionText"].ToString());
+            }
+            _parts.Add(part);
+
+            _remainingSeconds = 5 * 60; // Default 5 min, or get from section info
+
             _timer = new System.Windows.Forms.Timer();
             _timer.Interval = 1000;
             _timer.Tick += Timer_Tick;
+        }
 
-            // Khi phóng to – giữ audio panel ở giữa
-            //this.Resize += (s, e) => CenterAudioPanel();
+            _remainingSeconds = 5 * 60; // Default 5 min, or get from section info
+
+            _timer = new System.Windows.Forms.Timer();
+            _timer.Interval = 1000;
+            _timer.Tick += Timer_Tick;
         }
 
         // =============================

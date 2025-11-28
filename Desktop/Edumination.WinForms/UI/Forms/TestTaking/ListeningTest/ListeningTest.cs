@@ -14,6 +14,7 @@ namespace Edumination.WinForms.UI.Forms.TestTaking.ListeningTest
     public partial class ListeningTest : Form
     {
         private readonly List<ReadingPart> _parts;
+        private long _sectionId;
         private int _currentPartIndex = 0;
         private int _remainingSeconds;
 
@@ -21,13 +22,78 @@ namespace Edumination.WinForms.UI.Forms.TestTaking.ListeningTest
         private readonly Dictionary<int, string> _userAnswers = new();
 
      
-        public ListeningTest()
+        public ListeningTest(long sectionId)
         {
             InitializeComponent();
             WindowState = FormWindowState.Maximized;
+            _sectionId = sectionId;
 
-            _parts = ListeningMockData.GetParts();
-            _remainingSeconds = ListeningMockData.TotalTimeSeconds;
+            // Load real data from BLL
+            var passageBll = new IELTS.BLL.PassageBLL();
+            var questionBll = new IELTS.BLL.QuestionBLL();
+            _parts = new List<ReadingPart>();
+
+            // Load passages for this section
+            var passageTable = passageBll.GetPassagesBySectionId(sectionId);
+            if (passageTable.Rows.Count == 0)
+            {
+                MessageBox.Show("No passages found for this section.");
+            }
+            foreach (DataRow pRow in passageTable.Rows)
+            {
+                var part = new ReadingPart
+                {
+                    PartId = Convert.ToInt32(pRow["Id"]),
+                    PartName = "Passage " + pRow["Position"].ToString(),
+                    PassageTitle = pRow["Title"].ToString(),
+                    PassageText = pRow["ContentText"].ToString()
+                };
+                // Get questions for this passage
+                var questionsTable = questionBll.GetQuestionsByPassageId(part.PartId);
+                foreach (DataRow qRow in questionsTable.Rows)
+                {
+                    var question = new ReadingQuestion
+                    {
+                        Number = Convert.ToInt32(qRow["Id"]),
+                        Prompt = qRow["QuestionText"].ToString(),
+                        Type = qRow["QuestionType"].ToString() == "MCQ" ? QuestionType.ShortAnswer : QuestionType.TrueFalse,
+                        CorrectAnswer = GetCorrectAnswer(qRow["Id"]),
+                        Choices = new List<string>()
+                    };
+                    if (qRow["QuestionType"].ToString() == "MCQ")
+                    {
+                        var choiceBll = new IELTS.BLL.QuestionBLL();
+                        var choicesTable = choiceBll.GetChoicesByQuestionId(question.Number);
+                        foreach (DataRow cRow in choicesTable.Rows)
+                        {
+                            question.Choices.Add(cRow["ChoiceText"].ToString());
+                        }
+                    }
+                    part.Questions.Add(question);
+                }
+                _parts.Add(part);
+            }
+
+            _remainingSeconds = 40 * 60; // Default 40 min, or get from section info
+
+            _timer = new System.Windows.Forms.Timer();
+            _timer.Interval = 1000;
+            _timer.Tick += Timer_Tick;
+        }
+
+        private string GetCorrectAnswer(object questionId)
+        {
+            var choiceBll = new IELTS.BLL.QuestionChoiceBLL();
+            var choices = choiceBll.GetChoicesByQuestionId(Convert.ToInt64(questionId));
+            foreach (DataRow cRow in choices.Rows)
+            {
+                if (Convert.ToBoolean(cRow["IsCorrect"]))
+                    return cRow["ChoiceText"].ToString();
+            }
+            return "";
+        }
+
+            _remainingSeconds = 40 * 60; // Default 40 min, or get from section info
 
             _timer = new System.Windows.Forms.Timer();
             _timer.Interval = 1000;

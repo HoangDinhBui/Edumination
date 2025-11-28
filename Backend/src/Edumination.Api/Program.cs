@@ -181,6 +181,9 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpClient();
+// Groq AI settings
+builder.Services.Configure<Edumination.Api.Infrastructure.Services.GroqApiSettings>(builder.Configuration.GetSection("Groq"));
+builder.Services.AddScoped<Edumination.Api.Features.Attempts.Services.ISpeakingGradingService, Edumination.Api.Infrastructure.Services.GroqSpeakingGradingService>();
 
 // DI Services
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();

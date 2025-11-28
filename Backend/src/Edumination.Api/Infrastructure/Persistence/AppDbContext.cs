@@ -153,6 +153,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
             e.Property(x => x.DurationSec).HasColumnName("duration_sec");
             e.Property(x => x.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+            // AI grading columns
+            e.Property(x => x.FluencyScore).HasColumnName("fluency_score");
+            e.Property(x => x.LexicalScore).HasColumnName("lexical_score");
+            e.Property(x => x.GrammarScore).HasColumnName("grammar_score");
+            e.Property(x => x.PronunciationScore).HasColumnName("pronunciation_score");
+            e.Property(x => x.OverallBand).HasColumnName("overall_band");
+            e.Property(x => x.AiFeedback).HasColumnName("ai_feedback").HasColumnType("text");
+            e.Property(x => x.GradedAt).HasColumnName("graded_at");
+
             e.HasOne(s => s.SectionAttempt)
                 .WithOne()
                 .HasForeignKey<SpeakingSubmission>(s => s.SectionAttemptId)
@@ -163,7 +172,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
                 .HasForeignKey(s => s.AudioAssetId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            e.HasIndex(s => s.SectionAttemptId).IsUnique();
+            // Allow multiple speaking submissions per section attempt (one per question)
+            e.HasIndex(s => s.SectionAttemptId);
         });
 
         b.Entity<TestPaper>(e =>
