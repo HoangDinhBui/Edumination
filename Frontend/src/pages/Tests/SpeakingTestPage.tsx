@@ -41,7 +41,7 @@ function useCountdown(initialSeconds: number) {
   return { mins, secs, isWarning, timeLeft };
 }
 
-// =================== NAVBAR (ĐÃ TÍCH HỢP NÚT SUBMIT) ===================
+// =================== NAVBAR (SUBMIT BUTTON INTEGRATED) ===================
 const TopNavbar = ({
   paperName,
   timeProps,
@@ -55,15 +55,15 @@ const TopNavbar = ({
   const isMounted = React.useRef(false);
 
   useEffect(() => {
-    // Nếu là lần đầu load trang, bỏ qua check
+    // Skip on initial render
     if (!isMounted.current) {
       isMounted.current = true;
       return;
     }
 
-    // Chỉ nộp bài khi timeLeft về 0
+    // Auto-submit when time reaches zero
     if (timeLeft === 0) {
-      alert("Hết giờ! Hệ thống đang tự động nộp bài...");
+      alert("Time's up! The system will auto-submit your test...");
       onSubmitClick();
     }
   }, [timeLeft, onSubmitClick]);
@@ -211,7 +211,7 @@ const VideoPlayer = ({ assetId }: { assetId?: number }) => {
   );
 };
 
-// =================== HIỂN THỊ CÂU HỎI ===================
+// =================== QUESTION DISPLAY ===================
 const QuestionDisplay = ({ passage, currentQuestionIndex }: any) => {
   if (!passage) return null;
 
@@ -315,27 +315,29 @@ const SpeakingContent = ({
   >({});
   // keep playback url in sync with the active part + question's recording
   useEffect(() => {
-    try {
-      const key = `${activePart}-${currentQuestion}`;
-      const url = recordings[key]?.url ?? null;
-      setRecordingUrl((prev) => {
-        if (prev && prev !== url) {
           try {
-            URL.revokeObjectURL(prev);
-          } catch {}
-        }
-        return url;
-      });
-    } catch (e) {
-      console.warn(e);
-    }
+            const key = `${activePart}-${currentQuestion}`;
+            const url = recordings[key]?.url ?? null;
+            setRecordingUrl((prev) => {
+              if (prev && prev !== url) {
+                try {
+                  URL.revokeObjectURL(prev);
+                } catch (err) {
+                  console.warn(err);
+                }
+              }
+              return url;
+            });
+          } catch (err) {
+            console.warn(err);
+          }
   }, [activePart, currentQuestion, recordings]);
   const lastBlobRef = useRef<Blob | null>(null);
   const recordingPartRef = useRef<number | null>(null);
   // Save current question index when recording starts
   const recordingQuestionRef = useRef<number | null>(null);
 
-  // FIX LỖI TỰ ĐỘNG NỘP: Biến này check xem người dùng có THỰC SỰ bấm nút ghi âm chưa
+  // Prevent accidental auto-submit: this flag indicates the user actually pressed the record button
   const hasRecordedRef = useRef(false);
 
   // Get current passage by index (activePart 1,2,3 → index 0,1,2)
@@ -353,16 +355,13 @@ const SpeakingContent = ({
   ) => {
     // FIX LỖI: Nếu người dùng chưa bấm ghi âm bao giờ mà hàm này tự chạy -> Hủy
     if (!hasRecordedRef.current) {
-      console.log("Bỏ qua upload vì người dùng chưa thao tác ghi âm.");
+      console.log("Skipping upload because user hasn't recorded.");
       return;
     }
 
     // 1. Kiểm tra file rác (Tăng lên 1024 bytes cho chắc)
     if (!blob || blob.size < 1024) {
-      console.warn(
-        "File ghi âm quá nhỏ hoặc rỗng, hủy upload. Size:",
-        blob?.size
-      );
+      console.warn("Recorded file too small or empty, cancelling upload. Size:", blob?.size);
       hasRecordedRef.current = false; // Reset flag
       return;
     }
@@ -697,7 +696,7 @@ const SpeakingContent = ({
     <div className="flex-1 flex items-start justify-center bg-white px-6 pt-8 pb-24 overflow-y-auto">
       <div className="w-full max-w-3xl">
         <div className="w-full max-w-3xl text-center">
-          <h1 className="text-[#4A5568] text-xl font-bold mb-0.5">
+            <h1 className="text-[#4A5568] text-xl font-bold mb-0.5">
             {currentPassage.Title}
           </h1>
           <div className="flex items-start gap-6 mt-6">
@@ -1029,7 +1028,7 @@ const SpeakingTestPage = () => {
   // --- INITIALIZATION ---
   useEffect(() => {
     if (!paperId) {
-      setError("Không tìm thấy bài test. Vui lòng quay lại trang thư viện.");
+      setError("Test not found. Please return to the library.");
       setIsLoading(false);
       return;
     }
@@ -1054,15 +1053,13 @@ const SpeakingTestPage = () => {
           }
         );
         if (!startResponse.ok) {
-          // Xử lý lỗi Text từ backend
+          // Handle text errors from backend
           const errText = await startResponse.text();
           try {
             const errJson = JSON.parse(errText);
-            throw new Error(
-              errJson.Title || errJson.Detail || "Error starting test"
-            );
+            throw new Error(errJson.Title || errJson.Detail || "Error starting test");
           } catch {
-            throw new Error(errText || "Không thể bắt đầu bài test.");
+            throw new Error(errText || "Unable to start the test.");
           }
         }
 
@@ -1073,7 +1070,7 @@ const SpeakingTestPage = () => {
         );
 
         if (!speakingSection || !currentAttemptId) {
-          throw new Error("Không tìm thấy Section Speaking hoặc AttemptId.");
+          throw new Error("Speaking section or AttemptId not found.");
         }
 
         setAttemptId(currentAttemptId);
@@ -1085,7 +1082,7 @@ const SpeakingTestPage = () => {
           { headers: { Authorization: `Bearer ${TOKEN}` } }
         );
         if (!paperResponse.ok)
-          throw new Error(`Lỗi API: ${paperResponse.statusText}`);
+          throw new Error(`API error: ${paperResponse.statusText}`);
 
         const paperData = await paperResponse.json();
         setPaperData(paperData);
@@ -1094,7 +1091,7 @@ const SpeakingTestPage = () => {
           paperData.Sections?.[0]?.TimeLimitSec || 15 * 60;
         setTimeLimit(totalTimeInSeconds);
       } catch (err: any) {
-        console.error("Lỗi khi fetch:", err);
+        console.error("Error fetching:", err);
         setError((err as Error).message);
       } finally {
         setIsLoading(false);
@@ -1109,7 +1106,7 @@ const SpeakingTestPage = () => {
     if (!attemptId) return;
 
     const confirm = window.confirm(
-      "Bạn có chắc chắn muốn nộp bài và kết thúc bài thi không?"
+      "Are you sure you want to submit and finish the test?"
     );
     if (!confirm) return;
 
@@ -1144,15 +1141,13 @@ const SpeakingTestPage = () => {
       );
 
       if (!response.ok) {
-        // FIX LỖI JSON: Xử lý backend trả về Text
+        // Handle backend returning text errors
         const errorText = await response.text();
         try {
           const errJson = JSON.parse(errorText);
-          throw new Error(
-            errJson.Title || errJson.Detail || "Nộp bài thất bại"
-          );
+          throw new Error(errJson.Title || errJson.Detail || "Submit failed");
         } catch {
-          throw new Error(errorText || "Lỗi không xác định từ server");
+          throw new Error(errorText || "Unknown error from server");
         }
       }
 
@@ -1179,12 +1174,12 @@ const SpeakingTestPage = () => {
         band: displayedBand ?? null,
         graded,
         message: graded
-          ? "Bài thi đã được chấm bởi AI."
-          : "Bài thi đã nộp. Điểm sẽ được cập nhật khi có kết quả.",
+          ? "The test was graded by AI."
+          : "Test submitted. Scores will be updated when results are available.",
       });
     } catch (err: any) {
-      console.error("Lỗi nộp bài:", err);
-      alert(`Lỗi: Không thể nộp bài thi. ${err.message}`);
+      console.error("Submit error:", err);
+      alert(`Error: Unable to submit the test. ${err.message}`);
     } finally {
       setIsSubmittingTest(false);
     }
@@ -1192,7 +1187,7 @@ const SpeakingTestPage = () => {
 
   // Helper Functions
   const handleSaveDraft = () => {
-    alert("Draft saved! (chức năng đang phát triển)");
+    alert("Draft saved! (feature in development)");
     setIsMiniMenuOpen(false);
   };
   const handleExitClick = () => {
@@ -1208,19 +1203,19 @@ const SpeakingTestPage = () => {
     return (
       <div className="w-screen h-screen flex flex-col items-center justify-center bg-slate-50 text-[#C76378]">
         <Loader2 className="w-12 h-12 animate-spin mb-4" />
-        <p className="font-medium text-lg">Đang tải bài test...</p>
+        <p className="font-medium text-lg">Loading test...</p>
       </div>
     );
   }
   if (error) {
     return (
       <div className="w-screen h-screen flex flex-col items-center justify-center bg-slate-50 text-red-600">
-        <p className="font-medium text-lg">Lỗi: {error}</p>
+        <p className="font-medium text-lg">Error: {error}</p>
         <button
           onClick={() => navigate("/library")}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
         >
-          Quay lại thư viện
+          Back to library
         </button>
       </div>
     );
@@ -1271,7 +1266,7 @@ const SpeakingTestPage = () => {
       {isSubmittingTest && (
         <div className="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center flex-col text-white">
           <Loader2 className="w-12 h-12 animate-spin mb-4" />
-          <p className="text-lg font-semibold">Đang nộp bài thi...</p>
+          <p className="text-lg font-semibold">Submitting test...</p>
         </div>
       )}
 
@@ -1291,11 +1286,11 @@ const SpeakingTestPage = () => {
         <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md text-center">
             <h3 className="text-xl font-bold text-slate-800 mb-2">
-              Nộp bài thành công
+              Submission Successful
             </h3>
             {submitResultModal.graded ? (
               <div className="mb-4">
-                <div className="text-sm text-slate-500">Điểm chính thức</div>
+                <div className="text-sm text-slate-500">Official Score</div>
                 <div className="text-4xl font-extrabold text-[#C76378]">
                   {submitResultModal.band?.toFixed(1)}
                 </div>
