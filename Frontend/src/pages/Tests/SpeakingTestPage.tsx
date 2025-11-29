@@ -1017,6 +1017,9 @@ const SpeakingTestPage = () => {
     (() => Promise<any>) | null
   >(null);
 
+  // Course recommendations shown after submitting a test
+  const [recommendations, setRecommendations] = useState<Array<any>>([]);
+
   const timeProps = useCountdown(timeLimit);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const [isMiniMenuOpen, setIsMiniMenuOpen] = useState(false);
@@ -1177,6 +1180,17 @@ const SpeakingTestPage = () => {
           ? "The test was graded by AI."
           : "Test submitted. Scores will be updated when results are available.",
       });
+      // asynchronously fetch recommendations for display in the modal
+      (async () => {
+        try {
+          const bandForRec = displayedBand ?? 0;
+          const recs = await fetchRecommendations(bandForRec);
+          setRecommendations(recs);
+        } catch (e) {
+          console.warn("Failed to fetch recommendations:", e);
+          setRecommendations([]);
+        }
+      })();
     } catch (err: any) {
       console.error("Submit error:", err);
       alert(`Error: Unable to submit the test. ${err.message}`);
@@ -1184,6 +1198,39 @@ const SpeakingTestPage = () => {
       setIsSubmittingTest(false);
     }
   };
+
+  // Recommendation helper: call backend endpoint or fallback to simple mapping
+  async function fetchRecommendations(band: number) {
+    const TOKEN = localStorage.getItem("Token");
+    try {
+      const url = `http://localhost:8081/api/v1/recommendations?band=${encodeURIComponent(String(band))}`;
+      const resp = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length > 0) return data;
+      }
+    } catch (e) {
+      console.warn("Recommendation API failed:", e);
+    }
+
+    // Local fallback mapping
+    const level = band >= 7.5 ? "mastery" : band >= 6 ? "intensive" : band >= 4.5 ? "booster" : "foundation";
+    const titleMap: Record<string, string> = {
+      foundation: "Foundation",
+      booster: "Booster",
+      intensive: "Intensive",
+      mastery: "Mastery",
+    };
+    const descMap: Record<string, string> = {
+      foundation: "Start here to build core skills.",
+      booster: "Short course to boost your band quickly.",
+      intensive: "Comprehensive training to push your score up.",
+      mastery: "High-level mastery program for top bands.",
+    };
+    return [
+      { id: level, slug: level, title: titleMap[level], description: descMap[level], recommendedForBand: band },
+    ];
+  }
 
   // Helper Functions
   const handleSaveDraft = () => {
@@ -1302,6 +1349,47 @@ const SpeakingTestPage = () => {
               <div className="mb-4">
                 <div className="text-sm text-slate-600">
                   {submitResultModal.message}
+                </div>
+              </div>
+            )}
+
+            {/* Recommendations */}
+            {recommendations && recommendations.length > 0 && (
+              <div className="mt-4 text-left">
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">
+                  Recommended courses
+                </h4>
+                <div className="space-y-3">
+                  {recommendations.map((c: any) => (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between p-3 border rounded"
+                    >
+                      <div className="pr-3">
+                        <div className="font-semibold text-slate-800">{c.title}</div>
+                        <div className="text-sm text-slate-600">{c.description}</div>
+                      </div>
+                      <div>
+                        <button
+                          onClick={() => {
+                            setSubmitResultModal({ ...submitResultModal, visible: false });
+                            // Map recommendation slug to actual app route. Fall back to /overview.
+                            const routeMap: Record<string, string> = {
+                              foundation: "/foundation",
+                              booster: "/booster",
+                              intensive: "/intensive",
+                              mastery: "/mastery",
+                            };
+                            const route = routeMap[c.slug] ?? "/overview";
+                            navigate(route);
+                          }}
+                          className="px-3 py-1 bg-[#C76378] text-white rounded"
+                        >
+                          View
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
