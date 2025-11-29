@@ -225,7 +225,7 @@ export default function DashboardOverview() {
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-slate-800 flex items-center gap-2">
               <Activity size={18} className="text-slate-400"/>
-              Recent Activity (Mock)
+              Recent Activit
             </h3>
             
             <button className="text-xs text-blue-600 font-medium hover:underline" onClick={() => setShowEmailModal(true)}>
