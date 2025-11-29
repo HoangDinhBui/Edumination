@@ -1,191 +1,377 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { 
-  Users, FileText, BookOpen, Clock, TrendingUp, Activity
-} from 'lucide-react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
-} from 'recharts';
+import { MoreHorizontal, Search, UserCheck, UserX } from 'lucide-react';
 
-// --- MOCK DATA (Giữ nguyên cho biểu đồ) ---
-const monthlyData = [
-  { name: 'Jan', users: 400, tests: 240 },
-  { name: 'Feb', users: 300, tests: 139 },
-  { name: 'Mar', users: 200, tests: 980 },
-  { name: 'Apr', users: 278, tests: 390 },
-  { name: 'May', users: 189, tests: 480 },
-];
-const skillsData = [
-  { name: 'Reading', value: 35 }, { name: 'Listening', value: 25 },
-  { name: 'Writing', value: 20 }, { name: 'Speaking', value: 20 },
-];
-const MOCK_ACTIVITIES = [
-  { id: 1, user: "system@edumination.com", action: "System Check", target: "Maintenance", time: "Just now" },
-  { id: 2, user: "guest_user", action: "Viewed Course", target: "IELTS Basic", time: "5 mins ago" },
-];
-const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+export default function UserManagement() {
+  // Modal state
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState<{ show: boolean, id: number | null, fullName: string, email: string }>({ show: false, id: null, fullName: '', email: '' });
+  const [showRolesModal, setShowRolesModal] = useState<{ show: boolean, id: number | null, roles: string[] }>({ show: false, id: null, roles: [] });
+  
+  const [newUser, setNewUser] = useState({ fullName: '', email: '', password: '' });
+  const [editUser, setEditUser] = useState({ fullName: '', email: '' });
+  const [roleInput, setRoleInput] = useState('');
 
-// --- STAT CARD COMPONENT ---
-const StatCard = ({ title, value, icon: Icon, color, loading }) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-    <div>
-      <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
-      {loading ? (
-        <div className="h-8 w-16 bg-slate-100 animate-pulse rounded"></div>
-      ) : (
-        <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
-      )}
-    </div>
-    <div className={`p-4 rounded-full ${color} bg-opacity-10`}>
-      <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
-    </div>
-  </div>
-);
+  const [users, setUsers] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
 
-// --- COMPONENT CHÍNH ---
-export default function DashboardOverview() {
-    const [stats, setStats] = useState({ users: 0, papers: 0, courses: 0 });
-    const [popularTests, setPopularTests] = useState([]);
-    const [loading, setLoading] = useState(true);
+  // === 1. CREATE USER (Đã nâng cấp để hiện lỗi chi tiết) ===
+  const handleCreateUser = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    try {
+      const token = localStorage.getItem("Token");
+      const API_URL = "http://localhost:8081/api/v1/admin/users";
+      const body = {
+        FullName: newUser.fullName,
+        Email: newUser.email,
+        Password: newUser.password
+      };
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
 
-    // Hàm helper: Bắt dữ liệu thông minh (Copy logic từ UserManagement)
-    const extractDataList = (data) => {
-        if (!data) return [];
-        if (Array.isArray(data)) return data;
-        if (data.Items && Array.isArray(data.Items)) return data.Items; // .NET thường trả về cái này
-        if (data.items && Array.isArray(data.items)) return data.items;
-        if (data.data && Array.isArray(data.data)) return data.data;
-        return [];
-    };
+      // Đọc dữ liệu trả về để xem có lỗi cụ thể không
+      const data = await res.json();
 
-    const extractTotalCount = (data) => {
-        if (!data) return 0;
-        // Ưu tiên lấy số Total từ phân trang
-        if (typeof data.Total === 'number') return data.Total;
-        if (typeof data.total === 'number') return data.total;
-        if (typeof data.totalCount === 'number') return data.totalCount;
-        
-        // Nếu không có field Total, đếm thủ công mảng
-        const list = extractDataList(data);
-        return list.length;
-    };
+      if (!res.ok) {
+         // Lấy thông báo lỗi từ server (data.Error) nếu có
+         throw new Error(data.Error || "Create user failed");
+      }
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                // 1. Dùng đúng Key "Token" như trang UserManagement
-                const token = localStorage.getItem("Token");
-                const config = { headers: { Authorization: `Bearer ${token}` } };
-                
-                // 2. Dùng URL tuyệt đối (http://localhost:8081) để tránh lỗi HTML
-                const API_BASE = "http://localhost:8081/api/v1";
+      await fetchUsers();
+      setShowCreateModal(false);
+      setNewUser({ fullName: '', email: '', password: '' });
+      alert("User created successfully!");
+    } catch (err: any) {
+      alert(err.message); // Hiện lỗi cụ thể (VD: Email already exists)
+      console.error(err);
+    }
+  };
 
-                const [usersRes, papersRes, coursesRes] = await Promise.allSettled([
-                    axios.get(`${API_BASE}/admin/users?page=1&pageSize=1`, config), // Chỉ cần lấy 1 trang để xem Total
-                    axios.get(`${API_BASE}/papers?status=PUBLISHED`, config),
-                    axios.get(`${API_BASE}/courses`, config)
-                ]);
+  // === 2. EDIT USER ===
+  const openEditModal = (user: any) => {
+    setShowEditModal({ show: true, id: user.Id, fullName: user.FullName, email: user.Email });
+    setEditUser({ fullName: user.FullName, email: user.Email });
+  };
 
-                // 3. Xử lý Users
-                let userCount = 0;
-                if (usersRes.status === 'fulfilled') {
-                    userCount = extractTotalCount(usersRes.value.data);
-                }
+  const handleEditUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("Token");
+      const API_URL = `http://localhost:8081/api/v1/admin/users/${showEditModal.id}`;
+      const body = {
+        FullName: editUser.fullName,
+        Email: editUser.email
+      };
+      const res = await fetch(API_URL, {
+        method: "PATCH",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error("Edit user failed");
+      await fetchUsers();
+      setShowEditModal({ show: false, id: null, fullName: '', email: '' });
+      alert("User updated successfully!");
+    } catch (err) {
+      alert("Failed to update user.");
+      console.error(err);
+    }
+  };
 
-                // 4. Xử lý Papers
-                let paperCount = 0;
-                let paperItems = [];
-                if (papersRes.status === 'fulfilled') {
-                    // API Papers của bạn trả về { Items: [...] } hoặc mảng
-                    paperCount = extractTotalCount(papersRes.value.data);
-                    paperItems = extractDataList(papersRes.value.data);
-                }
+  // === 3. SET ROLES ===
+  const openRolesModal = (user: any) => {
+    setShowRolesModal({ show: true, id: user.Id, roles: user.Roles || [] });
+    setRoleInput('');
+  };
 
-                // 5. Xử lý Courses
-                let courseCount = 0;
-                if (coursesRes.status === 'fulfilled') {
-                    courseCount = extractTotalCount(coursesRes.value.data);
-                }
+  const handleSetRoles = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("Token");
+      const API_URL = `http://localhost:8081/api/v1/admin/users/${showRolesModal.id}/roles`;
+      const body = { Roles: showRolesModal.roles };
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error("Set roles failed");
+      await fetchUsers();
+      setShowRolesModal({ show: false, id: null, roles: [] });
+      alert("Roles updated successfully!");
+    } catch (err) {
+      alert("Failed to update roles.");
+      console.error(err);
+    }
+  };
 
-                setStats({
-                    users: userCount,
-                    papers: paperCount,
-                    courses: courseCount
-                });
+  // === 4. REMOVE ROLE ===
+  const handleRemoveRole = async (role: string) => {
+    try {
+      const token = localStorage.getItem("Token");
+      const API_URL = `http://localhost:8081/api/v1/admin/users/${showRolesModal.id}/roles/${role}`;
+      const res = await fetch(API_URL, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      if (!res.ok) throw new Error("Remove role failed");
+      setShowRolesModal(m => ({ ...m, roles: m.roles.filter(r => r !== role) }));
+      await fetchUsers();
+      // alert("Role removed successfully!"); // Bỏ alert cho đỡ phiền khi xóa nhanh
+    } catch (err) {
+      alert("Failed to remove role.");
+      console.error(err);
+    }
+  };
 
-                // Map dữ liệu cho bảng "Latest Tests"
-                const mappedPapers = paperItems.slice(0, 3).map(p => ({
-                    id: p.id || p.Id,
-                    title: p.title || p.Title || "No Title",
-                    attempts: Math.floor(Math.random() * 500) + 50, // Fake số lượt thi
-                    avgScore: (Math.random() * 4 + 5).toFixed(1)
-                }));
-                setPopularTests(mappedPapers);
+  // === 5. FETCH USERS ===
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem("Token");
+      const res = await fetch(`http://localhost:8081/api/v1/admin/users?email=${search}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-            } catch (error) {
-                console.error("Dashboard error:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+      if (!res.ok) throw new Error(`Lỗi HTTP: ${res.status}`);
 
-        fetchData();
-    }, []);
+      const rawData = await res.json();
+      let userList: any[] = [];
+
+      if (Array.isArray(rawData)) userList = rawData;
+      else if (rawData.Items && Array.isArray(rawData.Items)) userList = rawData.Items;
+      else if (rawData.items && Array.isArray(rawData.items)) userList = rawData.items;
+      else if (rawData.data && Array.isArray(rawData.data)) userList = rawData.data;
+
+      userList.sort((a: any, b: any) => a.Id - b.Id);
+      setUsers(userList);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách user:", error);
+      setUsers([]);
+    }
+  };
+
+  useEffect(() => { fetchUsers(); }, [search]);
 
   return (
-    <div className="space-y-6 pb-10">
-      <div className="flex justify-between items-center">
-        <div>
-            <h1 className="text-2xl font-bold text-slate-800">Dashboard Overview</h1>
-            <p className="text-slate-500">System metrics.</p>
-        </div>
-      </div>
-
-      {/* STATS CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total Students" value={stats.users.toLocaleString()} icon={Users} color="bg-blue-500 text-blue-600" loading={loading} />
-        <StatCard title="Published Tests" value={stats.papers} icon={FileText} color="bg-green-500 text-green-600" loading={loading} />
-        <StatCard title="Active Courses" value={stats.courses} icon={BookOpen} color="bg-purple-500 text-purple-600" loading={loading} />
-      </div>
-
-      {/* CHARTS (MOCK) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 lg:col-span-2">
-          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <TrendingUp size={18} className="text-slate-400"/> Growth (Simulated)
-          </h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
-                <Tooltip />
-                <Bar dataKey="users" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={30} />
-              </BarChart>
-            </ResponsiveContainer>
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-slate-800">Users Management</h1>
+        <div className="flex gap-3 items-center">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search by email..."
+              className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
-           <h3 className="font-bold text-slate-800 mb-4">Latest Tests</h3>
-           {loading ? <p className="text-center text-slate-400">Loading...</p> : (
-               <div className="space-y-4">
-                   {popularTests.map((paper) => (
-                       <div key={paper.id} className="flex items-center gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                           <FileText size={24} className="text-blue-400 flex-shrink-0"/>
-                           <div className="flex-1 min-w-0">
-                               <p className="text-sm font-medium text-slate-800 truncate">{paper.title}</p>
-                               <p className="text-xs text-slate-500">ID: {paper.id}</p>
-                           </div>
-                       </div>
-                   ))}
-               </div>
-           )}
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium"
+            onClick={() => setShowCreateModal(true)}
+          >+ Create User</button>
         </div>
       </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-slate-50 text-slate-600 text-xs uppercase font-semibold">
+            <tr>
+              <th className="p-4">ID</th>
+              <th className="p-4">Full Name</th>
+              <th className="p-4">Email</th>
+              <th className="p-4">Roles</th>
+              <th className="p-4">Status</th>
+              <th className="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="text-sm text-slate-700 divide-y divide-slate-100">
+            {users.map((user) => (
+              <tr key={user.Id} className="hover:bg-slate-50 transition">
+                <td className="p-4 font-mono text-slate-500">#{user.Id}</td>
+                <td className="p-4 font-medium">{user.FullName}</td>
+                <td className="p-4">{user.Email}</td>
+                <td className="p-4">
+                  {user.Roles?.map((r: string) => (
+                    <span key={r} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-md mr-1">{r}</span>
+                  ))}
+                </td>
+                <td className="p-4">
+                  {user.IsActive ?
+                    <span className="flex items-center text-green-600 gap-1"><UserCheck className="w-4 h-4" /> Active</span> :
+                    <span className="flex items-center text-red-500 gap-1"><UserX className="w-4 h-4" /> Banned</span>
+                  }
+                </td>
+                <td className="p-4 text-right">
+                  <div className="flex gap-2 justify-end">
+                    <button className="p-2 hover:bg-slate-100 rounded-full" title="Edit" onClick={() => openEditModal(user)}>
+                      <MoreHorizontal className="w-5 h-5 text-slate-500" />
+                    </button>
+                    <button className="p-2 hover:bg-blue-50 rounded-full" title="Roles" onClick={() => openRolesModal(user)}>
+                      <span className="text-xs text-blue-600 font-bold">Roles</span>
+                    </button>
+                  </div>
+                </td>
+                {/* ĐÃ XÓA CODE MODAL Ở ĐÂY */}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* === ĐƯA MODAL RA NGOÀI VÒNG LẶP (Đúng chuẩn) === */}
+      
+      {/* 1. Create User Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <form
+            className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative"
+            onSubmit={handleCreateUser}
+          >
+            <button
+              type="button"
+              className="absolute top-3 right-3 text-slate-400 hover:text-red-500 text-xl"
+              onClick={() => setShowCreateModal(false)}
+            >×</button>
+            <h2 className="text-xl font-bold mb-6 text-slate-800">Create User</h2>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Full Name</label>
+              <input
+                type="text"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={newUser.fullName}
+                onChange={e => setNewUser(u => ({ ...u, fullName: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input
+                type="email"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={newUser.email}
+                onChange={e => setNewUser(u => ({ ...u, email: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <input
+                type="password"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={newUser.password}
+                onChange={e => setNewUser(u => ({ ...u, password: e.target.value }))}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium w-full"
+            >Create</button>
+          </form>
+        </div>
+      )}
+
+      {/* 2. Edit User Modal */}
+      {showEditModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <form
+            className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative"
+            onSubmit={handleEditUser}
+          >
+            <button
+              type="button"
+              className="absolute top-3 right-3 text-slate-400 hover:text-red-500 text-xl"
+              onClick={() => setShowEditModal({ show: false, id: null, fullName: '', email: '' })}
+            >×</button>
+            <h2 className="text-xl font-bold mb-6 text-slate-800">Edit User</h2>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Full Name</label>
+              <input
+                type="text"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={editUser.fullName}
+                onChange={e => setEditUser(u => ({ ...u, fullName: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input
+                type="email"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={editUser.email}
+                onChange={e => setEditUser(u => ({ ...u, email: e.target.value }))}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium w-full"
+            >Save</button>
+          </form>
+        </div>
+      )}
+
+      {/* 3. Roles Modal */}
+      {showRolesModal.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <form
+            className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative"
+            onSubmit={handleSetRoles}
+          >
+            <button
+              type="button"
+              className="absolute top-3 right-3 text-slate-400 hover:text-red-500 text-xl"
+              onClick={() => setShowRolesModal({ show: false, id: null, roles: [] })}
+            >×</button>
+            <h2 className="text-xl font-bold mb-6 text-slate-800">Set Roles</h2>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Roles</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {showRolesModal.roles.map(r => (
+                  <span key={r} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-md flex items-center gap-1">
+                    {r}
+                    <button type="button" className="ml-1 text-red-500" onClick={() => handleRemoveRole(r)}>×</button>
+                  </span>
+                ))}
+              </div>
+              <input
+                type="text"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                placeholder="Add role (e.g. ADMIN, TEACHER, STUDENT)"
+                value={roleInput}
+                onChange={e => setRoleInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && roleInput.trim()) {
+                    e.preventDefault();
+                    if (!showRolesModal.roles.includes(roleInput.trim())) {
+                      setShowRolesModal(m => ({ ...m, roles: [...m.roles, roleInput.trim()] }));
+                      setRoleInput('');
+                    }
+                  }
+                }}
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium w-full"
+            >Save Roles</button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
