@@ -1,311 +1,490 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios'; 
+import React, { useState, useEffect } from 'react';
 import { 
-  Users, FileText, BookOpen, Clock, TrendingUp, Activity
+  BookOpen, 
+  Plus, 
+  Search, 
+  MoreHorizontal, 
+  Edit, 
+  Trash2, 
+  Users, 
+  PlayCircle,
+  RefreshCcw
 } from 'lucide-react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
-} from 'recharts';
 
-// --- 1. MOCK DATA (GIỮ NGUYÊN VÌ CHƯA CÓ API REPORT) ---
-const monthlyData = [
-  { name: 'Jan', users: 400, tests: 240 },
-  { name: 'Feb', users: 300, tests: 139 },
-  { name: 'Mar', users: 200, tests: 980 },
-  { name: 'Apr', users: 278, tests: 390 },
-  { name: 'May', users: 189, tests: 480 },
-];
+export default function CourseManagement() {
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
-const skillsData = [
-  { name: 'Reading', value: 35 },
-  { name: 'Listening', value: 25 },
-  { name: 'Writing', value: 20 },
-  { name: 'Speaking', value: 20 },
-];
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  
+  const [newCourse, setNewCourse] = useState({
+    title: "",
+    description: "",
+    level: "INTERMEDIATE",
+    isPublished: false
+  });
 
-const MOCK_ACTIVITIES = [
-  { id: 1, user: "system@edumination.com", action: "System Check", target: "Maintenance", time: "Just now" },
-  { id: 2, user: "guest_user", action: "Viewed Course", target: "IELTS Basic", time: "5 mins ago" },
-  { id: 3, user: "demo_student", action: "Failed Login", target: "Auth", time: "1 hour ago" },
-];
+  const [editModal, setEditModal] = useState<{ 
+    courseId: number | null; 
+    title: string; 
+    description: string;
+    level: string;
+    isPublished: boolean;
+    instructor: string;
+    price: number;
+    modules: number;
+    thumbnail: string;
+  }>({ 
+    courseId: null, 
+    title: "", 
+    description: "",
+    level: "INTERMEDIATE",
+    isPublished: false,
+    instructor: "Unknown",
+    price: 0,
+    modules: 0,
+    thumbnail: ""
+  });
 
-const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+  const defaultThumbnail = "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=200&h=200&fit=crop";
 
-// --- CẤU HÌNH API ---
-// Đổi port 8081 nếu Backend của bạn chạy port khác
-const API_BASE_URL = "http://localhost:8081"; 
+  // Fetch course list (basic info only)
+  const fetchCourses = async () => {
+  setLoading(true);
+  setError("");
+  const defaultThumbnail = "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=200&h=200&fit=crop";
 
-// --- 2. COMPONENT THẺ THỐNG KÊ ---
-const StatCard = ({ title, value, icon: Icon, color, loading }) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-    <div>
-      <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
-      {loading ? (
-        <div className="h-8 w-16 bg-slate-100 animate-pulse rounded"></div>
-      ) : (
-        <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
-      )}
-    </div>
-    <div className={`p-4 rounded-full ${color} bg-opacity-10`}>
-      <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
-    </div>
-  </div>
-);
+  try {
+    const token = localStorage.getItem("Token");
+    const API_URL = "http://localhost:8081/api/v1/courses";
 
-// --- 3. COMPONENT CHÍNH ---
-export default function DashboardOverview() {
-    // --- STATE ---
-    const [showEmailModal, setShowEmailModal] = useState(false);
-    const [stats, setStats] = useState({
-        users: 0,
-        papers: 0,
-        courses: 0
+    // Lấy danh sách khóa học cơ bản
+    const res = await fetch(API_URL, {
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     });
-    
-    const [userList, setUserList] = useState([]); 
-    const [popularTests, setPopularTests] = useState([]); 
-    const [loading, setLoading] = useState(true);
 
-    // --- FETCH DATA TỪ API ---
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            setLoading(true);
-            try {
-                // Lấy token (Lưu ý key là "Token" hay "accessToken" tuỳ code login của bạn)
-                const token = localStorage.getItem('Token') || localStorage.getItem('accessToken');
-                
-                const config = {
-                    headers: { Authorization: `Bearer ${token}` }
-                };
+    if (!res.ok) throw new Error(`Error loading data: ${res.statusText}`);
+    const data = await res.json();
+    console.log("Raw API Response:", data);
 
-                console.log("Starting fetch with URL:", API_BASE_URL);
+    let rawList: any[] = [];
+    if (data.items && Array.isArray(data.items)) rawList = data.items;
+    else if (data.Items && Array.isArray(data.Items)) rawList = data.Items;
+    else if (Array.isArray(data)) rawList = data;
 
-                // Gọi song song 3 API
-                const [usersRes, papersRes, coursesRes] = await Promise.allSettled([
-                    axios.get(`${API_BASE_URL}/api/v1/admin/users?page=1&pageSize=100`, config),
-                    axios.get(`${API_BASE_URL}/api/v1/papers?status=PUBLISHED`, config),
-                    axios.get(`${API_BASE_URL}/api/v1/courses`, config)
-                ]);
+    // Lấy chi tiết từng khóa học
+    const detailedCourses = await Promise.all(rawList.map(async (c: any) => {
+      try {
+        const detailRes = await fetch(`http://localhost:8081/api/v1/courses/${c.Id}`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+        if (!detailRes.ok) throw new Error("Detail fetch failed");
 
-                // --- HÀM HELPER ĐỂ ĐỌC DỮ LIỆU AN TOÀN ---
-                const safeGetCount = (res) => {
-                    if (res.status !== 'fulfilled') return 0;
-                    const d = res.value.data;
-                    // Kiểm tra đủ các kiểu chữ hoa/thường/mảng
-                    if (typeof d.totalCount === 'number') return d.totalCount;
-                    if (typeof d.TotalCount === 'number') return d.TotalCount;
-                    if (typeof d.Total === 'number') return d.Total; // PagedResult của bạn dùng chữ "Total"
-                    if (typeof d.total === 'number') return d.total;
-                    if (Array.isArray(d)) return d.length;
-                    if (d.items && Array.isArray(d.items)) return d.items.length;
-                    if (d.Items && Array.isArray(d.Items)) return d.Items.length;
-                    return 0;
-                };
+        const detail = await detailRes.json();
 
-                const safeGetItems = (res) => {
-                    if (res.status !== 'fulfilled') return [];
-                    const d = res.value.data;
-                    if (Array.isArray(d)) return d;
-                    if (d.items && Array.isArray(d.items)) return d.items;
-                    if (d.Items && Array.isArray(d.Items)) return d.Items;
-                    return [];
-                };
-
-                // --- CẬP NHẬT STATE ---
-                setStats({
-                    users: safeGetCount(usersRes),
-                    papers: safeGetCount(papersRes),
-                    courses: safeGetCount(coursesRes)
-                });
-
-                setUserList(safeGetItems(usersRes));
-
-                // Map tên bài thi thật + Fake số liệu attempts
-                const paperList = safeGetItems(papersRes);
-                const mappedPapers = paperList.slice(0, 3).map(p => ({
-                    id: p.id || p.Id,
-                    title: p.title || p.Title || "Untitled Test",
-                    attempts: Math.floor(Math.random() * 500) + 50, 
-                    avgScore: (Math.random() * 4 + 5).toFixed(1)
-                }));
-                setPopularTests(mappedPapers);
-
-            } catch (error) {
-                console.error("Critical Error fetching dashboard:", error);
-            } finally {
-                setLoading(false);
-            }
+        return {
+          id: c.Id,
+          title: c.Title,
+          description: c.Description,
+          level: c.Level,
+          instructor: detail.CreatedByName || "Unknown",
+          price: detail.Price || 0,
+          students: detail.Enrolled ? 1 : 0,
+          modules: detail.ModulesCount || 0,
+          status: c.IsPublished ? "Published" : "Draft",
+          thumbnail: detail.ThumbnailUrl || defaultThumbnail
         };
+      } catch (err) {
+        // fallback nếu fetch detail lỗi
+        return {
+          id: c.Id,
+          title: c.Title,
+          description: c.Description,
+          level: c.Level,
+          instructor: "Unknown",
+          price: 0,
+          students: 0,
+          modules: 0,
+          status: c.IsPublished ? "Published" : "Draft",
+          thumbnail: defaultThumbnail
+        };
+      }
+    }));
 
-        fetchDashboardData();
-    }, []);
+    console.log("Mapped courses:", detailedCourses);
+    setCourses(detailedCourses);
+
+  } catch (err: any) {
+    console.error("Error fetching courses:", err);
+    setError("Cannot connect to server.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  useEffect(() => { fetchCourses(); }, []);
+
+  // Fetch course detail when opening edit modal
+  const openEditModal = async (course: any) => {
+    setShowEditModal(true);
+    try {
+      const token = localStorage.getItem("Token");
+      const res = await fetch(`http://localhost:8081/api/v1/courses/${course.id}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      const detail = await res.json();
+      setEditModal({
+        courseId: course.id,
+        title: detail.Title || course.title,
+        description: detail.Description || course.description,
+        level: detail.Level || course.level,
+        isPublished: detail.IsPublished || false,
+        instructor: detail.CreatedByName || "Unknown",
+        price: detail.Price || 0,
+        modules: detail.ModulesCount || 0,
+        thumbnail: detail.ThumbnailUrl || defaultThumbnail
+      });
+    } catch (err) {
+      console.error("Failed to fetch course detail:", err);
+      setEditModal(prev => ({
+        ...prev,
+        courseId: course.id,
+        title: course.title,
+        description: course.description,
+        level: course.level,
+        isPublished: course.status === "Published",
+        instructor: "Unknown",
+        price: 0,
+        modules: 0,
+        thumbnail: defaultThumbnail
+      }));
+    }
+  };
+
+  // Create, Update, Delete functions (unchanged)
+  const handleCreateCourse = async () => {
+    try {
+      const token = localStorage.getItem("Token");
+      const res = await fetch("http://localhost:8081/api/v1/courses", {
+        method: "POST",
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCourse)
+      });
+      if (!res.ok) throw new Error(`Create failed: ${res.statusText}`);
+      await fetchCourses();
+      setShowCreateModal(false);
+      setNewCourse({ title: "", description: "", level: "INTERMEDIATE", isPublished: false });
+      alert("Course created successfully!");
+    } catch (err) { console.error(err); alert("Failed to create course."); }
+  };
+
+  const handleEditCourse = async () => {
+    try {
+      const token = localStorage.getItem("Token");
+      const API_URL = `http://localhost:8081/api/v1/courses/${editModal.courseId}`;
+      const body = {
+        title: editModal.title,
+        description: editModal.description,
+        level: editModal.level,
+        isPublished: editModal.isPublished
+      };
+      const res = await fetch(API_URL, { method: "PATCH", headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error(`Edit failed: ${res.statusText}`);
+      await fetchCourses();
+      setShowEditModal(false);
+      alert("Course updated successfully!");
+    } catch (err) { console.error(err); alert("Failed to update course."); }
+  };
+
+  const handleDeleteCourse = async (courseId: number) => {
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
+    try {
+      const token = localStorage.getItem("Token");
+      const res = await fetch(`http://localhost:8081/api/v1/courses/${courseId}`, { method: "DELETE", headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }});
+      if (!res.ok) throw new Error(`Delete failed: ${res.statusText}`);
+      await fetchCourses();
+      alert("Course deleted successfully!");
+    } catch (err) { console.error(err); alert("Failed to delete course."); }
+  };
+
+  const formatCurrency = (amount: number) => amount === 0 ? "Free" : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+
+  const filteredCourses = courses.filter(course => {
+    const matchTitle = course.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchStatus = statusFilter === "All" || (statusFilter === "Published" && course.status === "Published") || (statusFilter === "Draft" && course.status === "Draft");
+    return matchTitle && matchStatus;
+  });
 
   return (
-    <div className="space-y-6 pb-10">
-      {/* --- HEADER --- */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">Dashboard Overview</h1>
-        <p className="text-slate-500">System metrics from Edumination API.</p>
-      </div>
-
-      {/* --- STATS CARDS --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard 
-          title="Total Students" 
-          value={stats.users.toLocaleString()} 
-          icon={Users} 
-          color="bg-blue-500 text-blue-600" 
-          loading={loading}
-        />
-        <StatCard 
-          title="Published Tests" 
-          value={stats.papers} 
-          icon={FileText} 
-          color="bg-green-500 text-green-600" 
-          loading={loading}
-        />
-        <StatCard 
-          title="Active Courses" 
-          value={stats.courses} 
-          icon={BookOpen} 
-          color="bg-purple-500 text-purple-600" 
-          loading={loading}
-        />
-      </div>
-
-      {/* --- CHARTS SECTION (MOCK) --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 lg:col-span-2">
-          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <TrendingUp size={18} className="text-slate-400"/>
-            Growth & Attempts (Simulated)
-          </h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
-                <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}/>
-                <Legend />
-                <Bar dataKey="users" fill="#3b82f6" name="New Users" radius={[4, 4, 0, 0]} barSize={30} />
-                <Bar dataKey="tests" fill="#10b981" name="Tests Taken" radius={[4, 4, 0, 0]} barSize={30} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+    <div>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Course Management</h1>
+          <p className="text-slate-500 text-sm">Create and manage learning content.</p>
         </div>
+        <button
+          className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 font-medium shadow-sm"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <Plus size={20} />
+          Create New Course
+        </button>
+      </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-800 mb-4">Skill Dist. (Simulated)</h3>
-          <div className="h-64 flex justify-center items-center">
-             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={skillsData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                  {skillsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend layout="horizontal" verticalAlign="bottom" align="center" />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+      {/* TOOLBAR */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="relative w-full md:w-96">
+          <input 
+            type="text" 
+            placeholder="Search by course name..." 
+            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+        </div>
+        <div className="flex gap-3 w-full md:w-auto">
+          <button 
+            onClick={fetchCourses} 
+            className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-600"
+            title="Reload data"
+          >
+            <RefreshCcw size={18} />
+          </button>
+          <select
+            className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500"
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+          >
+            <option value="All">All status</option>
+            <option value="Published">Published</option>
+            <option value="Draft">Draft</option>
+          </select>
         </div>
       </div>
 
-      {/* --- BOTTOM SECTION --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Recent Activity (MOCK) */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <Activity size={18} className="text-slate-400"/>
-              Recent Activity (Mock)
-            </h3>
-            <button className="text-xs text-blue-600 font-medium hover:underline" onClick={() => setShowEmailModal(true)}>
-                View All Users
-            </button>
+      {/* CONTENT AREA */}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white p-5 rounded-xl border border-slate-100 h-32 animate-pulse"></div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="text-center py-10 bg-red-50 rounded-xl border border-red-100">
+          <p className="text-red-600 mb-2">{error}</p>
+          <button onClick={fetchCourses} className="text-sm font-medium underline text-red-700 hover:text-red-800">
+            Try again
+          </button>
+        </div>
+      ) : filteredCourses.length === 0 ? (
+        <div className="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+          <BookOpen size={48} className="mx-auto text-slate-300 mb-3" />
+          <p className="text-slate-500 font-medium">No courses found.</p>
+          <p className="text-slate-400 text-sm">Try creating a new course or changing the filter.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredCourses.map((course) => (
+            <div key={course.id} className="bg-white p-5 rounded-xl border border-slate-200 hover:shadow-md transition flex flex-col md:flex-row items-start md:items-center gap-6">
+              
+              {/* Thumbnail */}
+              <div className="w-full md:w-32 h-48 md:h-24 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100">
+                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+              </div>
 
-            {/* Email List Modal (REAL DATA) */}
-            {showEmailModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-                <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg relative">
-                    <button type="button" className="absolute top-3 right-3 text-slate-400 hover:text-red-500 text-xl" onClick={() => setShowEmailModal(false)}>×</button>
-                    <h2 className="text-xl font-bold mb-6 text-slate-800">System Users</h2>
-                    <div className="max-h-96 overflow-y-auto">
-                    <ul className="divide-y divide-slate-100">
-                        {loading ? <p>Loading users...</p> : userList.length > 0 ? userList.map((u, idx) => (
-                        <li key={idx} className="py-3 flex items-center gap-3">
-                            <div>
-                                {/* Check cả Email và email đề phòng BE trả về khác nhau */}
-                                <span className="font-mono text-slate-700 block">{u.email || u.Email}</span>
-                                <span className="text-xs text-slate-400">{u.fullName || u.FullName}</span>
-                            </div>
-                        </li>
-                        )) : <p className="text-slate-500 text-center py-4">No users found.</p>}
-                    </ul>
-                    </div>
-                </div>
-                </div>
-            )}
-          </div>
-          
-          <div className="space-y-4">
-            {MOCK_ACTIVITIES.map((act) => (
-               <div key={act.id} className="flex items-start justify-between border-b border-slate-50 pb-4 last:border-0 last:pb-0">
-                <div className="flex gap-3">
-                  <div className="bg-slate-100 p-2 rounded-full h-10 w-10 flex items-center justify-center text-slate-500 flex-shrink-0">
-                    <Clock size={18} />
-                  </div>
+              {/* Info */}
+              <div className="flex-1 min-w-0 w-full">
+                <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-sm font-semibold text-slate-800">{act.user}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {act.action} <span className="text-slate-300 mx-1">•</span> <span className="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{act.target}</span>
-                    </p>
+                    <h3 className="font-bold text-lg text-slate-800 truncate pr-4">{course.title}</h3>
+                    <p className="text-sm text-slate-500 mt-1">Instructor: <span className="text-slate-700 font-medium">{course.instructor}</span></p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ${
+                    course.status === 'Published' 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {course.status}
+                  </span>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-4 md:gap-6 mt-4 text-sm text-slate-500">
+                  <div className="flex items-center gap-1.5">
+                    <Users size={16} className="text-blue-500"/>
+                    <span>{course.students} students</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <PlayCircle size={16} className="text-purple-500"/>
+                    <span>{course.modules} modules</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-slate-800 text-base">{formatCurrency(course.price)}</span>
                   </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs text-slate-400">{act.time}</p>
-                </div>
-               </div>
-            ))}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 w-full md:w-auto border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 mt-4 md:mt-0 justify-end">
+                <button
+                  className="p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition"
+                  title="Edit"
+                  onClick={() => openEditModal(course)}
+                >
+                  <Edit size={18} />
+                </button>
+                <button
+                  className="p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition"
+                  title="Delete"
+                  onClick={() => handleDeleteCourse(course.id)}
+                >
+                  <Trash2 size={18} />
+                </button>
+                <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition">
+                  <MoreHorizontal size={18} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* CREATE MODAL */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button
+              className="absolute top-3 right-3 text-slate-400 hover:text-red-500 text-xl"
+              onClick={() => setShowCreateModal(false)}
+            >×</button>
+            <h2 className="text-xl font-bold mb-6 text-slate-800">Create New Course</h2>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Title</label>
+              <input
+                type="text"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={newCourse.title}
+                onChange={e => setNewCourse(c => ({ ...c, title: e.target.value }))}
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                rows={3}
+                value={newCourse.description}
+                onChange={e => setNewCourse(c => ({ ...c, description: e.target.value }))}
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Level</label>
+              <select
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={newCourse.level}
+                onChange={e => setNewCourse(c => ({ ...c, level: e.target.value }))}
+              >
+                <option value="BEGINNER">BEGINNER</option>
+                <option value="ELEMENTARY">ELEMENTARY</option>
+                <option value="PRE_INTERMEDIATE">PRE_INTERMEDIATE</option>
+                <option value="INTERMEDIATE">INTERMEDIATE</option>
+                <option value="UPPER_INTERMEDIATE">UPPER_INTERMEDIATE</option>
+                <option value="ADVANCED">ADVANCED</option>
+              </select>
+            </div>
+            
+            <div className="mb-6 flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isPublished"
+                checked={newCourse.isPublished}
+                onChange={e => setNewCourse(c => ({ ...c, isPublished: e.target.checked }))}
+              />
+              <label htmlFor="isPublished" className="text-sm">Published</label>
+            </div>
+            
+            <button
+              onClick={handleCreateCourse}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium w-full"
+            >Create Course</button>
           </div>
         </div>
-        
-        {/* Most Attempted Tests (REAL TITLES) */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
-           <h3 className="font-bold text-slate-800 mb-4">Latest Published Tests</h3>
-           {loading ? (
-               <div className="text-center py-10 text-slate-400">Loading papers...</div>
-           ) : popularTests.length > 0 ? (
-               <div className="space-y-4">
-                   {popularTests.map((paper) => (
-                       <div key={paper.id} className="flex items-center gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100">
-                           <FileText size={24} className="text-blue-400 flex-shrink-0"/>
-                           <div className="flex-1 min-w-0">
-                               <p className="text-sm font-medium text-slate-800 truncate">{paper.title}</p>
-                               <p className="text-xs text-slate-500 mt-1">
-                                   ID: {paper.id} • {paper.attempts} attempts
-                               </p>
-                           </div>
-                           <div className="text-right">
-                               <span className="text-sm font-bold text-green-600">{paper.avgScore}</span>
-                               <p className="text-[10px] text-slate-400">Avg Band</p>
-                           </div>
-                       </div>
-                   ))}
-               </div>
-           ) : (
-               <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-lg border border-dashed border-slate-200 min-h-[200px]">
-                 <FileText size={32} className="mb-2 opacity-50"/>
-                 <p className="text-sm font-medium">No published tests found</p>
-               </div>
-           )}
-        </div>
+      )}
 
-      </div>
+      {/* EDIT MODAL */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+            <button
+              className="absolute top-3 right-3 text-slate-400 hover:text-red-500 text-xl"
+              onClick={() => setShowEditModal(false)}
+            >×</button>
+            <h2 className="text-xl font-bold mb-6 text-slate-800">Edit Course</h2>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Title</label>
+              <input
+                type="text"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={editModal.title}
+                onChange={e => setEditModal(m => ({ ...m, title: e.target.value }))}
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                rows={3}
+                value={editModal.description}
+                onChange={e => setEditModal(m => ({ ...m, description: e.target.value }))}
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Level</label>
+              <select
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                value={editModal.level}
+                onChange={e => setEditModal(m => ({ ...m, level: e.target.value }))}
+              >
+                <option value="BEGINNER">BEGINNER</option>
+                <option value="ELEMENTARY">ELEMENTARY</option>
+                <option value="PRE_INTERMEDIATE">PRE_INTERMEDIATE</option>
+                <option value="INTERMEDIATE">INTERMEDIATE</option>
+                <option value="UPPER_INTERMEDIATE">UPPER_INTERMEDIATE</option>
+                <option value="ADVANCED">ADVANCED</option>
+              </select>
+            </div>
+            
+            <div className="mb-6 flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="editIsPublished"
+                checked={editModal.isPublished}
+                onChange={e => setEditModal(m => ({ ...m, isPublished: e.target.checked }))}
+              />
+              <label htmlFor="editIsPublished" className="text-sm">Published</label>
+            </div>
+            
+            <button
+              onClick={handleEditCourse}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium w-full"
+            >Save Changes</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
