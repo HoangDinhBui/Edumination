@@ -197,7 +197,7 @@ const Navbar: React.FC = () => {
             <nav>
               <ul className="flex items-center justify-center gap-8 text-[15px] font-semibold">
                 {[
-                  { label: "Home", href: "/" },
+                  { label: "Home", href: "/" , onClick: () => navigate("/") },
                   {
                     label: "IELTS Exam Library",
                     onClick: () => navigate("/library"),

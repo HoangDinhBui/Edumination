@@ -14,6 +14,7 @@ import {
   GraduationCap,
   Lightbulb,
 } from "lucide-react";
+import Navbar from "../components/Navbar";
 
 const Foundation: React.FC = () => {
   const navigate = useNavigate();
@@ -120,6 +121,7 @@ const Foundation: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+      <Navbar />
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#4AB8A1] to-[#2986B7] text-white">
         <div className="absolute inset-0 opacity-10">

@@ -13,6 +13,7 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
+import Navbar from "../components/Navbar";
 
 const Booster: React.FC = () => {
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ const Booster: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+      <Navbar />
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#7BA5D1] to-[#5B9BD5] text-white">
         <div className="absolute inset-0 opacity-10">

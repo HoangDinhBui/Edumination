@@ -17,6 +17,7 @@ import {
   Trophy,
   Brain,
 } from "lucide-react";
+import Navbar from "../components/Navbar";
 
 const Intensive: React.FC = () => {
   const navigate = useNavigate();
@@ -139,6 +140,7 @@ const Intensive: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-slate-100">
+      <Navbar />
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 text-white">
         <div className="absolute inset-0 opacity-10">

@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Filter, Search, User, Briefcase, Clock, BookOpen, BarChart, UserCheck } from 'lucide-react';
 import logoImage from "../../assets/img/Rectangle 78.png";
+import Navbar from '../../components/Navbar';
+
 const Dropdown: React.FC<{
   title: string;
   sections: { header?: string; items: string[] }[];
@@ -38,82 +40,6 @@ const Dropdown: React.FC<{
       </div>
     </div>
   );
-};
-
-
-// === COMPONENT NAVBAR CỦA BẠN (ĐÃ CHỈNH SỬA MÀU SẮC) ===
-const Navbar: React.FC = () => {
-    return (
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                    {/* Logo (EDM) */}
-                    <a href="#" className="flex items-center gap-2">
-                      <img
-                        src={logoImage}
-                        className="h-7 rounded"
-                        alt="logo"
-                      />
-                    </a>
-                    <nav className="hidden md:flex items-center gap-6">
-                        <a className="text-slate-700 hover:text-sky-600 font-medium transition duration-150" href="#">
-                            Home
-                        </a>
-                        <Dropdown
-                            title="IELTS Exam Library"
-                            sections={[
-                                {
-                                    header: "",
-                                    items: [
-                                        "IELTS Listening Test",
-                                        "IELTS Reading Test",
-                                        "IELTS Writing Test",
-                                        "IELTS Speaking Test",
-                                        "IELTS Test Collection",
-                                    ],
-                                },
-                            ]}
-                        />
-                        <Dropdown
-                            title="IELTS Course"
-                            sections={[
-                                {
-                                    header: "IELTS Foundation (0.0–5.0)",
-                                    items: [
-                                        "IELTS 5.5–6.0 Booster",
-                                        "IELTS 6.0–7.5 Intensive",
-                                        "IELTS 7.5–9.0 Mastery",
-                                    ],
-                                },
-                            ]}
-                        />
-                        {/* Mục Ranking được làm nổi bật (Active) */}
-                        <a 
-                           className="font-bold text-sky-600 border-b-2 border-sky-600 pb-1.5 transition duration-150" 
-                           href="#"
-                        >
-                            Ranking
-                        </a>
-                    </nav>
-                </div>
-                <div className="flex items-center gap-3">
-                    <a
-                        href="#signin"
-                        className="text-slate-600 hover:text-sky-600 text-sm font-semibold transition duration-150"
-                    >
-                        Sign in
-                    </a>
-                    <a
-                        href="#signup"
-                        // Chỉnh màu nút Sign up thành xanh lá cây (giống ảnh Ranking gốc)
-                        className="text-sm font-semibold text-white bg-green-500 px-4 py-2 rounded-full shadow-md hover:bg-green-600 transition duration-150"
-                    >
-                        Sign up
-                    </a>
-                </div>
-            </div>
-        </header>
-    );
 };
 
 
