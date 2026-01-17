@@ -59,7 +59,7 @@
             AddMenuButton(btnDashboard, "📊  Dashboard");
             AddMenuButton(btnCourses, "📚  Quản lý khóa học");
             AddMenuButton(btnTests, "📝  Quản lý bài test");
-            AddMenuButton(btnStudents, "👨‍🎓  Quản lý sinh viên");
+            AddMenuButton(btnStudents, "👨‍🎓  Danh sách học viên");
             AddMenuButton(btnTeachers, "👨‍🏫  Quản lý giảng viên");
             AddMenuButton(btnAccounts, "👤  Quản lý tài khoản");
             AddMenuButton(btnReports, "📈  Báo cáo thống kê");
