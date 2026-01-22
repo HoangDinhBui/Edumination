@@ -79,21 +79,21 @@ namespace IELTS.UI.Admin.TestManager
 
         private TestPaperBLL testPaperBLL = new TestPaperBLL();
 
-        private void btnUpload_Click(object sender, EventArgs e)
+        private async void btnUpload_Click(object sender, EventArgs e)
         {
             string title = txtTitle.Text.Trim();
             string description = txtDescription.Text.Trim();
-            // đường dẫn file PDF từ OpenFileDialog
-            long createdBy = SessionManager.CurrentUserId;
 
-            // Kiểm tra title
+            // Lấy ID người dùng thực tế từ Session
+            long currentUserId = SessionManager.CurrentUserId;
+
+            // 1. Kiểm tra đầu vào
             if (string.IsNullOrWhiteSpace(title))
             {
                 MessageBox.Show("Tiêu đề đề thi không được để trống!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Kiểm tra file PDF
             if (string.IsNullOrWhiteSpace(selectedPdfPath) || !File.Exists(selectedPdfPath))
             {
                 MessageBox.Show("Vui lòng chọn file PDF hợp lệ!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -102,42 +102,63 @@ namespace IELTS.UI.Admin.TestManager
 
             try
             {
-                // Thư mục assets trong project
+                // 2. Khóa UI để tránh người dùng bấm lung tung khi AI đang chạy
+                btnUpload.Enabled = false;
+                this.Cursor = Cursors.WaitCursor;
+
+                // 3. Xử lý file vật lý
                 string assetsFolder = Path.Combine(Application.StartupPath, "..", "..", "UI", "assets");
+                if (!Directory.Exists(assetsFolder)) Directory.CreateDirectory(assetsFolder);
 
-                if (!Directory.Exists(assetsFolder))
-                    Directory.CreateDirectory(assetsFolder);
-
-                // Tạo tên file mới để tránh trùng lặp
                 string newFileName = Guid.NewGuid().ToString() + ".pdf";
                 string destPath = Path.Combine(assetsFolder, newFileName);
 
-                // Copy file PDF vào folder assets
+                // Đọc và copy file (có thể dùng Task.Run nếu file quá nặng)
                 File.Copy(selectedPdfPath, destPath, true);
 
-                // Lưu thông tin đề thi vào DB
+                // 4. Lưu TestPaper vào SQL Server
                 bool success = testPaperBLL.CreateTestPaper(
-                    // sinh mã đề thi tự động
                     title: title,
                     description: description,
-                    createdBy: 2,
+                    createdBy: currentUserId, // ĐÃ SỬA: Dùng ID thực tế thay vì số 4
                     pdfFullPath: destPath
                 );
 
-                if (success)
-                    MessageBox.Show("Upload PDF và tạo đề thi thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (!success)
+                {
+                    MessageBox.Show("Tạo đề thi thất bại! Vui lòng kiểm tra lại Database.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                int newPaperId = testPaperBLL.GetLatestTestPaperId();
+
+                // 5. Gọi AI phân tích (Giai đoạn này tốn 5-15 giây)
+                var aiService = new AIQuestionAnalysisService();
+                bool aiSuccess = await aiService.AnalyzePdfAndSaveQuestions(destPath, newPaperId);
+
+                if (aiSuccess)
+                {
+                    MessageBox.Show("✅ Thành công: AI đã phân tích và lưu câu hỏi!", "Thông báo");
+                }
                 else
-                    MessageBox.Show("Tạo đề thi thất bại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                {
+                    MessageBox.Show("⚠️ AI phân tích thất bại. Hệ thống sẽ để trống danh sách câu hỏi.", "Cảnh báo");
+                }
+
+                // 6. Chuyển sang bước tiếp theo
+                testManagerControl.GetAddSectionButtonControl().SetTestPaperId(newPaperId);
+                testManagerControl.ShowPanel(testManagerControl.GetAddSectionButtonControl());
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi hệ thống: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            int newPaperId= testPaperBLL.GetLatestTestPaperId();
-            testManagerControl.GetAddSectionButtonControl().SetTestPaperId(newPaperId);
-            MessageBox.Show(" " + newPaperId);
-            testManagerControl.ShowPanel(testManagerControl.GetAddSectionButtonControl());
-
+            finally
+            {
+                // 7. Luôn luôn mở lại UI cho dù có lỗi xảy ra
+                btnUpload.Enabled = true;
+                this.Cursor = Cursors.Default;
+            }
         }
         public void ResetForm()
         {

@@ -113,14 +113,13 @@ namespace IELTS.UI.Login
         /// </summary>
         private void SaveToSession(LoginResponseDTO response)
         {
-            // Tạo DataRow để lưu vào SessionManager (tương thích với code cũ)
             DataTable dt = new DataTable();
             dt.Columns.Add("Id", typeof(long));
             dt.Columns.Add("Email", typeof(string));
             dt.Columns.Add("FullName", typeof(string));
             dt.Columns.Add("Role", typeof(string));
             dt.Columns.Add("IsActive", typeof(bool));
-            dt.Columns.Add("Token", typeof(string)); // Thêm token
+            dt.Columns.Add("Token", typeof(string));
 
             DataRow row = dt.NewRow();
             row["Id"] = response.User.Id;
@@ -131,12 +130,7 @@ namespace IELTS.UI.Login
             row["Token"] = response.Token;
 
             dt.Rows.Add(row);
-
-            // Lưu vào SessionManager
             SessionManager.Login(row);
-
-            // Lưu token riêng (nếu cần dùng cho các API call sau này)
-            SessionManager.SetToken(response.Token);
         }
 
         /// <summary>
