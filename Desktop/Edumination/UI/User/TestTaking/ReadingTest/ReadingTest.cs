@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using Edumination.Api.Domain.Entities;
 using IELTS.DAL;
+using IELTS.UI.User.Results;
 using IELTS.UI.User.TestTaking.Controls;
 
 namespace IELTS.UI.User.TestTaking.ReadingTest
@@ -236,9 +237,48 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
         // ================================
         private void SubmitTest()
         {
-            int correct = GradeReading();
-            int total = _questions.Count;
-            MessageBox.Show($"Bạn trả lời đúng {correct}/{total} câu.", "Kết quả Reading", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // 1. Tạo đối tượng ExamResult
+            var finalResult = new ExamResult
+            {
+                Skill = "Reading",
+                UserName = SessionManager.FullName,
+               
+                TimeTakenSeconds = 3600 - _remainingSeconds, // Tổng 60p - thời gian còn lại
+                TotalQuestions = _questions.Count,
+                Parts = new List<PartReview>()
+            };
+
+            // 2. Gom nhóm câu hỏi theo Part (Giả sử mỗi Part 10 câu)
+            for (int p = 1; p <= 4; p++)
+            {
+                var part = new PartReview { PartName = $"Part {p}", Questions = new List<QuestionReview>() };
+
+                // Lấy các câu hỏi thuộc Part này (ví dụ câu 1-10 là Part 1)
+                var partQuestions = _questions.Skip((p - 1) * 10).Take(10).ToList();
+
+                foreach (var q in partQuestions)
+                {
+                    _userAnswers.TryGetValue(q.Id, out string userAns);
+                    string correctAns = GetCorrectAnswerFromDB(q.Id);
+                    bool isCorrect = string.Equals(userAns?.Trim(), correctAns?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+                    if (isCorrect) finalResult.CorrectCount++;
+
+                    part.Questions.Add(new QuestionReview
+                    {
+                        Number = _questions.IndexOf(q) + 1,
+                        UserAnswer = userAns ?? "",
+                        CorrectAnswer = correctAns,
+                        IsCorrect = isCorrect
+                    });
+                }
+                finalResult.Parts.Add(part);
+            }
+
+            // 3. Mở trang kết quả bạn đã viết
+            AnswerResultForm resultForm = new AnswerResultForm(finalResult);
+            resultForm.Show();
+            this.Close();
         }
 
         private void LoadQuestionsFromDatabase()

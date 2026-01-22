@@ -36,10 +36,7 @@ namespace IELTS.UI.User.Results
             }
 
             // User name & title
-            lblUserName.Text = string.IsNullOrWhiteSpace(_result.UserName)
-                ? "Student Name"
-                : _result.UserName;
-
+            lblUserName.Text = string.IsNullOrWhiteSpace(_result.UserName) ? "Student" : _result.UserName;
             lblTitleResult.Text = $"{_result.Skill} Result";
 
             // Correct
@@ -60,74 +57,70 @@ namespace IELTS.UI.User.Results
             if (_result.Parts == null || _result.Parts.Count == 0)
                 return;
 
-            int y = 0;
-
             foreach (var part in _result.Parts)
             {
-                // Tiêu đề Part
-                var lblPart = new UILabel
+                // 1. Tạo Label tiêu đề cho từng Part (Ví dụ: Part 1: Question 1 - 10)
+                UILabel lblPartHeader = new UILabel
                 {
+                    Text = part.PartName,
                     Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                     ForeColor = Color.FromArgb(41, 69, 99),
-                    Location = new Point(0, y),
-                    Size = new Size(600, 25),
-                    TextAlign = ContentAlignment.MiddleLeft,
-                    Text = part.PartName
-                };
-                panelAnswerKeys.Controls.Add(lblPart);
-                y += 32;
-
-                // FLowLayout 2 cột
-                var flow = new FlowLayoutPanel
-                {
-                    Location = new Point(0, y),
-                    Width = panelAnswerKeys.Width - 40,
                     AutoSize = true,
-                    WrapContents = false,
-                    FlowDirection = FlowDirection.LeftToRight
+                    Margin = new Padding(0, 25, 0, 10) // Tạo khoảng cách giữa các Part
                 };
+                panelAnswerKeys.Controls.Add(lblPartHeader);
 
-                var leftCol = new FlowLayoutPanel
+                // 2. Tạo một TableLayoutPanel để chia 2 cột cho các câu hỏi TRONG Part này
+                TableLayoutPanel partGrid = new TableLayoutPanel
                 {
-                    Width = 600,
+                    ColumnCount = 2,
+                    RowCount = 1,
+                    Width = panelAnswerKeys.Width - 50, // Trừ hao khoảng cách scrollbar
                     AutoSize = true,
-                    FlowDirection = FlowDirection.TopDown
+                    Margin = new Padding(0, 0, 0, 20)
                 };
+                // Chia 2 cột bằng nhau (50% - 50%)
+                partGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+                partGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
 
-                var rightCol = new FlowLayoutPanel
+                // 3. Logic chia câu hỏi của Part thành 2 danh sách (Trái - Phải)
+                var questions = part.Questions.OrderBy(q => q.Number).ToList();
+                int mid = (int)Math.Ceiling(questions.Count / 2.0);
+
+                FlowLayoutPanel leftCol = CreatePartColumn();
+                FlowLayoutPanel rightCol = CreatePartColumn();
+
+                for (int i = 0; i < questions.Count; i++)
                 {
-                    Width = 600,
-                    AutoSize = true,
-                    FlowDirection = FlowDirection.TopDown
-                };
+                    AnswerRowPanel row = new AnswerRowPanel();
+                    row.Bind(questions[i]);
 
-                // Cắt câu thành 2 phần
-                var list = part.Questions.OrderBy(q => q.Number).ToList();
-                int half = (int)Math.Ceiling(list.Count / 2.0);
-
-                foreach (var q in list.Take(half))
-                {
-                    var row = new AnswerRowPanel();
-                    row.Bind(q);
-                    leftCol.Controls.Add(row);
+                    if (i < mid)
+                        leftCol.Controls.Add(row);
+                    else
+                        rightCol.Controls.Add(row);
                 }
 
-                foreach (var q in list.Skip(half))
-                {
-                    var row = new AnswerRowPanel();
-                    row.Bind(q);
-                    rightCol.Controls.Add(row);
-                }
+                // 4. Thêm 2 cột vào grid của Part
+                partGrid.Controls.Add(leftCol, 0, 0);
+                partGrid.Controls.Add(rightCol, 1, 0);
 
-                flow.Controls.Add(leftCol);
-                flow.Controls.Add(rightCol);
-
-                panelAnswerKeys.Controls.Add(flow);
-
-                y += flow.Height + 25;
+                // 5. Thêm grid này vào panel chính
+                panelAnswerKeys.Controls.Add(partGrid);
             }
         }
 
+        private FlowLayoutPanel CreatePartColumn()
+        {
+            return new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoSize = true,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0)
+            };
+        }
 
         private Control BuildColumnPanel(System.Collections.Generic.List<QuestionReview> list)
         {
