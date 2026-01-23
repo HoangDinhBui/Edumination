@@ -1,17 +1,20 @@
 ﻿using Edumination.WinForms.UI.Admin.TestManager;
-using IELTS.UI.Admin.DashBoard;
 using IELTS.UI.Admin.AccountManager;
 using IELTS.UI.Admin.CoursesManager;
+using IELTS.UI.Admin.DashBoard;
 using IELTS.UI.Admin.ReportManager;
+using IELTS.UI.Admin.CourseStudents;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Shapes;
 
 
 namespace Edumination.WinForms.UI.Admin
@@ -75,7 +78,7 @@ namespace Edumination.WinForms.UI.Admin
                     break;
 
                 case "students":
-                    //LoadContent(new StudentsPanel());
+                    LoadContent(new CourseStudentViewerPanel());
                     break;
 
                 case "teachers":

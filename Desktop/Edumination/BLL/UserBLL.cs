@@ -1,4 +1,5 @@
-﻿using IELTS.DAL;
+﻿using BCrypt.Net;
+using IELTS.DAL;
 using IELTS.DTO;
 using Newtonsoft.Json;
 using System;
@@ -7,7 +8,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BCrypt.Net;
+using System.Windows.Forms;
 
 namespace IELTS.BLL
 {
@@ -171,6 +172,14 @@ namespace IELTS.BLL
         public DataTable GetAllUsers()
         {
             return userDAL.GetAllUsers();
+        }
+
+        public List<UserDTO> GetStudentsByCourse(long courseId, string keyword = "")
+        {
+            if (courseId <= 0)
+                throw new Exception("Course ID không hợp lệ!");
+
+            return userDAL.GetStudentsByCourse(courseId, keyword);
         }
 
         /// <summary>
@@ -453,6 +462,17 @@ namespace IELTS.BLL
         {
             return courseDAL.DeleteCourse(id);
         }
+
+        public DataTable GetStudentsForViewer(long courseId)
+        {
+            return courseDAL.GetEnrolledUsersByCourse(courseId);
+        }
+
+        public DataTable GetStudentCourseDetail(long courseId, long studentId)
+        {
+            return courseDAL.GetCourseStudent(courseId, studentId);
+        }
+
     }
 
     // =========================================================

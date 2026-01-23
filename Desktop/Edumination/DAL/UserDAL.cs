@@ -296,5 +296,59 @@ namespace IELTS.DAL
                 return cmd.ExecuteNonQuery() > 0;
             }
         }
+
+        public List<UserDTO> GetStudentsByCourse(long courseId, string keyword = "")
+        {
+            var list = new List<UserDTO>();
+
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            {
+                conn.Open();
+
+                string sql = @"
+            SELECT 
+                u.Id,
+                u.Email,
+                u.FullName,
+                u.Phone,
+                u.DateOfBirth,
+                u.Role,
+                u.IsActive,
+                u.CreatedAt,
+                u.UpdatedAt
+            FROM CourseStudents cs
+            JOIN Users u ON u.Id = cs.StudentId
+            WHERE cs.CourseId = @CourseId
+              AND u.FullName LIKE @Key
+            ORDER BY u.FullName";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@CourseId", courseId);
+                    cmd.Parameters.AddWithValue("@Key", "%" + keyword + "%");
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            list.Add(new UserDTO
+                            {
+                                Id = Convert.ToInt64(reader["Id"]),
+                                Email = reader["Email"].ToString(),
+                                FullName = reader["FullName"].ToString(),
+                                Phone = reader["Phone"]?.ToString(),
+                                DateOfBirth = reader["DateOfBirth"] as DateTime?,
+                                Role = reader["Role"].ToString(),
+                                IsActive = Convert.ToBoolean(reader["IsActive"]),
+                                CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
+                                UpdatedAt = Convert.ToDateTime(reader["UpdatedAt"])
+                            });
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
     }
 }

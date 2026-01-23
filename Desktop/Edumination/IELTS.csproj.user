@@ -16,6 +16,9 @@
     <Compile Update="UI\Admin\CoursesManager\CoursesPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\Admin\CourseStudents\CourseStudentViewerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Admin\DashBoard\AdminDashboardControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

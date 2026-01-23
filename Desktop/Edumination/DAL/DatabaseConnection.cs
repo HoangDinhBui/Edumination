@@ -252,6 +252,44 @@ namespace IELTS.DAL
                 }
             }
         }
+
+        // Lấy danh sách đã đăng ký
+        public DataTable GetEnrolledUsersByCourse(long courseId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            string sql = @"
+        SELECT u.Id, u.FullName, u.Email, e.EnrolledAt
+        FROM Enrollments e
+        JOIN Users u ON u.Id = e.UserId
+        WHERE e.CourseId = @CourseId";
+
+            var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@CourseId", courseId);
+
+            var dt = new DataTable();
+            new SqlDataAdapter(cmd).Fill(dt);
+            return dt;
+        }
+
+        // Lấy CourseStudent (nếu có)
+        public DataTable GetCourseStudent(long courseId, long studentId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            string sql = @"
+        SELECT cs.*, i.FullName AS InstructorName
+        FROM CourseStudents cs
+        LEFT JOIN Users i ON i.Id = cs.InstructorId
+        WHERE cs.CourseId = @CourseId AND cs.StudentId = @StudentId";
+
+            var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@CourseId", courseId);
+            cmd.Parameters.AddWithValue("@StudentId", studentId);
+
+            var dt = new DataTable();
+            new SqlDataAdapter(cmd).Fill(dt);
+            return dt;
+        }
+
     }
 
     // =========================================================
