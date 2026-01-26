@@ -7,11 +7,10 @@ namespace IELTS.UI.User.Results
     partial class AnswerRowPanel
     {
         private System.ComponentModel.IContainer components = null;
-
-        private UIButton lblNumber;
-        private UILabel lblUserAnswer;
-        private UILabel lblCorrectAnswer;
-        private Label lblIcon;
+        private Sunny.UI.UIButton btnNo;
+        private Sunny.UI.UILabel lblUserAns;
+        private Sunny.UI.UILabel lblCorrectHint;
+        private System.Windows.Forms.Label lblIcon;
 
         protected override void Dispose(bool disposing)
         {
@@ -22,70 +21,67 @@ namespace IELTS.UI.User.Results
 
         private void InitializeComponent()
         {
-            lblNumber = new UIButton();
-            lblUserAnswer = new UILabel();
-            lblCorrectAnswer = new UILabel();
-            lblIcon = new Label();
+            btnNo = new Sunny.UI.UIButton();
+            lblUserAns = new Sunny.UI.UILabel();
+            lblCorrectHint = new Sunny.UI.UILabel();
+            lblIcon = new System.Windows.Forms.Label();
 
             SuspendLayout();
 
-            // ===================== NUMBER BADGE =====================
-            lblNumber.FillColor = Color.FromArgb(225, 240, 255);
-            lblNumber.FillHoverColor = lblNumber.FillColor;
-            lblNumber.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lblNumber.ForeColor = Color.FromArgb(39, 56, 146);
-            lblNumber.Location = new Point(0, 3);
-            lblNumber.MinimumSize = new Size(1, 1);
-            lblNumber.Radius = 16;
-            lblNumber.RectColor = Color.FromArgb(210, 230, 250);
-            lblNumber.RectHoverColor = lblNumber.RectColor;
-            lblNumber.Size = new Size(32, 32);
-            lblNumber.Style = UIStyle.Custom;
-            lblNumber.TextAlign = ContentAlignment.MiddleCenter;
-            lblNumber.Text = "1";
+            // --- 1. Số thứ tự (Vòng tròn xanh) ---
+            btnNo.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            btnNo.Location = new Point(10, 8);
+            btnNo.Size = new Size(35, 35);
+            btnNo.Cursor = Cursors.Default;
+            btnNo.FillColor = Color.FromArgb(0, 159, 227);
+            btnNo.RectColor = Color.FromArgb(0, 159, 227);
+            btnNo.ForeColor = Color.White;
+            btnNo.Radius = 17;
+            btnNo.Style = UIStyle.Custom;
+            btnNo.Text = "1";
+            btnNo.TextAlign = ContentAlignment.MiddleCenter;
 
-            // ===================== USER ANSWER =====================
-            lblUserAnswer.Font = new Font("Segoe UI", 10.5F, FontStyle.Regular);
-            lblUserAnswer.ForeColor = Color.FromArgb(39, 56, 146);
-            lblUserAnswer.Location = new Point(48, 3);
-            lblUserAnswer.Size = new Size(215, 32);
-            lblUserAnswer.TextAlign = ContentAlignment.MiddleLeft;
-            lblUserAnswer.Text = "1. Keiko";
+            // --- 2. Câu trả lời của học viên ---
+            lblUserAns.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblUserAns.ForeColor = Color.FromArgb(0, 159, 227);
+            lblUserAns.Location = new Point(55, 8);
+            lblUserAns.Size = new Size(120, 35); // ✅ TĂNG WIDTH
+            lblUserAns.Style = UIStyle.Custom;
+            lblUserAns.Text = "Answer:";
+            lblUserAns.TextAlign = ContentAlignment.MiddleLeft;
 
-            // ===================== CORRECT ANSWER =====================
-            lblCorrectAnswer.Font = new Font("Segoe UI", 10.5F, FontStyle.Regular);
-            lblCorrectAnswer.ForeColor = Color.FromArgb(140, 140, 140);
-            lblCorrectAnswer.Location = new Point(265, 3);
-            lblCorrectAnswer.Size = new Size(215, 32);
-            lblCorrectAnswer.TextAlign = ContentAlignment.MiddleLeft;
-            lblCorrectAnswer.Text = "Correct: B";
-
-            // ===================== ICON ✓ / ✕ =====================
+            // --- 3. Icon đúng/sai ---
             lblIcon.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            lblIcon.Location = new Point(500, 3);
-            lblIcon.Size = new Size(32, 32);
+            lblIcon.Location = new Point(185, 8);
+            lblIcon.Size = new Size(30, 35);
             lblIcon.Text = "✕";
             lblIcon.ForeColor = Color.FromArgb(235, 85, 85);
             lblIcon.TextAlign = ContentAlignment.MiddleCenter;
 
-            // ===================== PANEL WRAPPER =====================
-            AutoScaleMode = AutoScaleMode.None;
-            BackColor = Color.White;
+            // --- 4. Gợi ý đáp án đúng ---
+            lblCorrectHint.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+            lblCorrectHint.ForeColor = Color.FromArgb(100, 100, 100);
+            lblCorrectHint.Location = new Point(225, 8);
+            lblCorrectHint.Size = new Size(200, 35); // ✅ TĂNG WIDTH
+            lblCorrectHint.Style = UIStyle.Custom;
+            lblCorrectHint.Text = "Correct: Example";
+            lblCorrectHint.TextAlign = ContentAlignment.MiddleLeft;
+            lblCorrectHint.AutoSize = false; // ✅ QUAN TRỌNG: Tắt AutoSize
+            lblCorrectHint.Visible = true; // Hiển thị để test
 
-            // FIX SIZE PRECISELY
-            Size = new Size(540, 38);
-            MinimumSize = new Size(540, 38);
-            MaximumSize = new Size(540, 38);
-            Margin = new Padding(0, 4, 0, 4);
+            // --- 5. Panel chính ---
+            this.BackColor = Color.White;
+            this.Size = new Size(450, 50); // ✅ TĂNG WIDTH TỔNG THỂ
+            this.Margin = new Padding(8, 5, 8, 5);
+            this.BorderStyle = BorderStyle.FixedSingle; // ✅ Thêm viền để dễ nhìn
 
-            Controls.Add(lblNumber);
-            Controls.Add(lblUserAnswer);
-            Controls.Add(lblCorrectAnswer);
-            Controls.Add(lblIcon);
+            this.Controls.Add(btnNo);
+            this.Controls.Add(lblUserAns);
+            this.Controls.Add(lblIcon);
+            this.Controls.Add(lblCorrectHint);
 
-            Name = "AnswerRowPanel";
-
-            ResumeLayout(false);
+            this.Name = "AnswerRowPanel";
+            this.ResumeLayout(false);
         }
     }
 }

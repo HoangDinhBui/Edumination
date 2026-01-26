@@ -83,6 +83,17 @@ namespace IELTS.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap pngtree_avatar_client_face_happy_man_person_user_business_flat_li_png_image_4980772 {
+            get {
+                object obj = ResourceManager.GetObject("pngtree-avatar-client-face-happy-man-person-user-business-flat-li-png-image_49807" +
+                        "72", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap TTMD {
             get {
                 object obj = ResourceManager.GetObject("TTMD", resourceCulture);

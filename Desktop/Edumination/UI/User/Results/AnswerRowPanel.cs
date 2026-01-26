@@ -1,39 +1,43 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
 namespace IELTS.UI.User.Results
 {
     public partial class AnswerRowPanel : UserControl
     {
-        public AnswerRowPanel()
-        {
-            InitializeComponent();
-        }
+        public AnswerRowPanel() => InitializeComponent();
 
         public void Bind(QuestionReview q)
         {
-            if (q == null) return;
+            // 1. Số thứ tự
+            btnNo.Text = q.Number.ToString();
 
-            // số câu
-            lblNumber.Text = q.Number.ToString();
+            // 2. Câu trả lời của user
+            string displayAnswer = string.IsNullOrWhiteSpace(q.UserAnswer)
+                ? "no answer"
+                : q.UserAnswer;
 
-            // text user answer (giống mẫu: "1   Keiko:")
-            lblUserAnswer.Text = $"{q.Number}.  {q.UserAnswer}";
+            lblUserAns.Text = $"{displayAnswer}";
 
-            // đáp án đúng
-            lblCorrectAnswer.Text = q.CorrectAnswer;
-
-            // icon & màu đúng/sai
+            // 3. Icon + Correct Hint
             if (q.IsCorrect)
             {
                 lblIcon.Text = "✓";
-                lblIcon.ForeColor = Color.FromArgb(0, 160, 80);
+                lblIcon.ForeColor = Color.Green;
+                lblCorrectHint.Visible = false; // ✅ Ẩn khi đúng
             }
             else
             {
                 lblIcon.Text = "✕";
-                lblIcon.ForeColor = Color.FromArgb(235, 85, 85);
+                lblIcon.ForeColor = Color.Red;
+
+                // ✅ Hiển thị đầy đủ đáp án đúng
+                string correctDisplay = string.IsNullOrWhiteSpace(q.CorrectAnswer)
+                    ? "N/A"
+                    : q.CorrectAnswer;
+
+                lblCorrectHint.Text = $"Correct: {correctDisplay}";
+                lblCorrectHint.Visible = true;
             }
         }
     }

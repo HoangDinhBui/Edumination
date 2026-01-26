@@ -1,147 +1,164 @@
-﻿using Sunny.UI;
-using System;
+﻿using System;
 using System.Drawing;
-using System.IO;
-using System.Linq;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace IELTS.UI.User.Results
 {
-    public partial class AnswerResultForm : Form
-    {
-        private readonly ExamResult _result;
+	public partial class AnswerResultForm : Form
+	{
+		private readonly ExamResult _result;
 
-        public AnswerResultForm(ExamResult result)
-        {
-            _result = result ?? throw new ArgumentNullException(nameof(result));
-            InitializeComponent();
+		public AnswerResultForm(ExamResult result)
+		{
+			_result = result ?? throw new ArgumentNullException(nameof(result));
+			InitializeComponent();
+			this.Shown += AnswerResultForm_Load;
 
-            WindowState = FormWindowState.Maximized;
-        }
+			// ✅ GỌI NGAY SAU InitializeComponent() để đảm bảo controls đã tồn tại
 
-        private void AnswerResultForm_Load(object sender, EventArgs e)
-        {
-            // Avatar
-            if (!string.IsNullOrWhiteSpace(_result.AvatarPath) &&
-                File.Exists(_result.AvatarPath))
-            {
-                try
-                {
-                    picAvatar.Image = Image.FromFile(_result.AvatarPath);
-                }
-                catch
-                {
-                    // ignore lỗi đọc ảnh
-                }
-            }
+		}
 
-            // User name & title
-            lblUserName.Text = string.IsNullOrWhiteSpace(_result.UserName) ? "Student" : _result.UserName;
-            lblTitleResult.Text = $"{_result.Skill} Result";
+		private void AnswerResultForm_Load(object sender, EventArgs e)
+		{
+			// ✅ Gọi lại 1 lần nữa khi Form đã hiển thị hoàn toàn
+			LoadResultData();
+		}
 
-            // Correct
-            lblCorrectMain.Text = $"{_result.CorrectCount}/{_result.TotalQuestions}";
-            lblBandMain.Text = _result.CorrectCount.ToString();
+		// ✅ HÀM TỔNG HỢP - Gọi tất cả logic load data
+		private void LoadResultData()
+		{
+			// Kiểm tra ngay lập tức tên trong Session
+			System.Diagnostics.Debug.WriteLine($"[CRITICAL CHECK] Tên trong Session: {IELTS.UI.User.SessionManager.FullName}");
+			try
+			{
+				UpdateUserProfile();
+				UpdateExamStatistics();
+				BuildAnswerKeysUI();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Error loading result data: {ex.Message}",
+					"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 
-            // Time
-            var span = TimeSpan.FromSeconds(_result.TimeTakenSeconds);
-            lblTimeMain.Text = $"{(int)span.TotalMinutes:D2}:{span.Seconds:D2}";
+		}
 
-            BuildAnswerKeysUI();
-        }
+		private void UpdateUserProfile()
+		{
+			// Kiểm tra trực tiếp dữ liệu từ SessionManager
+			string sessionName = SessionManager.FullName;
+			Console.WriteLine($"[DEBUG RESULT FORM] Tên từ Session: {sessionName}");
 
-        private void BuildAnswerKeysUI()
-        {
-            panelAnswerKeys.Controls.Clear();
+			lblUserName.Text = sessionName; // "Student" là giá trị mặc định nếu rỗng
 
-            if (_result.Parts == null || _result.Parts.Count == 0)
-                return;
+			lblUserName.Text = _result.UserName ?? "Student";
 
-            foreach (var part in _result.Parts)
-            {
-                // 1. Tạo Label tiêu đề cho từng Part (Ví dụ: Part 1: Question 1 - 10)
-                UILabel lblPartHeader = new UILabel
-                {
-                    Text = part.PartName,
-                    Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(41, 69, 99),
-                    AutoSize = true,
-                    Margin = new Padding(0, 25, 0, 10) // Tạo khoảng cách giữa các Part
-                };
-                panelAnswerKeys.Controls.Add(lblPartHeader);
+			if (picAvatar.Width > 0 && picAvatar.Height > 0)
+			{
+				GraphicsPath gp = new GraphicsPath();
+				gp.AddEllipse(0, 0, picAvatar.Width, picAvatar.Height);
+				picAvatar.Region = new Region(gp);
+			}
 
-                // 2. Tạo một TableLayoutPanel để chia 2 cột cho các câu hỏi TRONG Part này
-                TableLayoutPanel partGrid = new TableLayoutPanel
-                {
-                    ColumnCount = 2,
-                    RowCount = 1,
-                    Width = panelAnswerKeys.Width - 50, // Trừ hao khoảng cách scrollbar
-                    AutoSize = true,
-                    Margin = new Padding(0, 0, 0, 20)
-                };
-                // Chia 2 cột bằng nhau (50% - 50%)
-                partGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
-                partGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+			if (!string.IsNullOrEmpty(_result.AvatarPath) &&
+				System.IO.File.Exists(_result.AvatarPath))
+			{
+				try
+				{
+					picAvatar.Image = Image.FromFile(_result.AvatarPath);
+				}
+				catch { }
+			}
+		}
 
-                // 3. Logic chia câu hỏi của Part thành 2 danh sách (Trái - Phải)
-                var questions = part.Questions.OrderBy(q => q.Number).ToList();
-                int mid = (int)Math.Ceiling(questions.Count / 2.0);
+		private void BuildAnswerKeysUI()
+		{
+			flowPanelAnswers.Controls.Clear();
 
-                FlowLayoutPanel leftCol = CreatePartColumn();
-                FlowLayoutPanel rightCol = CreatePartColumn();
+			if (_result.Parts == null || _result.Parts.Count == 0)
+			{
+				Label lblEmpty = new Label
+				{
+					Text = "No answer data available.",
+					AutoSize = true,
+					Font = new Font("Segoe UI", 11F, FontStyle.Italic),
+					ForeColor = Color.Gray,
+					Margin = new Padding(20)
+				};
+				flowPanelAnswers.Controls.Add(lblEmpty);
+				return;
+			}
 
-                for (int i = 0; i < questions.Count; i++)
-                {
-                    AnswerRowPanel row = new AnswerRowPanel();
-                    row.Bind(questions[i]);
+			// ✅ Duyệt qua TẤT CẢ Parts và Questions
+			foreach (var part in _result.Parts)
+			{
+				if (part.Questions == null) continue;
 
-                    if (i < mid)
-                        leftCol.Controls.Add(row);
-                    else
-                        rightCol.Controls.Add(row);
-                }
+				foreach (var q in part.Questions)
+				{
+					AnswerRowPanel row = new AnswerRowPanel();
+					row.Bind(q);
+					flowPanelAnswers.Controls.Add(row);
+				}
+			}
 
-                // 4. Thêm 2 cột vào grid của Part
-                partGrid.Controls.Add(leftCol, 0, 0);
-                partGrid.Controls.Add(rightCol, 1, 0);
+			// ✅ DEBUG: In số lượng câu đã thêm
+			System.Diagnostics.Debug.WriteLine(
+				$"[BuildAnswerKeysUI] Added {flowPanelAnswers.Controls.Count} answer rows"
+			);
+		}
+		private void UpdateExamStatistics()
+		{
+			// 1. Vòng tròn Trái: Số câu đúng
+			StyleCircle(progressCorrect, Color.FromArgb(0, 159, 227), "The correct answer", $"{_result.CorrectCount}/{_result.TotalQuestions}");
+			progressCorrect.Value = _result.TotalQuestions > 0 ? (int)((double)_result.CorrectCount / _result.TotalQuestions * 100) : 0;
 
-                // 5. Thêm grid này vào panel chính
-                panelAnswerKeys.Controls.Add(partGrid);
-            }
-        }
+			// 2. Vòng tròn Giữa: Band Score (Hiện số 2 lớn)
+			StyleCircle(progressBand, Color.FromArgb(80, 227, 255), "Band Score", _result.Band.ToString("0.#"));
+			progressBand.Value = (int)((_result.Band / 9.0) * 100);
 
-        private FlowLayoutPanel CreatePartColumn()
-        {
-            return new FlowLayoutPanel
-            {
-                FlowDirection = FlowDirection.TopDown,
-                WrapContents = false,
-                AutoSize = true,
-                Dock = DockStyle.Fill,
-                Margin = new Padding(0)
-            };
-        }
+			// 3. Vòng tròn Phải: Thời gian
+			var span = TimeSpan.FromSeconds(_result.TimeTakenSeconds);
+			string timeStr = $"{(int)span.TotalMinutes:D2}:{span.Seconds:D2}";
+			StyleCircle(progressTime, Color.FromArgb(0, 159, 227), "Time taken", timeStr);
+			progressTime.Value = 100;
+		}
+		private void StyleCircle(Sunny.UI.UIRoundProcess bar, Color color, string subTitle, string mainText)
+		{
+			bar.ShowProcess = true; // Hiện thanh xanh
+			bar.Inner = 46;         // Làm vòng tròn mỏng
+			bar.Outer = 50;
+			bar.Text = mainText;    // Hiển thị con số ở giữa
+			bar.ForeColor = color;
+			
+			bar.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
 
-        private Control BuildColumnPanel(System.Collections.Generic.List<QuestionReview> list)
-        {
-            var panel = new Panel
-            {
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                Dock = DockStyle.Fill
-            };
+			// Xóa các nhãn cũ nếu có để tránh ghi đè khi gọi lại
+			foreach (Control c in panelMainContent.Controls)
+			{
+				if (c is Label && c.Tag?.ToString() == bar.Name)
+				{
+					panelMainContent.Controls.Remove(c); break;
+				}
+			}
 
-            int y = 0;
-            foreach (var q in list)
-            {
-                var row = new AnswerRowPanel();
-                row.Bind(q);
-                row.Location = new Point(0, y);
-                panel.Controls.Add(row);
-                y += row.Height;
-            }
+			// Thêm chữ trang trí bên dưới vòng tròn
+			Label lbl = new Label
+			{
+				Text = subTitle,
+				Font = new Font("Segoe UI", 9F),
+				ForeColor = Color.Gray,
+				TextAlign = ContentAlignment.MiddleCenter,
+				Location = new Point(bar.Location.X, bar.Location.Y + bar.Height + 5),
+				Size = new Size(bar.Width, 20),
+				Tag = bar.Name
+			};
+			panelMainContent.Controls.Add(lbl);
+		}
+		private void progressCorrect_ValueChanged(object sender, int value)
+		{
 
-            return panel;
-        }
-    }
+		}
+	}
 }

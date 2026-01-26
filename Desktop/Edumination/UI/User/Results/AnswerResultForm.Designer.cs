@@ -7,182 +7,195 @@ namespace IELTS.UI.User.Results
     partial class AnswerResultForm
     {
         private System.ComponentModel.IContainer components = null;
-
+        private UIPanel panelSidebar;
+        private Panel panelMainContent;
         private PictureBox picAvatar;
         private Label lblUserName;
-        private Label lblTitleResult;
-
-        private Label lblCorrectMain;
-        private Label lblBandMain;
-        private Label lblTimeMain;
-
-        private Label lblCorrectLabel;
-        private Label lblBandLabel;
-        private Label lblTimeLabel;
-
-        private Label lblAnswerKeysTitle;
-        private Panel panelAnswerKeys;
+        private Label lblResultTitle;
+        private Sunny.UI.UIRoundProcess progressCorrect;
+        private Sunny.UI.UIRoundProcess progressBand;
+        private Sunny.UI.UIRoundProcess progressTime;
+        private FlowLayoutPanel flowPanelAnswers;
 
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
+            {
                 components.Dispose();
+            }
             base.Dispose(disposing);
         }
 
-        private void InitializeComponent()
+		private void InitializeComponent()
+		{
+			panelSidebar = new UIPanel();
+			picAvatar = new PictureBox();
+			lblUserName = new Label();
+			panelMainContent = new Panel();
+			lblResultTitle = new Label();
+			progressCorrect = new UIRoundProcess();
+			progressBand = new UIRoundProcess();
+			progressTime = new UIRoundProcess();
+			flowPanelAnswers = new FlowLayoutPanel();
+			panelSidebar.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)picAvatar).BeginInit();
+			panelMainContent.SuspendLayout();
+			SuspendLayout();
+			// 
+			// panelSidebar
+			// 
+			panelSidebar.Controls.Add(picAvatar);
+			panelSidebar.Controls.Add(lblUserName);
+			panelSidebar.Dock = DockStyle.Left;
+			panelSidebar.FillColor = Color.FromArgb(240, 248, 255);
+			panelSidebar.Font = new Font("Microsoft Sans Serif", 12F);
+			panelSidebar.Location = new Point(0, 0);
+			panelSidebar.Margin = new Padding(4, 6, 4, 6);
+			panelSidebar.MinimumSize = new Size(1, 1);
+			panelSidebar.Name = "panelSidebar";
+			panelSidebar.RectColor = Color.FromArgb(200, 200, 200);
+			panelSidebar.Size = new Size(300, 1000);
+			panelSidebar.Style = UIStyle.Custom;
+			panelSidebar.TabIndex = 1;
+			panelSidebar.Text = null;
+			panelSidebar.TextAlignment = ContentAlignment.MiddleCenter;
+			// 
+			// picAvatar
+			// 
+			picAvatar.BackColor = Color.LightGray;
+			picAvatar.Location = new Point(75, 40);
+			picAvatar.Name = "picAvatar";
+			picAvatar.Size = new Size(150, 150);
+			picAvatar.SizeMode = PictureBoxSizeMode.Zoom;
+			picAvatar.TabIndex = 0;
+			picAvatar.TabStop = false;
+			// 
+			// lblUserName
+			// 
+			lblUserName.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+			lblUserName.ForeColor = Color.FromArgb(0, 102, 204);
+			lblUserName.Location = new Point(20, 210);
+			lblUserName.Name = "lblUserName";
+			lblUserName.Size = new Size(260, 30);
+			lblUserName.TabIndex = 1;
+			lblUserName.Text = "Student Name";
+			lblUserName.TextAlign = ContentAlignment.MiddleCenter;
+			// 
+			// panelMainContent
+			// 
+			panelMainContent.AutoScroll = true;
+			panelMainContent.BackColor = Color.White;
+			panelMainContent.Controls.Add(lblResultTitle);
+			panelMainContent.Controls.Add(progressCorrect);
+			panelMainContent.Controls.Add(progressBand);
+			panelMainContent.Controls.Add(progressTime);
+			panelMainContent.Controls.Add(flowPanelAnswers);
+			panelMainContent.Dock = DockStyle.Fill;
+			panelMainContent.Location = new Point(300, 0);
+			panelMainContent.Margin = new Padding(3, 4, 3, 4);
+			panelMainContent.Name = "panelMainContent";
+			panelMainContent.Size = new Size(900, 1000);
+			panelMainContent.TabIndex = 0;
+			// 
+			// lblResultTitle
+			// 
+			lblResultTitle.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
+			lblResultTitle.ForeColor = Color.FromArgb(0, 102, 204);
+			lblResultTitle.Location = new Point(50, 38);
+			lblResultTitle.Name = "lblResultTitle";
+			lblResultTitle.Size = new Size(400, 50);
+			lblResultTitle.TabIndex = 0;
+			lblResultTitle.Text = "Your Test Results";
+			// 
+			// progressCorrect
+			// 
+			progressCorrect.Font = new Font("Microsoft Sans Serif", 12F);
+			progressCorrect.ForeColor2 = Color.Black;
+			progressCorrect.Location = new Point(489, 127);
+			progressCorrect.Margin = new Padding(3, 4, 3, 4);
+			progressCorrect.MinimumSize = new Size(1, 1);
+			progressCorrect.Name = "progressCorrect";
+			progressCorrect.Size = new Size(120, 150);
+			progressCorrect.TabIndex = 1;
+			progressCorrect.ValueChanged += progressCorrect_ValueChanged;
+			// 
+			// progressBand
+			// 
+			progressBand.Font = new Font("Microsoft Sans Serif", 12F);
+			progressBand.ForeColor2 = Color.Black;
+			progressBand.Location = new Point(262, 127);
+			progressBand.Margin = new Padding(3, 4, 3, 4);
+			progressBand.MinimumSize = new Size(1, 1);
+			progressBand.Name = "progressBand";
+			progressBand.Size = new Size(120, 150);
+			progressBand.TabIndex = 2;
+			// 
+			// progressTime
+			// 
+			progressTime.Font = new Font("Microsoft Sans Serif", 12F);
+			progressTime.ForeColor2 = Color.Black;
+			progressTime.Location = new Point(34, 127);
+			progressTime.Margin = new Padding(3, 4, 3, 4);
+			progressTime.MinimumSize = new Size(1, 1);
+			progressTime.Name = "progressTime";
+			progressTime.ShowProcess = true;
+			progressTime.Size = new Size(120, 150);
+			progressTime.TabIndex = 3;
+			progressTime.TextAlign = ContentAlignment.BottomCenter;
+			// 
+			// flowPanelAnswers
+			// 
+			flowPanelAnswers.AutoScroll = true;
+			flowPanelAnswers.BackColor = Color.FromArgb(245, 247, 250);
+			flowPanelAnswers.BorderStyle = BorderStyle.FixedSingle;
+			flowPanelAnswers.Location = new Point(50, 438);
+			flowPanelAnswers.Margin = new Padding(3, 4, 3, 4);
+			flowPanelAnswers.Name = "flowPanelAnswers";
+			flowPanelAnswers.Padding = new Padding(15, 19, 15, 19);
+			flowPanelAnswers.Size = new Size(950, 562);
+			flowPanelAnswers.TabIndex = 4;
+			// 
+			// AnswerResultForm
+			// 
+			AutoScaleDimensions = new SizeF(8F, 20F);
+			AutoScaleMode = AutoScaleMode.Font;
+			ClientSize = new Size(1200, 1000);
+			Controls.Add(panelMainContent);
+			Controls.Add(panelSidebar);
+			Margin = new Padding(3, 4, 3, 4);
+			Name = "AnswerResultForm";
+			Text = "IELTS Test Results";
+			Load += AnswerResultForm_Load;
+			panelSidebar.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)picAvatar).EndInit();
+			panelMainContent.ResumeLayout(false);
+			ResumeLayout(false);
+		}
+
+		private void SetupCircularProgress(UIRoundProcess bar, int x, int y, string text, int val)
         {
-            picAvatar = new PictureBox();
-            lblUserName = new Label();
-            lblTitleResult = new Label();
-            lblCorrectMain = new Label();
-            lblBandMain = new Label();
-            lblTimeMain = new Label();
-            lblCorrectLabel = new Label();
-            lblBandLabel = new Label();
-            lblTimeLabel = new Label();
-            lblAnswerKeysTitle = new Label();
-            panelAnswerKeys = new Panel();
-            ((System.ComponentModel.ISupportInitialize)picAvatar).BeginInit();
-            SuspendLayout();
-            // 
-            // picAvatar
-            // 
-            picAvatar.Location = new Point(829, 49);
-            picAvatar.Margin = new Padding(3, 4, 3, 4);
-            picAvatar.Name = "picAvatar";
-            picAvatar.Size = new Size(126, 147);
-            picAvatar.SizeMode = PictureBoxSizeMode.Zoom;
-            picAvatar.TabIndex = 0;
-            picAvatar.TabStop = false;
-            // 
-            // lblUserName
-            // 
-            lblUserName.AutoSize = true;
-            lblUserName.Font = new Font("Segoe UI", 11F);
-            lblUserName.Location = new Point(829, 200);
-            lblUserName.Name = "lblUserName";
-            lblUserName.Size = new Size(131, 25);
-            lblUserName.TabIndex = 1;
-            lblUserName.Text = "Student Name";
-            // 
-            // lblTitleResult
-            // 
-            lblTitleResult.AutoSize = true;
-            lblTitleResult.Font = new Font("Segoe UI", 26F, FontStyle.Bold);
-            lblTitleResult.ForeColor = Color.FromArgb(39, 56, 146);
-            lblTitleResult.Location = new Point(737, 247);
-            lblTitleResult.Name = "lblTitleResult";
-            lblTitleResult.Size = new Size(335, 60);
-            lblTitleResult.TabIndex = 2;
-            lblTitleResult.Text = "Reading Result";
-            // 
-            // lblCorrectMain
-            // 
-            lblCorrectMain.AutoSize = true;
-            lblCorrectMain.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblCorrectMain.Location = new Point(632, 399);
-            lblCorrectMain.Name = "lblCorrectMain";
-            lblCorrectMain.Size = new Size(77, 37);
-            lblCorrectMain.TabIndex = 4;
-            lblCorrectMain.Text = "0/40";
-            // 
-            // lblBandMain
-            // 
-            lblBandMain.AutoSize = true;
-            lblBandMain.Font = new Font("Segoe UI", 26F, FontStyle.Bold);
-            lblBandMain.Location = new Point(878, 392);
-            lblBandMain.Name = "lblBandMain";
-            lblBandMain.Size = new Size(50, 60);
-            lblBandMain.TabIndex = 6;
-            lblBandMain.Text = "0";
-            // 
-            // lblTimeMain
-            // 
-            lblTimeMain.AutoSize = true;
-            lblTimeMain.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblTimeMain.Location = new Point(1064, 399);
-            lblTimeMain.Name = "lblTimeMain";
-            lblTimeMain.Size = new Size(88, 37);
-            lblTimeMain.TabIndex = 8;
-            lblTimeMain.Text = "00:00";
-            // 
-            // lblCorrectLabel
-            // 
-            lblCorrectLabel.AutoSize = true;
-            lblCorrectLabel.Font = new Font("Segoe UI", 12F);
-            lblCorrectLabel.Location = new Point(632, 359);
-            lblCorrectLabel.Name = "lblCorrectLabel";
-            lblCorrectLabel.Size = new Size(76, 28);
-            lblCorrectLabel.TabIndex = 3;
-            lblCorrectLabel.Text = "Correct";
-            // 
-            // lblBandLabel
-            // 
-            lblBandLabel.AutoSize = true;
-            lblBandLabel.Font = new Font("Segoe UI", 12F);
-            lblBandLabel.Location = new Point(861, 359);
-            lblBandLabel.Name = "lblBandLabel";
-            lblBandLabel.Size = new Size(123, 28);
-            lblBandLabel.TabIndex = 5;
-            lblBandLabel.Text = "Total Correct";
-            // 
-            // lblTimeLabel
-            // 
-            lblTimeLabel.AutoSize = true;
-            lblTimeLabel.Font = new Font("Segoe UI", 12F);
-            lblTimeLabel.Location = new Point(1078, 359);
-            lblTimeLabel.Name = "lblTimeLabel";
-            lblTimeLabel.Size = new Size(54, 28);
-            lblTimeLabel.TabIndex = 7;
-            lblTimeLabel.Text = "Time";
-            // 
-            // lblAnswerKeysTitle
-            // 
-            lblAnswerKeysTitle.AutoSize = true;
-            lblAnswerKeysTitle.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
-            lblAnswerKeysTitle.ForeColor = Color.FromArgb(39, 56, 146);
-            lblAnswerKeysTitle.Location = new Point(137, 480);
-            lblAnswerKeysTitle.Name = "lblAnswerKeysTitle";
-            lblAnswerKeysTitle.Size = new Size(164, 35);
-            lblAnswerKeysTitle.TabIndex = 9;
-            lblAnswerKeysTitle.Text = "Answer Keys";
-            // 
-            // panelAnswerKeys
-            // 
-            panelAnswerKeys.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            panelAnswerKeys.AutoScroll = true;
-            panelAnswerKeys.BackColor = Color.White;
-            panelAnswerKeys.Location = new Point(164, 533);
-            panelAnswerKeys.Margin = new Padding(3, 4, 3, 4);
-            panelAnswerKeys.Name = "panelAnswerKeys";
-            panelAnswerKeys.Size = new Size(1429, 453);
-            panelAnswerKeys.TabIndex = 10;
-            // 
-            // AnswerResultForm
-            // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.White;
-            ClientSize = new Size(1691, 1055);
-            Controls.Add(picAvatar);
-            Controls.Add(lblUserName);
-            Controls.Add(lblTitleResult);
-            Controls.Add(lblCorrectLabel);
-            Controls.Add(lblCorrectMain);
-            Controls.Add(lblBandLabel);
-            Controls.Add(lblBandMain);
-            Controls.Add(lblTimeLabel);
-            Controls.Add(lblTimeMain);
-            Controls.Add(lblAnswerKeysTitle);
-            Controls.Add(panelAnswerKeys);
-            Margin = new Padding(3, 4, 3, 4);
-            Name = "AnswerResultForm";
-            Text = "Test Result";
-            Load += AnswerResultForm_Load;
-            ((System.ComponentModel.ISupportInitialize)picAvatar).EndInit();
-            ResumeLayout(false);
-            PerformLayout();
+            bar.Location = new Point(x, y);
+            bar.Size = new Size(150, 150);
+            bar.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            bar.Text = text;
+            bar.Value = val;
+            bar.Style = UIStyle.Custom;
+            bar.ForeColor = Color.FromArgb(80, 190, 240);
+            bar.BackColor = Color.White;
         }
+
+        private void AddStatLabel(string text, int x, int y)
+        {
+            Label lbl = new Label();
+            lbl.Text = text;
+            lbl.Location = new Point(x, y);
+            lbl.Size = new Size(150, 25);
+            lbl.TextAlign = ContentAlignment.MiddleCenter;
+            lbl.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+            lbl.ForeColor = Color.Gray;
+            this.panelMainContent.Controls.Add(lbl);
+        }
+
+       
     }
 }

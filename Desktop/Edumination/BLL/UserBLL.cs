@@ -106,9 +106,14 @@ namespace IELTS.BLL
                     Role = row["Role"].ToString(),
                     IsActive = Convert.ToBoolean(row["IsActive"])
                 };
-
-                // Tạo JWT token
-                string token = JwtHelper.GenerateToken(user);
+				// Chèn vào ngay sau dòng: FullName = row["FullName"].ToString()
+				Console.WriteLine($"[DEBUG BLL] Tên lấy từ DB: '{row["FullName"]}'");
+				if (string.IsNullOrEmpty(user.FullName))
+				{
+					MessageBox.Show("Cảnh báo: Tên trong BLL đang bị rỗng!");
+				}
+				// Tạo JWT token
+				string token = JwtHelper.GenerateToken(user);
 
                 // Trả về response thành công
                 return new LoginResponseDTO(
@@ -222,6 +227,7 @@ namespace IELTS.BLL
 
                 // Lấy thông tin user
                 string fullName = result.Rows[0]["FullName"].ToString();
+
 
                 // Tạo mã OTP
                 string otpCode = OtpManager.GenerateOtp();

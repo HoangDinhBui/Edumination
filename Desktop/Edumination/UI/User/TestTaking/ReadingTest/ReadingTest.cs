@@ -237,48 +237,99 @@ namespace IELTS.UI.User.TestTaking.ReadingTest
         // ================================
         private void SubmitTest()
         {
-            // 1. Tạo đối tượng ExamResult
-            var finalResult = new ExamResult
+			string currentName = IELTS.UI.User.SessionManager.FullName;
+			// DEBUG: Nếu vẫn ra "Student", hãy gán cứng tên từ DB để kiểm tra giao diện trước
+			if (currentName == "Student")
+			{
+				currentName = "Trần Tú"; // Thay bằng logic lấy từ DB nếu cần
+			}
+			var finalResult = new ExamResult
             {
                 Skill = "Reading",
-                UserName = SessionManager.FullName,
-               
-                TimeTakenSeconds = 3600 - _remainingSeconds, // Tổng 60p - thời gian còn lại
+                UserName = currentName, // ✅ Đảm bảo có giá trị
+                TimeTakenSeconds = 3600 - _remainingSeconds,
                 TotalQuestions = _questions.Count,
                 Parts = new List<PartReview>()
             };
 
-            // 2. Gom nhóm câu hỏi theo Part (Giả sử mỗi Part 10 câu)
+            // ✅ KIỂM TRA: In ra console để debug
+            System.Diagnostics.Debug.WriteLine($"Total Questions: {_questions.Count}");
+            System.Diagnostics.Debug.WriteLine($"User Answers Count: {_userAnswers.Count}");
+
+            // Gom nhóm theo Part
             for (int p = 1; p <= 4; p++)
             {
-                var part = new PartReview { PartName = $"Part {p}", Questions = new List<QuestionReview>() };
+                var part = new PartReview
+                {
+                    PartName = $"Part {p}",
+                    Questions = new List<QuestionReview>()
+                };
 
-                // Lấy các câu hỏi thuộc Part này (ví dụ câu 1-10 là Part 1)
                 var partQuestions = _questions.Skip((p - 1) * 10).Take(10).ToList();
 
                 foreach (var q in partQuestions)
                 {
                     _userAnswers.TryGetValue(q.Id, out string userAns);
                     string correctAns = GetCorrectAnswerFromDB(q.Id);
-                    bool isCorrect = string.Equals(userAns?.Trim(), correctAns?.Trim(), StringComparison.OrdinalIgnoreCase);
 
-                    if (isCorrect) finalResult.CorrectCount++;
+                    bool isCorrect = string.Equals(
+                        userAns?.Trim(),
+                        correctAns?.Trim(),
+                        StringComparison.OrdinalIgnoreCase
+                    );
+
+                    if (isCorrect)
+                        finalResult.CorrectCount++;
+
+                    // ✅ DEBUG: In từng câu hỏi
+                    System.Diagnostics.Debug.WriteLine(
+                        $"Q{_questions.IndexOf(q) + 1}: User={userAns ?? "EMPTY"} | " +
+                        $"Correct={correctAns ?? "EMPTY"} | Match={isCorrect}"
+                    );
 
                     part.Questions.Add(new QuestionReview
                     {
                         Number = _questions.IndexOf(q) + 1,
-                        UserAnswer = userAns ?? "",
-                        CorrectAnswer = correctAns,
+                        UserAnswer = string.IsNullOrEmpty(userAns) ? "" : userAns, // ✅ Hiển thị rõ
+                        CorrectAnswer = correctAns ?? "N/A",
                         IsCorrect = isCorrect
                     });
                 }
+
                 finalResult.Parts.Add(part);
             }
 
-            // 3. Mở trang kết quả bạn đã viết
+            // Tính Band Score
+            finalResult.Band = CalculateBandScore(finalResult.CorrectCount);
+
+            // ✅ DEBUG: In kết quả cuối
+            System.Diagnostics.Debug.WriteLine($"=== FINAL RESULT ===");
+            System.Diagnostics.Debug.WriteLine($"Correct: {finalResult.CorrectCount}/{finalResult.TotalQuestions}");
+            System.Diagnostics.Debug.WriteLine($"Band: {finalResult.Band}");
+            System.Diagnostics.Debug.WriteLine($"Time: {finalResult.TimeTakenSeconds}s");
+
+            // Mở form kết quả
             AnswerResultForm resultForm = new AnswerResultForm(finalResult);
             resultForm.Show();
             this.Close();
+        }
+        private double CalculateBandScore(int correctAnswers)
+        {
+            if (correctAnswers >= 39) return 9.0;
+            if (correctAnswers >= 37) return 8.5;
+            if (correctAnswers >= 35) return 8.0;
+            if (correctAnswers >= 33) return 7.5;
+            if (correctAnswers >= 30) return 7.0;
+            if (correctAnswers >= 27) return 6.5;
+            if (correctAnswers >= 23) return 6.0;
+            if (correctAnswers >= 19) return 5.5;
+            if (correctAnswers >= 15) return 5.0;
+            if (correctAnswers >= 13) return 4.5;
+            if (correctAnswers >= 10) return 4.0;
+            if (correctAnswers >= 8) return 3.5;
+            if (correctAnswers >= 6) return 3.0;
+            if (correctAnswers >= 4) return 2.5;
+            return 0.0;
         }
 
         private void LoadQuestionsFromDatabase()

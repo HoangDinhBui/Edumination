@@ -66,8 +66,13 @@ namespace IELTS.UI.Login
             {
                 // Gọi API Login (sử dụng BLL trực tiếp)
                 LoginResponseDTO response = userBLL.LoginWithToken(email, password);
+				if (response.Success)
+				{
+					// Kiểm tra tên trong đối tượng UserDTO trước khi lưu vào Session
+					Console.WriteLine($"[DEBUG LOGIN] Tên từ Response: {response.User.FullName}");
+				}
 
-                if (response.Success)
+				if (response.Success)
                 {
                     // Lưu thông tin vào SessionManager
                     SaveToSession(response);
