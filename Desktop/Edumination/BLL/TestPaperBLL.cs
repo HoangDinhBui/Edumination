@@ -55,32 +55,43 @@ namespace IELTS.BLL
             return paperDAL.DeletePaper(paperId);
         }
 
-        public bool CreateTestPaper(string title, string description, long createdBy, string pdfFullPath)
-        {
-            if (!File.Exists(pdfFullPath))
-                throw new FileNotFoundException("File PDF không tồn tại.", pdfFullPath);
+		public bool CreateTestPaper(string title, string description, long createdBy, string pdfFullPath)
+		{
+			if (string.IsNullOrWhiteSpace(title))
+				throw new Exception("Tiêu đề không được để trống!");
 
-            // Tạo code đề tự động: TP + timestamp
-            string code = "TP" + DateTime.Now.ToString("yyyyMMddHHmmss");
+			if (createdBy <= 0)
+				throw new Exception("Người tạo không hợp lệ!");
 
-            // Tên file
-            string pdfFileName = Path.GetFileName(pdfFullPath);
+			if (!File.Exists(pdfFullPath))
+				throw new FileNotFoundException("File PDF không tồn tại.", pdfFullPath);
 
-            // Đường dẫn lưu trong assets
-            string uploadFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UI", "assets");
-            if (!Directory.Exists(uploadFolder))
-                Directory.CreateDirectory(uploadFolder);
+			// ✅ Tạo code đề tự động
+			string code = "TP" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
-            string pdfFilePath = Path.Combine(uploadFolder, pdfFileName);
+			// ✅ Lấy tên file từ path (file đã được copy bởi UI)
+			string pdfFileName = Path.GetFileName(pdfFullPath);
 
-            // Copy file vào assets
-            File.Copy(pdfFullPath, pdfFilePath, true);
+			// ✅ KHÔNG copy file nữa, vì UI đã copy rồi
+			// Chỉ cần lưu thông tin vào database
 
-            // Gọi DAL lưu vào database
-            return paperDAL.CreateTestPaper(code, title, description, createdBy, pdfFileName, pdfFilePath);
-        }
+			System.Diagnostics.Debug.WriteLine($"=== CreateTestPaper ===");
+			System.Diagnostics.Debug.WriteLine($"Code: {code}");
+			System.Diagnostics.Debug.WriteLine($"Title: {title}");
+			System.Diagnostics.Debug.WriteLine($"PdfFileName: {pdfFileName}");
+			System.Diagnostics.Debug.WriteLine($"PdfFilePath: {pdfFullPath}");
+			System.Diagnostics.Debug.WriteLine($"CreatedBy: {createdBy}");
 
-        public List<TestPaperDTO> GetAll()
+			// ✅ Gọi DAL lưu vào database
+			bool result = paperDAL.CreateTestPaper(code, title, description, createdBy, pdfFileName, pdfFullPath);
+
+			System.Diagnostics.Debug.WriteLine($"Result: {result}");
+			System.Diagnostics.Debug.WriteLine($"======================");
+
+			return result;
+		}
+
+		public List<TestPaperDTO> GetAll()
         {
             var papers = paperDAL.GetAllTestPapers();
 
