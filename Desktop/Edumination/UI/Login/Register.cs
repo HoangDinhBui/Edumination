@@ -69,6 +69,14 @@ namespace IELTS.UI.Login
         {
             this.WindowState = FormWindowState.Maximized;
         }
+
+        private void lnkBackToLogin_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            new SignIn().Show();
+            this.Close();
+        }
+
     }
 
 

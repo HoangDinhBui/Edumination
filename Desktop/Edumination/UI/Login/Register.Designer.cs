@@ -1,201 +1,307 @@
-﻿namespace IELTS.UI.Login
+﻿using Sunny.UI;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace IELTS.UI.Login
 {
     partial class Register
     {
         private System.ComponentModel.IContainer components = null;
 
-        private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.Label lblFullName;
-        private System.Windows.Forms.TextBox txtFullName;
-        private System.Windows.Forms.Label lblEmail;
-        private System.Windows.Forms.TextBox txtEmail;
-        private System.Windows.Forms.Label lblPassword;
-        private System.Windows.Forms.TextBox txtPassword;
-        private System.Windows.Forms.Label lblConfirmPassword;
-        private System.Windows.Forms.TextBox txtConfirmPassword;
-        private System.Windows.Forms.Button btnRegister;
+        private UIPanel panelRegister;
+
+        private UILabel lblTitle;
+        private UILabel lblSub;
+
+        private PictureBox picFullName;
+        private UITextBox txtFullName;
+
+        private PictureBox picEmail;
+        private UITextBox txtEmail;
+
+        private PictureBox picPassword;
+        private UITextBox txtPassword;
+
+        private PictureBox picConfirmPassword;
+        private UITextBox txtConfirmPassword;
+
+        private UIButton btnRegister;
+        private UILinkLabel lnkBackToLogin;
+
+        // ===== GIỮ SLIDE (ẨN – KHÔNG XOÁ LOGIC) =====
+        private PictureBox pictureBoxSlide;
+        private Panel panelDots;
         private System.Windows.Forms.Timer timerSlide;
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null)) components.Dispose();
+            if (disposing && (components != null))
+                components.Dispose();
             base.Dispose(disposing);
         }
-
-        #region Windows Form Designer generated code
 
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            lblTitle = new Label();
-            lblFullName = new Label();
-            txtFullName = new TextBox();
-            lblEmail = new Label();
-            txtEmail = new TextBox();
-            lblPassword = new Label();
-            txtPassword = new TextBox();
-            lblConfirmPassword = new Label();
-            txtConfirmPassword = new TextBox();
-            btnRegister = new Button();
-            panel1 = new Panel();
+            panelRegister = new UIPanel();
+            lblTitle = new UILabel();
+            lblSub = new UILabel();
+            picFullName = new PictureBox();
+            txtFullName = new UITextBox();
+            picEmail = new PictureBox();
+            txtEmail = new UITextBox();
+            picPassword = new PictureBox();
+            txtPassword = new UITextBox();
+            picConfirmPassword = new PictureBox();
+            txtConfirmPassword = new UITextBox();
+            btnRegister = new UIButton();
+            lnkBackToLogin = new UILinkLabel();
             pictureBoxSlide = new PictureBox();
             panelDots = new Panel();
             timerSlide = new System.Windows.Forms.Timer(components);
-            panel1.SuspendLayout();
+            panelRegister.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)picFullName).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picEmail).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picPassword).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picConfirmPassword).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSlide).BeginInit();
             SuspendLayout();
             // 
+            // panelRegister
+            // 
+            panelRegister.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            panelRegister.Controls.Add(lblTitle);
+            panelRegister.Controls.Add(lblSub);
+            panelRegister.Controls.Add(picFullName);
+            panelRegister.Controls.Add(txtFullName);
+            panelRegister.Controls.Add(picEmail);
+            panelRegister.Controls.Add(txtEmail);
+            panelRegister.Controls.Add(picPassword);
+            panelRegister.Controls.Add(txtPassword);
+            panelRegister.Controls.Add(picConfirmPassword);
+            panelRegister.Controls.Add(txtConfirmPassword);
+            panelRegister.Controls.Add(btnRegister);
+            panelRegister.Controls.Add(lnkBackToLogin);
+            panelRegister.FillColor = Color.White;
+            panelRegister.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            panelRegister.Location = new Point(1080, 48);
+            panelRegister.Margin = new Padding(4, 5, 4, 5);
+            panelRegister.MinimumSize = new Size(1, 1);
+            panelRegister.Name = "panelRegister";
+            panelRegister.Padding = new Padding(30);
+            panelRegister.Radius = 0;
+            panelRegister.RectSides = ToolStripStatusLabelBorderSides.None;
+            panelRegister.Size = new Size(685, 899);
+            panelRegister.TabIndex = 0;
+            panelRegister.Text = null;
+            panelRegister.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
             // lblTitle
             // 
-            lblTitle.Font = new Font("Microsoft Sans Serif", 20F, FontStyle.Bold);
-            lblTitle.ForeColor = Color.FromArgb(80, 160, 255);
-            lblTitle.Location = new Point(160, 235);
+            lblTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblTitle.Dock = DockStyle.Top;
+            lblTitle.Font = new Font("Paytone One", 28F);
+            lblTitle.ForeColor = Color.DodgerBlue;
+            lblTitle.Location = new Point(30, 70);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(440, 50);
+            lblTitle.Size = new Size(625, 75);
             lblTitle.TabIndex = 0;
-            lblTitle.Text = "📝 ĐĂNG KÝ TÀI KHOẢN";
+            lblTitle.Text = "EDUMINATION";
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // lblFullName
+            // lblSub
             // 
-            lblFullName.Location = new Point(182, 307);
-            lblFullName.Name = "lblFullName";
-            lblFullName.Size = new Size(400, 25);
-            lblFullName.TabIndex = 1;
-            lblFullName.Text = "Họ và tên:";
+            lblSub.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblSub.Dock = DockStyle.Top;
+            lblSub.Font = new Font("Segoe UI", 13F);
+            lblSub.ForeColor = Color.Gray;
+            lblSub.Location = new Point(30, 30);
+            lblSub.Name = "lblSub";
+            lblSub.Size = new Size(625, 40);
+            lblSub.TabIndex = 1;
+            lblSub.Text = "Create your account 🚀";
+            lblSub.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // picFullName
+            // 
+            picFullName.BackColor = Color.FromArgb(0, 0, 0, 0);
+            picFullName.BackgroundImage = Properties.Resources.userIcon;
+            picFullName.Location = new Point(60, 215);
+            picFullName.Name = "picFullName";
+            picFullName.Size = new Size(45, 45);
+            picFullName.SizeMode = PictureBoxSizeMode.Zoom;
+            picFullName.TabIndex = 2;
+            picFullName.TabStop = false;
             // 
             // txtFullName
             // 
-            txtFullName.Location = new Point(182, 337);
+            txtFullName.Font = new Font("Segoe UI", 11F);
+            txtFullName.Location = new Point(134, 208);
+            txtFullName.Margin = new Padding(4, 5, 4, 5);
+            txtFullName.MinimumSize = new Size(1, 16);
             txtFullName.Name = "txtFullName";
-            txtFullName.Size = new Size(400, 27);
-            txtFullName.TabIndex = 2;
+            txtFullName.Padding = new Padding(6);
+            txtFullName.Radius = 8;
+            txtFullName.RectColor = Color.FromArgb(220, 224, 229);
+            txtFullName.RectSides = ToolStripStatusLabelBorderSides.Bottom;
+            txtFullName.ShowText = false;
+            txtFullName.Size = new Size(479, 59);
+            txtFullName.TabIndex = 3;
+            txtFullName.TextAlignment = ContentAlignment.MiddleLeft;
+            txtFullName.Watermark = "Họ và tên";
             // 
-            // lblEmail
+            // picEmail
             // 
-            lblEmail.Location = new Point(182, 397);
-            lblEmail.Name = "lblEmail";
-            lblEmail.Size = new Size(400, 25);
-            lblEmail.TabIndex = 3;
-            lblEmail.Text = "Email:";
+            picEmail.BackColor = Color.FromArgb(0, 0, 0, 0);
+            picEmail.BackgroundImage = Properties.Resources.emailIcon;
+            picEmail.Location = new Point(60, 307);
+            picEmail.Name = "picEmail";
+            picEmail.Size = new Size(45, 45);
+            picEmail.SizeMode = PictureBoxSizeMode.Zoom;
+            picEmail.TabIndex = 4;
+            picEmail.TabStop = false;
             // 
             // txtEmail
             // 
-            txtEmail.Location = new Point(182, 427);
+            txtEmail.Font = new Font("Segoe UI", 11F);
+            txtEmail.Location = new Point(134, 299);
+            txtEmail.Margin = new Padding(4, 5, 4, 5);
+            txtEmail.MinimumSize = new Size(1, 16);
             txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(400, 27);
-            txtEmail.TabIndex = 4;
+            txtEmail.Padding = new Padding(6);
+            txtEmail.Radius = 8;
+            txtEmail.RectColor = Color.FromArgb(220, 224, 229);
+            txtEmail.RectSides = ToolStripStatusLabelBorderSides.Bottom;
+            txtEmail.ShowText = false;
+            txtEmail.Size = new Size(479, 59);
+            txtEmail.TabIndex = 5;
+            txtEmail.TextAlignment = ContentAlignment.MiddleLeft;
+            txtEmail.Watermark = "Email";
             // 
-            // lblPassword
+            // picPassword
             // 
-            lblPassword.Location = new Point(182, 487);
-            lblPassword.Name = "lblPassword";
-            lblPassword.Size = new Size(400, 25);
-            lblPassword.TabIndex = 5;
-            lblPassword.Text = "Mật khẩu:";
+            picPassword.BackColor = Color.FromArgb(0, 0, 0, 0);
+            picPassword.BackgroundImage = Properties.Resources.passwordIcon;
+            picPassword.Location = new Point(60, 397);
+            picPassword.Name = "picPassword";
+            picPassword.Size = new Size(45, 45);
+            picPassword.SizeMode = PictureBoxSizeMode.Zoom;
+            picPassword.TabIndex = 6;
+            picPassword.TabStop = false;
             // 
             // txtPassword
             // 
-            txtPassword.Location = new Point(182, 517);
+            txtPassword.Font = new Font("Segoe UI", 11F);
+            txtPassword.Location = new Point(134, 388);
+            txtPassword.Margin = new Padding(4, 5, 4, 5);
+            txtPassword.MinimumSize = new Size(1, 16);
             txtPassword.Name = "txtPassword";
+            txtPassword.Padding = new Padding(6);
             txtPassword.PasswordChar = '●';
-            txtPassword.Size = new Size(400, 27);
-            txtPassword.TabIndex = 6;
+            txtPassword.Radius = 8;
+            txtPassword.RectColor = Color.FromArgb(220, 224, 229);
+            txtPassword.RectSides = ToolStripStatusLabelBorderSides.Bottom;
+            txtPassword.ShowText = false;
+            txtPassword.Size = new Size(479, 59);
+            txtPassword.TabIndex = 7;
+            txtPassword.TextAlignment = ContentAlignment.MiddleLeft;
+            txtPassword.Watermark = "Mật khẩu";
             // 
-            // lblConfirmPassword
+            // picConfirmPassword
             // 
-            lblConfirmPassword.Location = new Point(182, 577);
-            lblConfirmPassword.Name = "lblConfirmPassword";
-            lblConfirmPassword.Size = new Size(400, 25);
-            lblConfirmPassword.TabIndex = 7;
-            lblConfirmPassword.Text = "Xác nhận mật khẩu:";
+            picConfirmPassword.BackColor = Color.FromArgb(0, 0, 0, 0);
+            picConfirmPassword.BackgroundImage = Properties.Resources.passwordIcon;
+            picConfirmPassword.Location = new Point(60, 485);
+            picConfirmPassword.Name = "picConfirmPassword";
+            picConfirmPassword.Size = new Size(45, 45);
+            picConfirmPassword.SizeMode = PictureBoxSizeMode.Zoom;
+            picConfirmPassword.TabIndex = 8;
+            picConfirmPassword.TabStop = false;
             // 
             // txtConfirmPassword
             // 
-            txtConfirmPassword.Location = new Point(182, 607);
+            txtConfirmPassword.Font = new Font("Segoe UI", 11F);
+            txtConfirmPassword.Location = new Point(134, 477);
+            txtConfirmPassword.Margin = new Padding(4, 5, 4, 5);
+            txtConfirmPassword.MinimumSize = new Size(1, 16);
             txtConfirmPassword.Name = "txtConfirmPassword";
+            txtConfirmPassword.Padding = new Padding(6);
             txtConfirmPassword.PasswordChar = '●';
-            txtConfirmPassword.Size = new Size(400, 27);
-            txtConfirmPassword.TabIndex = 8;
+            txtConfirmPassword.Radius = 8;
+            txtConfirmPassword.RectColor = Color.FromArgb(220, 224, 229);
+            txtConfirmPassword.RectSides = ToolStripStatusLabelBorderSides.Bottom;
+            txtConfirmPassword.ShowText = false;
+            txtConfirmPassword.Size = new Size(479, 59);
+            txtConfirmPassword.TabIndex = 9;
+            txtConfirmPassword.TextAlignment = ContentAlignment.MiddleLeft;
+            txtConfirmPassword.Watermark = "Xác nhận mật khẩu";
             // 
             // btnRegister
             // 
-            btnRegister.BackColor = Color.FromArgb(80, 160, 255);
-            btnRegister.FlatAppearance.BorderSize = 0;
-            btnRegister.FlatStyle = FlatStyle.Flat;
-            btnRegister.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold);
-            btnRegister.ForeColor = Color.White;
-            btnRegister.Location = new Point(182, 677);
+            btnRegister.FillColor = Color.FromArgb(13, 110, 253);
+            btnRegister.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnRegister.Location = new Point(60, 580);
+            btnRegister.MinimumSize = new Size(1, 1);
             btnRegister.Name = "btnRegister";
-            btnRegister.Size = new Size(400, 50);
-            btnRegister.TabIndex = 9;
+            btnRegister.Radius = 10;
+            btnRegister.Size = new Size(553, 63);
+            btnRegister.TabIndex = 10;
             btnRegister.Text = "Đăng ký";
-            btnRegister.UseVisualStyleBackColor = false;
+            btnRegister.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
             btnRegister.Click += btnRegister_Click;
             // 
-            // panel1
+            // lnkBackToLogin
             // 
-            panel1.Controls.Add(pictureBoxSlide);
-            panel1.Controls.Add(panelDots);
-            panel1.Location = new Point(800, 8);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(1090, 953);
-            panel1.TabIndex = 10;
+            lnkBackToLogin.ActiveLinkColor = Color.FromArgb(80, 160, 255);
+            lnkBackToLogin.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lnkBackToLogin.Font = new Font("Segoe UI", 10.5F);
+            lnkBackToLogin.ForeColor = Color.FromArgb(48, 48, 48);
+            lnkBackToLogin.LinkBehavior = LinkBehavior.AlwaysUnderline;
+            lnkBackToLogin.LinkColor = Color.FromArgb(13, 110, 253);
+            lnkBackToLogin.Location = new Point(60, 677);
+            lnkBackToLogin.Name = "lnkBackToLogin";
+            lnkBackToLogin.Size = new Size(100, 23);
+            lnkBackToLogin.TabIndex = 11;
+            lnkBackToLogin.TabStop = true;
+            lnkBackToLogin.Text = "← Quay về đăng nhập";
+            lnkBackToLogin.VisitedLinkColor = Color.FromArgb(230, 80, 80);
+            lnkBackToLogin.Click += lnkBackToLogin_Click;
             // 
             // pictureBoxSlide
             // 
-            pictureBoxSlide.Dock = DockStyle.Fill;
             pictureBoxSlide.Location = new Point(0, 0);
             pictureBoxSlide.Name = "pictureBoxSlide";
-            pictureBoxSlide.Size = new Size(1090, 913);
-            pictureBoxSlide.SizeMode = PictureBoxSizeMode.StretchImage;
-            pictureBoxSlide.TabIndex = 4;
+            pictureBoxSlide.Size = new Size(100, 50);
+            pictureBoxSlide.TabIndex = 0;
             pictureBoxSlide.TabStop = false;
+            pictureBoxSlide.Visible = false;
             // 
             // panelDots
             // 
-            panelDots.BackColor = Color.Transparent;
-            panelDots.Dock = DockStyle.Bottom;
-            panelDots.Location = new Point(0, 913);
+            panelDots.Location = new Point(0, 0);
             panelDots.Name = "panelDots";
-            panelDots.Size = new Size(1090, 40);
-            panelDots.TabIndex = 5;
-            // 
-            // timerSlide
-            // 
-            timerSlide.Interval = 4000;
-            timerSlide.Tick += TimerSlide_Tick;
+            panelDots.Size = new Size(200, 100);
+            panelDots.TabIndex = 0;
+            panelDots.Visible = false;
             // 
             // Register
             // 
-            BackColor = Color.White;
-            ClientSize = new Size(1902, 973);
-            Controls.Add(panel1);
-            Controls.Add(lblTitle);
-            Controls.Add(lblFullName);
-            Controls.Add(txtFullName);
-            Controls.Add(lblEmail);
-            Controls.Add(txtEmail);
-            Controls.Add(lblPassword);
-            Controls.Add(txtPassword);
-            Controls.Add(lblConfirmPassword);
-            Controls.Add(txtConfirmPassword);
-            Controls.Add(btnRegister);
+            BackgroundImage = Properties.Resources.bg;
+            BackgroundImageLayout = ImageLayout.Stretch;
+            ClientSize = new Size(1900, 950);
+            Controls.Add(panelRegister);
             MaximizeBox = false;
             Name = "Register";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Đăng ký tài khoản - IELTS Learning";
             Load += Register_Load;
-            panel1.ResumeLayout(false);
+            panelRegister.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)picFullName).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picEmail).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picPassword).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picConfirmPassword).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSlide).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
-
-        #endregion
-
-        private Panel panel1;
-        private PictureBox pictureBoxSlide;
-        private Panel panelDots;
     }
 }
