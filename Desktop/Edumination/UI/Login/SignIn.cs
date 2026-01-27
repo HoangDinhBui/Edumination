@@ -66,13 +66,13 @@ namespace IELTS.UI.Login
             {
                 // Gọi API Login (sử dụng BLL trực tiếp)
                 LoginResponseDTO response = userBLL.LoginWithToken(email, password);
-				if (response.Success)
-				{
-					// Kiểm tra tên trong đối tượng UserDTO trước khi lưu vào Session
-					Console.WriteLine($"[DEBUG LOGIN] Tên từ Response: {response.User.FullName}");
-				}
+                if (response.Success)
+                {
+                    // Kiểm tra tên trong đối tượng UserDTO trước khi lưu vào Session
+                    Console.WriteLine($"[DEBUG LOGIN] Tên từ Response: {response.User.FullName}");
+                }
 
-				if (response.Success)
+                if (response.Success)
                 {
                     // Lưu thông tin vào SessionManager
                     SaveToSession(response);
@@ -190,6 +190,21 @@ namespace IELTS.UI.Login
         {
             currentSlide = (currentSlide + 1) % slides.Count;
             pictureBoxSlide.Image = slides[currentSlide];
+        }
+
+        private void picEmail_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panelLogin_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SignIn_Load(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Maximized;
         }
     }
 }

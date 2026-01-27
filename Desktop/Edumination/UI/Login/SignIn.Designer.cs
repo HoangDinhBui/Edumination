@@ -1,203 +1,244 @@
-﻿namespace IELTS.UI.Login
+﻿using Sunny.UI;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace IELTS.UI.Login
 {
     partial class SignIn
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        // Controls
-        private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.Label lblEmail;
-        private System.Windows.Forms.TextBox txtEmail;
-        private System.Windows.Forms.Label lblPassword;
-        private System.Windows.Forms.TextBox txtPassword;
-        private System.Windows.Forms.LinkLabel lnkForgotPassword;
-        private System.Windows.Forms.Button btnLogin;
-        private System.Windows.Forms.Button btnRegister;
+        private UIPanel panelLogin;
+        private UILabel lblTitle;
+        private UILabel lblSub;
+
+        private UITextBox txtEmail;
+        private UITextBox txtPassword;
+
+        private UIButton btnLogin;
+        private UIButton btnRegister;
+
+        private UILinkLabel lnkForgotPassword;
+
+        private PictureBox pictureBoxSlide;
+
+        private PictureBox picEmail;
+        private PictureBox picPassword;
+
         private System.Windows.Forms.Timer timerSlide;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null)) components.Dispose();
+            if (disposing && (components != null))
+                components.Dispose();
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support.
-        /// </summary>
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            lblTitle = new Label();
-            lblEmail = new Label();
-            txtEmail = new TextBox();
-            lblPassword = new Label();
-            txtPassword = new TextBox();
-            lnkForgotPassword = new LinkLabel();
-            btnLogin = new Button();
-            btnRegister = new Button();
-            panel1 = new Panel();
+            panelLogin = new UIPanel();
+            lblTitle = new UILabel();
+            lblSub = new UILabel();
+            picEmail = new PictureBox();
+            txtEmail = new UITextBox();
+            picPassword = new PictureBox();
+            txtPassword = new UITextBox();
+            lnkForgotPassword = new UILinkLabel();
+            btnLogin = new UIButton();
+            btnRegister = new UIButton();
             pictureBoxSlide = new PictureBox();
-            panelDots = new Panel();
             timerSlide = new System.Windows.Forms.Timer(components);
-            panel1.SuspendLayout();
+            panelLogin.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)picEmail).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picPassword).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSlide).BeginInit();
             SuspendLayout();
             // 
+            // panelLogin
+            // 
+            panelLogin.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            panelLogin.Controls.Add(lblTitle);
+            panelLogin.Controls.Add(lblSub);
+            panelLogin.Controls.Add(picEmail);
+            panelLogin.Controls.Add(txtEmail);
+            panelLogin.Controls.Add(picPassword);
+            panelLogin.Controls.Add(txtPassword);
+            panelLogin.Controls.Add(lnkForgotPassword);
+            panelLogin.Controls.Add(btnLogin);
+            panelLogin.Controls.Add(btnRegister);
+            panelLogin.FillColor = Color.White;
+            panelLogin.Font = new Font("Segoe UI", 12F);
+            panelLogin.Location = new Point(1080, 48);
+            panelLogin.Margin = new Padding(4, 5, 4, 5);
+            panelLogin.MinimumSize = new Size(1, 1);
+            panelLogin.Name = "panelLogin";
+            panelLogin.Padding = new Padding(30);
+            panelLogin.Radius = 0;
+            panelLogin.RectColor = Color.FromArgb(230, 235, 245);
+            panelLogin.RectSides = ToolStripStatusLabelBorderSides.None;
+            panelLogin.Size = new Size(685, 899);
+            panelLogin.TabIndex = 1;
+            panelLogin.Text = null;
+            panelLogin.TextAlignment = ContentAlignment.MiddleCenter;
+            panelLogin.Click += panelLogin_Click;
+            // 
             // lblTitle
             // 
-            lblTitle.Font = new Font("Microsoft Sans Serif", 16F, FontStyle.Bold);
-            lblTitle.ForeColor = Color.FromArgb(80, 160, 255);
-            lblTitle.Location = new Point(99, 225);
+            lblTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblTitle.Dock = DockStyle.Top;
+            lblTitle.Font = new Font("Paytone One", 28.2F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblTitle.ForeColor = Color.DodgerBlue;
+            lblTitle.Location = new Point(30, 60);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(350, 40);
+            lblTitle.Size = new Size(625, 75);
             lblTitle.TabIndex = 0;
-            lblTitle.Text = "🎓 IELTS LEARNING SYSTEM";
+            lblTitle.Text = "EDUMINATION";
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // lblEmail
+            // lblSub
             // 
-            lblEmail.Location = new Point(99, 305);
-            lblEmail.Name = "lblEmail";
-            lblEmail.Size = new Size(100, 30);
-            lblEmail.TabIndex = 1;
-            lblEmail.Text = "Email:";
+            lblSub.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblSub.Dock = DockStyle.Top;
+            lblSub.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblSub.ForeColor = Color.Gray;
+            lblSub.Location = new Point(30, 30);
+            lblSub.Name = "lblSub";
+            lblSub.Size = new Size(625, 30);
+            lblSub.TabIndex = 1;
+            lblSub.Text = "Sign in to continue learning 🎓";
+            lblSub.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // picEmail
+            // 
+            picEmail.BackColor = Color.FromArgb(0, 0, 0, 0);
+            picEmail.BackgroundImage = Properties.Resources.emailIcon;
+            picEmail.Location = new Point(60, 204);
+            picEmail.Name = "picEmail";
+            picEmail.Size = new Size(45, 45);
+            picEmail.SizeMode = PictureBoxSizeMode.Zoom;
+            picEmail.TabIndex = 2;
+            picEmail.TabStop = false;
+            picEmail.Click += picEmail_Click;
             // 
             // txtEmail
             // 
-            txtEmail.Location = new Point(99, 335);
+            txtEmail.Font = new Font("Segoe UI", 11F);
+            txtEmail.Location = new Point(134, 198);
+            txtEmail.Margin = new Padding(4, 5, 4, 5);
+            txtEmail.MinimumSize = new Size(1, 16);
             txtEmail.Name = "txtEmail";
-            txtEmail.Size = new Size(350, 27);
-            txtEmail.TabIndex = 2;
+            txtEmail.Padding = new Padding(6);
+            txtEmail.Radius = 8;
+            txtEmail.RectColor = Color.FromArgb(220, 224, 229);
+            txtEmail.RectSides = ToolStripStatusLabelBorderSides.Bottom;
+            txtEmail.ShowText = false;
+            txtEmail.Size = new Size(479, 59);
+            txtEmail.TabIndex = 3;
+            txtEmail.TextAlignment = ContentAlignment.MiddleLeft;
+            txtEmail.Watermark = "Email";
             // 
-            // lblPassword
+            // picPassword
             // 
-            lblPassword.Location = new Point(99, 385);
-            lblPassword.Name = "lblPassword";
-            lblPassword.Size = new Size(100, 30);
-            lblPassword.TabIndex = 3;
-            lblPassword.Text = "Mật khẩu:";
+            picPassword.BackColor = Color.FromArgb(0, 0, 0, 0);
+            picPassword.BackgroundImage = Properties.Resources.passwordIcon;
+            picPassword.Location = new Point(60, 293);
+            picPassword.Name = "picPassword";
+            picPassword.Size = new Size(45, 45);
+            picPassword.SizeMode = PictureBoxSizeMode.Zoom;
+            picPassword.TabIndex = 4;
+            picPassword.TabStop = false;
             // 
             // txtPassword
             // 
-            txtPassword.Location = new Point(99, 415);
+            txtPassword.Font = new Font("Segoe UI", 11F);
+            txtPassword.Location = new Point(134, 289);
+            txtPassword.Margin = new Padding(4, 5, 4, 5);
+            txtPassword.MinimumSize = new Size(1, 16);
             txtPassword.Name = "txtPassword";
+            txtPassword.Padding = new Padding(6);
             txtPassword.PasswordChar = '●';
-            txtPassword.Size = new Size(350, 27);
-            txtPassword.TabIndex = 4;
+            txtPassword.Radius = 8;
+            txtPassword.RectColor = Color.FromArgb(220, 224, 229);
+            txtPassword.RectSides = ToolStripStatusLabelBorderSides.Bottom;
+            txtPassword.ShowText = false;
+            txtPassword.Size = new Size(479, 59);
+            txtPassword.TabIndex = 5;
+            txtPassword.TextAlignment = ContentAlignment.MiddleLeft;
+            txtPassword.Watermark = "Mật khẩu";
             // 
             // lnkForgotPassword
             // 
-            lnkForgotPassword.ActiveLinkColor = Color.FromArgb(60, 140, 235);
-            lnkForgotPassword.Font = new Font("Microsoft Sans Serif", 9F);
-            lnkForgotPassword.LinkColor = Color.FromArgb(80, 160, 255);
-            lnkForgotPassword.Location = new Point(99, 450);
+            lnkForgotPassword.ActiveLinkColor = Color.FromArgb(80, 160, 255);
+            lnkForgotPassword.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lnkForgotPassword.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lnkForgotPassword.ForeColor = Color.FromArgb(48, 48, 48);
+            lnkForgotPassword.LinkBehavior = LinkBehavior.AlwaysUnderline;
+            lnkForgotPassword.LinkColor = Color.FromArgb(13, 110, 253);
+            lnkForgotPassword.Location = new Point(465, 380);
             lnkForgotPassword.Name = "lnkForgotPassword";
-            lnkForgotPassword.Size = new Size(150, 20);
-            lnkForgotPassword.TabIndex = 5;
+            lnkForgotPassword.Size = new Size(167, 33);
+            lnkForgotPassword.TabIndex = 6;
             lnkForgotPassword.TabStop = true;
             lnkForgotPassword.Text = "Quên mật khẩu?";
-            lnkForgotPassword.VisitedLinkColor = Color.FromArgb(80, 160, 255);
+            lnkForgotPassword.VisitedLinkColor = Color.FromArgb(230, 80, 80);
             lnkForgotPassword.Click += lnkForgotPassword_Click;
             // 
             // btnLogin
             // 
-            btnLogin.BackColor = Color.FromArgb(80, 160, 255);
-            btnLogin.FlatAppearance.BorderSize = 0;
-            btnLogin.FlatStyle = FlatStyle.Flat;
-            btnLogin.Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Bold);
-            btnLogin.ForeColor = Color.White;
-            btnLogin.Location = new Point(99, 485);
+            btnLogin.FillColor = Color.FromArgb(13, 110, 253);
+            btnLogin.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnLogin.Location = new Point(60, 454);
+            btnLogin.MinimumSize = new Size(1, 1);
             btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(350, 45);
-            btnLogin.TabIndex = 6;
+            btnLogin.Radius = 10;
+            btnLogin.Size = new Size(553, 63);
+            btnLogin.TabIndex = 7;
             btnLogin.Text = "Đăng nhập";
-            btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
             btnLogin.Click += btnLogin_Click;
             // 
             // btnRegister
             // 
-            btnRegister.BackColor = Color.FromArgb(100, 100, 100);
-            btnRegister.FlatAppearance.BorderSize = 0;
-            btnRegister.FlatStyle = FlatStyle.Flat;
-            btnRegister.Font = new Font("Microsoft Sans Serif", 10F);
-            btnRegister.ForeColor = Color.White;
-            btnRegister.Location = new Point(99, 545);
+            btnRegister.FillColor = Color.White;
+            btnRegister.Font = new Font("Segoe UI", 10.5F);
+            btnRegister.ForeColor = Color.FromArgb(13, 110, 253);
+            btnRegister.Location = new Point(60, 545);
+            btnRegister.MinimumSize = new Size(1, 1);
             btnRegister.Name = "btnRegister";
-            btnRegister.Size = new Size(350, 40);
-            btnRegister.TabIndex = 7;
+            btnRegister.Radius = 10;
+            btnRegister.RectColor = Color.FromArgb(13, 110, 253);
+            btnRegister.Size = new Size(553, 60);
+            btnRegister.TabIndex = 8;
             btnRegister.Text = "Đăng ký tài khoản mới";
-            btnRegister.UseVisualStyleBackColor = false;
+            btnRegister.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
             btnRegister.Click += btnRegister_Click;
-            // 
-            // panel1
-            // 
-            panel1.Controls.Add(pictureBoxSlide);
-            panel1.Controls.Add(panelDots);
-            panel1.Location = new Point(572, -1);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(1334, 962);
-            panel1.TabIndex = 8;
             // 
             // pictureBoxSlide
             // 
-            pictureBoxSlide.Dock = DockStyle.Fill;
             pictureBoxSlide.Location = new Point(0, 0);
             pictureBoxSlide.Name = "pictureBoxSlide";
-            pictureBoxSlide.Size = new Size(1334, 922);
-            pictureBoxSlide.SizeMode = PictureBoxSizeMode.StretchImage;
-            pictureBoxSlide.TabIndex = 2;
+            pictureBoxSlide.Size = new Size(100, 50);
+            pictureBoxSlide.TabIndex = 0;
             pictureBoxSlide.TabStop = false;
-            // 
-            // panelDots
-            // 
-            panelDots.BackColor = Color.Transparent;
-            panelDots.Dock = DockStyle.Bottom;
-            panelDots.Location = new Point(0, 922);
-            panelDots.Name = "panelDots";
-            panelDots.Size = new Size(1334, 40);
-            panelDots.TabIndex = 3;
-            // 
-            // timerSlide
-            // 
-            timerSlide.Interval = 4000;
-            timerSlide.Tick += TimerSlide_Tick;
+            pictureBoxSlide.Visible = false;
             // 
             // SignIn
             // 
-            BackColor = Color.White;
-            ClientSize = new Size(1902, 973);
-            Controls.Add(panel1);
-            Controls.Add(lblTitle);
-            Controls.Add(lblEmail);
-            Controls.Add(txtEmail);
-            Controls.Add(lblPassword);
-            Controls.Add(txtPassword);
-            Controls.Add(lnkForgotPassword);
-            Controls.Add(btnLogin);
-            Controls.Add(btnRegister);
+            BackgroundImage = Properties.Resources.bg;
+            BackgroundImageLayout = ImageLayout.Stretch;
+            ClientSize = new Size(1900, 950);
+            Controls.Add(panelLogin);
             MaximizeBox = false;
             Name = "SignIn";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Đăng nhập - IELTS Learning";
-            panel1.ResumeLayout(false);
+            Load += SignIn_Load;
+            panelLogin.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)picEmail).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picPassword).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSlide).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
-
-        #endregion
-
-        private Panel panel1;
-        private PictureBox pictureBoxSlide;
-        private Panel panelDots;
     }
 }

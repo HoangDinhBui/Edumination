@@ -75,7 +75,6 @@
     <Folder Include="NewFolder\" />
     <Folder Include="src\DB\" />
     <Folder Include="UI\Forms\" />
-    <Folder Include="UI\assets\" />
   </ItemGroup>
 
   <ItemGroup>

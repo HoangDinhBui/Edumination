@@ -65,6 +65,10 @@ namespace IELTS.UI.Login
             pictureBoxSlide.Image = slides[currentSlide];
         }
 
+        private void Register_Load(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Maximized;
+        }
     }
 
 

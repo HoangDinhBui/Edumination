@@ -40,8 +40,8 @@
             panel1 = new Panel();
             pictureBoxSlide = new PictureBox();
             panelDots = new Panel();
-            panel1.SuspendLayout();
             timerSlide = new System.Windows.Forms.Timer(components);
+            panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSlide).BeginInit();
             SuspendLayout();
             // 
@@ -185,6 +185,7 @@
             Name = "Register";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Đăng ký tài khoản - IELTS Learning";
+            Load += Register_Load;
             panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBoxSlide).EndInit();
             ResumeLayout(false);
