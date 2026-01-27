@@ -16,7 +16,7 @@ namespace IELTS.UI.Admin.TestManager
 		private TestManagerControl testManagerControl;
 		private TestPaperBLL testPaperBLL = new TestPaperBLL();
 		private string selectedPdfPath = "";
-
+		private string selectedAudioPath = "";
 		public CreateTestPaperControl()
 		{
 			InitializeComponent();
@@ -85,31 +85,23 @@ namespace IELTS.UI.Admin.TestManager
 			string description = txtDescription.Text.Trim();
 			long currentUserId = SessionManager.CurrentUserId;
 
-			// Validation
+			// 1. Validation cơ bản
 			if (string.IsNullOrWhiteSpace(title))
 			{
-				MessageBox.Show("⚠️ Tiêu đề đề thi không được để trống!",
-					"Thiếu Thông Tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("⚠️ Tiêu đề đề thi không được để trống!", "Thiếu Thông Tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				txtTitle.Focus();
 				return;
 			}
 
 			if (string.IsNullOrWhiteSpace(selectedPdfPath) || !File.Exists(selectedPdfPath))
 			{
-				MessageBox.Show("⚠️ Vui lòng chọn file PDF hợp lệ!",
-					"Thiếu File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("⚠️ Vui lòng chọn file PDF hợp lệ!", "Thiếu File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
-			// Xác nhận từ người dùng
 			var confirm = MessageBox.Show(
-				$"📋 Đề thi: {title}\n" +
-				$"📄 File: {Path.GetFileName(selectedPdfPath)}\n" +
-				$"🤖 AI sẽ tự động phân tích câu hỏi (có thể mất 10-30 giây)\n\n" +
-				"Bạn có chắc chắn muốn tạo đề thi này?",
-				"Xác Nhận Tạo Đề Thi",
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Question
+				$"📋 Đề thi: {title}\n📄 File: {Path.GetFileName(selectedPdfPath)}\n🤖 AI sẽ tự động phân tích câu hỏi.\n\nBạn có chắc chắn muốn tạo đề thi này?",
+				"Xác Nhận Tạo Đề Thi", MessageBoxButtons.YesNo, MessageBoxIcon.Question
 			);
 
 			if (confirm != DialogResult.Yes) return;
@@ -118,156 +110,100 @@ namespace IELTS.UI.Admin.TestManager
 
 			try
 			{
-				// Khóa UI
 				btnUpload.Enabled = false;
 				btnChooseFile.Enabled = false;
 				this.Cursor = Cursors.WaitCursor;
 
-				// Hiển thị progress
-				progressForm = new Form
-				{
-					Text = "Đang xử lý...",
-					Size = new Size(400, 150),
-					StartPosition = FormStartPosition.CenterParent,
-					FormBorderStyle = FormBorderStyle.FixedDialog,
-					ControlBox = false
-				};
-				var progressLabel = new Label
-				{
-					Text = "🔄 Đang tải file PDF lên server...",
-					Dock = DockStyle.Fill,
-					TextAlign = ContentAlignment.MiddleCenter,
-					Font = new Font("Segoe UI", 10)
-				};
+				progressForm = new Form { Text = "Đang xử lý...", Size = new Size(400, 150), StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.FixedDialog, ControlBox = false };
+				var progressLabel = new Label { Text = "🔄 Đang tải file PDF lên server...", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10) };
 				progressForm.Controls.Add(progressLabel);
 				progressForm.Show();
 				Application.DoEvents();
 
-				// Xử lý file
+				// 2. Xử lý lưu file PDF
 				string assetsFolder = Path.Combine(Application.StartupPath, "..", "..", "UI", "assets");
-				if (!Directory.Exists(assetsFolder))
-					Directory.CreateDirectory(assetsFolder);
+				if (!Directory.Exists(assetsFolder)) Directory.CreateDirectory(assetsFolder);
 
 				string newFileName = $"{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}.pdf";
 				string destPath = Path.Combine(assetsFolder, newFileName);
-
 				await Task.Run(() => File.Copy(selectedPdfPath, destPath, true));
 
-				// Lưu TestPaper
+				// 3. Lưu TestPaper vào Database
 				progressLabel.Text = "💾 Đang lưu thông tin đề thi...";
 				Application.DoEvents();
 
-				bool success = await Task.Run(() => testPaperBLL.CreateTestPaper(
-					title: title,
-					description: description,
-					createdBy: currentUserId,
-					pdfFullPath: destPath
-				));
+				bool success = await Task.Run(() => testPaperBLL.CreateTestPaper(title, description, currentUserId, destPath));
 
 				if (!success)
 				{
 					progressForm?.Close();
-					MessageBox.Show("❌ Tạo đề thi thất bại! Vui lòng kiểm tra Database.",
-						"Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					MessageBox.Show("❌ Tạo đề thi thất bại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					return;
 				}
 
 				int newPaperId = testPaperBLL.GetLatestTestPaperId();
 
-				System.Diagnostics.Debug.WriteLine($"=== UPLOAD SUCCESS ===");
-				System.Diagnostics.Debug.WriteLine($"📄 PaperId: {newPaperId}");
-				System.Diagnostics.Debug.WriteLine($"📝 Title: {title}");
-				System.Diagnostics.Debug.WriteLine($"📁 File: {newFileName}");
-				System.Diagnostics.Debug.WriteLine($"📂 Path: {destPath}");
-				System.Diagnostics.Debug.WriteLine($"======================");
-
-				// Gọi AI phân tích
+				// 4. Gọi AI phân tích file PDF
 				progressLabel.Text = "🤖 AI đang phân tích file PDF...\n(Có thể mất 10-30 giây)";
 				Application.DoEvents();
 
 				var aiService = new AIQuestionAnalysisService();
+				// Gọi AI phân tích lần đầu để xác định kỹ năng
 				bool aiSuccess = await aiService.AnalyzePdfAndSaveQuestions(destPath, newPaperId);
+
+				// --- PHẦN SỬA MỚI: KIỂM TRA VÀ YÊU CẦU FILE ÂM THANH ---
+				if (IsListeningWithoutAudio(newPaperId))
+				{
+					progressForm.Hide(); // Tạm ẩn form chờ để hiện hộp thoại chọn file
+					MessageBox.Show("🤖 AI xác định đây là đề LISTENING. Vui lòng chọn file âm thanh cho bài thi này!",
+									"Yêu cầu bổ sung", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+					using (OpenFileDialog ofd = new OpenFileDialog { Filter = "Audio Files|*.mp3;*.wav" })
+					{
+						if (ofd.ShowDialog() == DialogResult.OK)
+						{
+							string audioFolder = Path.Combine(assetsFolder, "audios");
+							if (!Directory.Exists(audioFolder)) Directory.CreateDirectory(audioFolder);
+
+							// FIX: Tạo tên file an toàn (Không dấu, không khoảng trắng)
+							string extension = Path.GetExtension(ofd.FileName);
+							string safeFileName = $"{DateTime.Now:yyyyMMdd_HHmm}_{Guid.NewGuid().ToString().Substring(0, 8)}{extension}";
+
+							string destAudio = Path.Combine(audioFolder, safeFileName);
+							File.Copy(ofd.FileName, destAudio, true);
+
+							// Cập nhật đường dẫn (chỉ lưu tên file an toàn hoặc đường dẫn tương đối) vào Database
+							UpdateAudioPathInSection(newPaperId, safeFileName);
+						}
+					}
+					progressForm.Show();
+				}
+				// --- KẾT THÚC PHẦN SỬA MỚI ---
 
 				progressForm?.Close();
 				progressForm = null;
 
-				// ✅ Verify dữ liệu
+				// 5. Verify và hiển thị kết quả
 				var verifyResult = VerifyDataSaved(newPaperId);
-
-				System.Diagnostics.Debug.WriteLine($"=== VERIFY RESULT ===");
-				System.Diagnostics.Debug.WriteLine($"Sections: {verifyResult.Sections}");
-				System.Diagnostics.Debug.WriteLine($"Questions: {verifyResult.Questions}");
-				System.Diagnostics.Debug.WriteLine($"Answers: {verifyResult.Answers}");
-				System.Diagnostics.Debug.WriteLine($"=====================");
 
 				if (aiSuccess && verifyResult.Questions > 0)
 				{
-					MessageBox.Show(
-						$"✅ Tạo đề thi thành công!\n\n" +
-						$"📊 Paper ID: {newPaperId}\n" +
-						$"🤖 AI Analysis: Thành công\n" +
-						$"💾 Database:\n" +
-						$"   - Sections: {verifyResult.Sections}\n" +
-						$"   - Questions: {verifyResult.Questions}\n" +
-						$"   - Answers: {verifyResult.Answers}\n\n" +
-						"📝 Bạn có thể xem và chỉnh sửa ở bước tiếp theo.",
-						"Thành Công",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information
-					);
-				}
-				else if (aiSuccess && verifyResult.Questions == 0)
-				{
-					MessageBox.Show(
-						$"⚠️ Cảnh báo!\n\n" +
-						$"📊 Paper ID: {newPaperId}\n" +
-						$"🤖 AI phân tích thành công nhưng KHÔNG lưu được câu hỏi vào DB!\n\n" +
-						$"💾 Database:\n" +
-						$"   - Sections: {verifyResult.Sections}\n" +
-						$"   - Questions: {verifyResult.Questions} ❌\n" +
-						$"   - Answers: {verifyResult.Answers} ❌\n\n" +
-						"Kiểm tra Console Output để debug.",
-						"Lỗi Lưu Database",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Warning
-					);
+					MessageBox.Show($"✅ Tạo đề thi thành công!\n📊 Paper ID: {newPaperId}\n🤖 AI Analysis: Thành công", "Thành Công", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				}
 				else
 				{
-					MessageBox.Show(
-						$"⚠️ AI không phân tích được file PDF!\n\n" +
-						$"📊 Paper ID: {newPaperId}\n" +
-						$"💾 Database: {verifyResult.Sections} sections, {verifyResult.Questions} questions\n\n" +
-						"Nguyên nhân có thể:\n" +
-						"• File không phải đề thi IELTS Reading\n" +
-						"• PDF bị mã hóa hoặc scan chất lượng kém\n" +
-						"• Định dạng không chuẩn\n\n" +
-						"📝 Bạn cần thêm câu hỏi thủ công.",
-						"AI Phân Tích Thất Bại",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Warning
-					);
+					MessageBox.Show("⚠️ AI không phân tích được hoặc dữ liệu trống. Bạn cần kiểm tra lại nội dung.", "Cảnh Báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				}
 
-				// Chuyển sang bước tiếp theo
+				// Reset và chuyển trang
 				ResetForm();
 				testManagerControl.GetAddSectionButtonControl().SetTestPaperId(newPaperId);
 				testManagerControl.ShowPanel(testManagerControl.GetAddSectionButtonControl());
 			}
 			catch (Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine($"❌ Exception: {ex.Message}");
-				System.Diagnostics.Debug.WriteLine($"StackTrace: {ex.StackTrace}");
-
 				progressForm?.Close();
-
-				MessageBox.Show(
-					$"❌ Lỗi hệ thống:\n\n{ex.Message}\n\n" +
-					"Chi tiết lỗi đã được ghi vào Console Output.",
-					"Lỗi",
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Error
-				);
+				MessageBox.Show($"❌ Lỗi hệ thống: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 			finally
 			{
@@ -277,7 +213,6 @@ namespace IELTS.UI.Admin.TestManager
 				this.Cursor = Cursors.Default;
 			}
 		}
-
 		// ✅ CHỈ GIỮ 1 METHOD DUY NHẤT
 		private VerifyResult VerifyDataSaved(int paperId)
 		{
@@ -384,6 +319,75 @@ namespace IELTS.UI.Admin.TestManager
 			{
 				MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi");
 			}
+		}
+
+		private void btnChooseAudio_Click(object sender, EventArgs e)
+		{
+			// Sử dụng OpenFileDialog để mở cửa sổ chọn file trên máy tính
+			using (OpenFileDialog ofd = new OpenFileDialog())
+			{
+				// Thiết lập bộ lọc chỉ hiển thị các định dạng âm thanh phổ biến
+				ofd.Filter = "Audio Files|*.mp3;*.wav;*.m4a";
+				ofd.Title = "Chọn file âm thanh cho bài Listening";
+
+				if (ofd.ShowDialog() == DialogResult.OK)
+				{
+					// Lưu đường dẫn file vào biến toàn cục để dùng khi bấm nút Upload
+					selectedAudioPath = ofd.FileName;
+
+					// Thông báo cho người dùng biết đã chọn thành công
+					MessageBox.Show("✅ Đã chọn file âm thanh: " + Path.GetFileName(selectedAudioPath),
+									"Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+					// Nếu bạn có một TextBox để hiển thị tên file, hãy gán giá trị tại đây
+					// txtAudioFileName.Text = Path.GetFileName(selectedAudioPath);
+				}
+			}
+		}
+
+		// Hàm này dùng để cập nhật đường dẫn file âm thanh vào Database sau khi Admin chọn file
+		private void UpdateAudioPathInSection(int paperId, string audioPath)
+		{
+			try
+			{
+				using (var conn = DatabaseConnection.GetConnection()) // Sử dụng kết nối từ DAL
+				{
+					conn.Open();
+					// Câu lệnh SQL tác động trực tiếp vào bảng TestSections dựa trên PaperId và Skill Listening
+					string sql = "UPDATE TestSections SET AudioFilePath = @path WHERE PaperId = @id AND Skill = 'LISTENING'";
+
+					using (var cmd = new SqlCommand(sql, conn))
+					{
+						cmd.Parameters.AddWithValue("@path", audioPath); // Đường dẫn file đã copy vào assets
+						cmd.Parameters.AddWithValue("@id", paperId);
+						cmd.ExecuteNonQuery();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Lỗi cập nhật đường dẫn âm thanh: {ex.Message}", "Lỗi DB");
+			}
+		}
+
+		// Hàm bổ trợ để kiểm tra xem Section có phải Listening và đang thiếu Audio không
+		private bool IsListeningWithoutAudio(int paperId)
+		{
+			try
+			{
+				using (var conn = DatabaseConnection.GetConnection())
+				{
+					conn.Open();
+					string sql = "SELECT COUNT(*) FROM TestSections WHERE PaperId = @id AND Skill = 'LISTENING' AND (AudioFilePath IS NULL OR AudioFilePath = '')";
+					using (var cmd = new SqlCommand(sql, conn))
+					{
+						cmd.Parameters.AddWithValue("@id", paperId);
+						int count = (int)cmd.ExecuteScalar();
+						return count > 0;
+					}
+				}
+			}
+			catch { return false; }
 		}
 	}
 	public class VerifyResult
