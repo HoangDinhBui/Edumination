@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static IELTS.DTO.QuestionDTO;
 namespace IELTS.DAL
 {
     public class QuestionDAL
@@ -198,6 +199,77 @@ namespace IELTS.DAL
             }
 
             return ids;
+        }
+
+        public List<QuestionDTO> GetQuestionsByPassage(long passageId)
+        {
+            var questions = new List<QuestionDTO>();
+
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            // 1️⃣ Load questions
+            using (var cmdQ = new SqlCommand(
+                "SELECT Id, QuestionType, QuestionText FROM Questions WHERE PassageId=@pid ORDER BY Position",
+                conn))
+            {
+                cmdQ.Parameters.AddWithValue("@pid", passageId);
+
+                using var r = cmdQ.ExecuteReader();
+                while (r.Read())
+                {
+                    questions.Add(new QuestionDTO
+                    {
+                        Id = (long)r["Id"],
+                        QuestionType = r["QuestionType"].ToString(),
+                        QuestionText = r["QuestionText"].ToString()
+                    });
+                }
+            }
+
+            // 2️⃣ Load detail cho từng question
+            foreach (var q in questions)
+            {
+                // ===== MCQ / MULTI / ORDER / MATCHING (RIGHT COLUMN) =====
+                if (q.QuestionType is "MCQ" or "MULTI_SELECT" or "ORDER" or "MATCHING")
+                {
+                    using var cmdOpt = new SqlCommand(
+                        "SELECT OptionKey, OptionText FROM QuestionOptions WHERE QuestionId=@qid ORDER BY OptionKey",
+                        conn);
+                    cmdOpt.Parameters.AddWithValue("@qid", q.Id);
+
+                    using var rr = cmdOpt.ExecuteReader();
+                    while (rr.Read())
+                    {
+                        q.Options.Add(new QuestionOptionDTO
+                        {
+                            OptionKey = rr["OptionKey"].ToString(),
+                            OptionText = rr["OptionText"].ToString()
+                        });
+                    }
+                }
+
+                // ===== MATCHING (LEFT COLUMN) =====
+                if (q.QuestionType == "MATCHING")
+                {
+                    using var cmdMatch = new SqlCommand(
+                        "SELECT LeftKey, LeftText FROM QuestionMatchPairs WHERE QuestionId=@qid ORDER BY LeftKey",
+                        conn);
+                    cmdMatch.Parameters.AddWithValue("@qid", q.Id);
+
+                    using var rr = cmdMatch.ExecuteReader();
+                    while (rr.Read())
+                    {
+                        q.MatchPairs.Add(new QuestionMatchDTO
+                        {
+                            LeftKey = rr["LeftKey"].ToString(),
+                            LeftText = rr["LeftText"].ToString()
+                        });
+                    }
+                }
+            }
+
+            return questions;
         }
 
 		public bool InsertWritingPrompt(long sectionId, int position, string questionType, string promptText)

@@ -28,6 +28,9 @@ namespace IELTS.DTO
         public override string ToString() => $"{Code} - {Title}";
 
         public string CreatorFullName { get; set; }
+
+        public int? TestMonth { get; set; }
+        public long? MockTestId { get; set; }
     }
 
 }

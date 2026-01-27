@@ -23,6 +23,10 @@ namespace IELTS.BLL
             _answerKeyDAL = new QuestionAnswerKeyDAL();
         }
 
+        public List<TestSectionDTO> GetSectionsByPaper(long paperId)
+        {
+            return _sectionDAL.GetByPaperId(paperId);
+        }
         #region Public Methods
 
         public DataTable GetSectionsByPaperId(long paperId)

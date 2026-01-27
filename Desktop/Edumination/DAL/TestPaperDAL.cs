@@ -192,5 +192,44 @@ namespace IELTS.DAL
                 }
             }
         }
+
+        public List<TestPaperDTO> NewGetAll()
+        {
+            var list = new List<TestPaperDTO>();
+
+            string sql = @"SELECT * FROM TestPapers";
+
+            using (SqlConnection conn = DatabaseConnection.GetConnection())
+            using (SqlCommand cmd = new SqlCommand(sql, conn))
+            {
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    list.Add(MapReader(reader));
+                }
+            }
+
+            return list;
+        }
+
+        private TestPaperDTO MapReader(SqlDataReader reader)
+        {
+            return new TestPaperDTO
+            {
+                Id = Convert.ToInt64(reader["Id"]),
+                Code = reader["Code"]?.ToString(),
+                Title = reader["Title"].ToString(),
+                Description = reader["Description"]?.ToString(),
+                PdfFileName = reader["PdfFileName"]?.ToString(),
+                PdfFilePath = reader["PdfFilePath"]?.ToString(),
+                MockTestId = reader["MockTestId"] as long?,
+                TestMonth = reader["TestMonth"] as int?,
+                IsPublished = Convert.ToBoolean(reader["IsPublished"]),
+                CreatedBy = Convert.ToInt64(reader["CreatedBy"]),
+                CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+            };
+        }
     }
 }

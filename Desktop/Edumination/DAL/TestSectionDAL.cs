@@ -173,6 +173,41 @@ namespace IELTS.DAL
                 PdfFilePath = reader.IsDBNull(6) ? null : reader.GetString(6)
             };
         }
+
+        public List<TestSectionDTO> GetByPaperId(long paperId)
+        {
+            List<TestSectionDTO> list = new();
+
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            string sql = @"
+                SELECT Id, PaperId, Skill, TimeLimitMinutes,
+                       AudioFilePath, PdfFileName, PdfFilePath
+                FROM TestSections
+                WHERE PaperId = @PaperId
+                ORDER BY Skill
+            ";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@PaperId", paperId);
+
+            conn.Open();
+            using SqlDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                list.Add(new TestSectionDTO
+                {
+                    Id = r.GetInt64(0),
+                    PaperId = r.GetInt64(1),
+                    Skill = r.GetString(2),
+                    TimeLimitMinutes = r.IsDBNull(3) ? null : r.GetInt32(3),
+                    AudioFilePath = r.IsDBNull(4) ? null : r.GetString(4),
+                    PdfFileName = r.IsDBNull(5) ? null : r.GetString(5),
+                    PdfFilePath = r.IsDBNull(6) ? null : r.GetString(6)
+                });
+            }
+
+            return list;
+        }
     }
 }
 

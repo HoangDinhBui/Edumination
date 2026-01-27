@@ -34,6 +34,15 @@
     <Compile Update="UI\Admin\TestManager\CreateTestPaperControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\Admin\TestManager\ShowPassageControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\ShowQuestionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\ShowSectionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Admin\TestManager\TestManagerControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
