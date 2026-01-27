@@ -95,28 +95,53 @@ namespace IELTS.DAL
             }
         }
 
-        public bool CreateTestPaper(string code, string title, string description, long createdBy, string pdfFileName, string pdfFilePath)
-        {
-            using SqlConnection conn = DatabaseConnection.GetConnection();
-            string sql = @"INSERT INTO TestPapers
-                   (Code, Title, Description, CreatedBy, PdfFileName, PdfFilePath)
-                   VALUES (@Code, @Title, @Desc, @CreatedBy, @PdfFileName, @PdfFilePath)";
+		public bool CreateTestPaper(string code, string title, string description, long createdBy, string pdfFileName, string pdfFilePath)
+		{
+			using (SqlConnection conn = DatabaseConnection.GetConnection())
+			{
+				conn.Open();
 
-            using (SqlCommand cmd = new SqlCommand(sql, conn))
-            {
-                cmd.Parameters.AddWithValue("@Code", code);
-                cmd.Parameters.AddWithValue("@Title", title);
-                cmd.Parameters.AddWithValue("@Desc", description);
-                cmd.Parameters.AddWithValue("@CreatedBy", createdBy);
-                cmd.Parameters.AddWithValue("@PdfFileName", pdfFileName);
-                cmd.Parameters.AddWithValue("@PdfFilePath", pdfFilePath);
+				string query = @"
+            INSERT INTO TestPapers (
+                Code, 
+                Title, 
+                Description, 
+                PdfFileName, 
+                PdfFilePath, 
+                CreatedBy, 
+                IsPublished,  -- ⬅️ QUAN TRỌNG
+                CreatedAt
+            )
+            VALUES (
+                @Code, 
+                @Title, 
+                @Description, 
+                @PdfFileName, 
+                @PdfFilePath, 
+                @CreatedBy, 
+                1,  -- ⬅️ PHẢI LÀ 1 ĐỂ HIỂN THỊ TRONG UI
+                GETDATE()
+            )";
 
-                conn.Open();
-                return cmd.ExecuteNonQuery() > 0;
-            }
-        }
+				using (SqlCommand cmd = new SqlCommand(query, conn))
+				{
+					cmd.Parameters.AddWithValue("@Code", code);
+					cmd.Parameters.AddWithValue("@Title", title);
+					cmd.Parameters.AddWithValue("@Description", description ?? (object)DBNull.Value);
+					cmd.Parameters.AddWithValue("@PdfFileName", pdfFileName);
+					cmd.Parameters.AddWithValue("@PdfFilePath", pdfFilePath);
+					cmd.Parameters.AddWithValue("@CreatedBy", createdBy);
 
-        public List<TestPaperDTO> GetAllTestPapers()
+					int affected = cmd.ExecuteNonQuery();
+
+					System.Diagnostics.Debug.WriteLine($"TestPaperDAL.CreateTestPaper: {affected} row(s) affected");
+
+					return affected > 0;
+				}
+			}
+		}
+
+		public List<TestPaperDTO> GetAllTestPapers()
         {
             List<TestPaperDTO> list = new();
 

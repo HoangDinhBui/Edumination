@@ -7,6 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <PlatformTarget>x86</PlatformTarget>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -83,6 +84,7 @@
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
     <PackageReference Include="HIC.System.Windows.Forms.DataVisualization" Version="1.0.1" />
+    <PackageReference Include="itext7" Version="9.5.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
@@ -91,15 +93,149 @@
     <PackageReference Include="ReaLTaiizor" Version="3.8.1.3" />
     <PackageReference Include="Stripe.net" Version="50.0.0" />
     <PackageReference Include="SunnyUI" Version="3.9.1" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.2" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.6.1" />
   </ItemGroup>
 
 	<ItemGroup>
 		<Content Include="UI\assets\**\*.*">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="bin\Debug\net8.0-windows\IELTS.deps.json" />
+	  <Content Include="bin\Debug\net8.0-windows\IELTS.runtimeconfig.json" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-Black.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-BlackItalic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-Bold.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-BoldItalic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-ExtraBold.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-ExtraBoldItalic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-ExtraLight.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-ExtraLightItalic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-Italic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-Light.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-LightItalic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-Medium.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-MediumItalic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-Regular.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-SemiBold.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-SemiBoldItalic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-Thin.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\Lato-ThinItalic.ttf" />
+	  <Content Include="bin\Debug\net8.0-windows\LatoFont\OFL.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="bin\Debug\net8.0-windows\AxInterop.AcroPDFLib.dll" />
+	  <None Include="bin\Debug\net8.0-windows\AxInterop.WMPLib.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Azure.Core.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Azure.Identity.dll" />
+	  <None Include="bin\Debug\net8.0-windows\BCrypt.Net-Next.dll" />
+	  <None Include="bin\Debug\net8.0-windows\cs\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\de\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\DotNetEnv.dll" />
+	  <None Include="bin\Debug\net8.0-windows\es\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\FontAwesome.Sharp.dll" />
+	  <None Include="bin\Debug\net8.0-windows\fr\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\IELTS.dll" />
+	  <None Include="bin\Debug\net8.0-windows\IELTS.dll.config" />
+	  <None Include="bin\Debug\net8.0-windows\IELTS.exe" />
+	  <None Include="bin\Debug\net8.0-windows\IELTS.pdb" />
+	  <None Include="bin\Debug\net8.0-windows\Interop.AcroPDFLib.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Interop.WMPLib.dll" />
+	  <None Include="bin\Debug\net8.0-windows\it\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\ja\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\ko\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Bcl.AsyncInterfaces.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Bcl.Cryptography.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Data.SqlClient.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Extensions.Caching.Abstractions.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Extensions.Caching.Memory.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Extensions.Configuration.Abstractions.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Extensions.Configuration.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Extensions.Logging.Abstractions.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Extensions.Options.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Extensions.Primitives.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Identity.Client.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.Identity.Client.Extensions.Msal.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.IdentityModel.Abstractions.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.IdentityModel.JsonWebTokens.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.IdentityModel.Logging.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.IdentityModel.Protocols.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.IdentityModel.Tokens.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Microsoft.SqlServer.Server.dll" />
+	  <None Include="bin\Debug\net8.0-windows\NAudio.Asio.dll" />
+	  <None Include="bin\Debug\net8.0-windows\NAudio.Core.dll" />
+	  <None Include="bin\Debug\net8.0-windows\NAudio.dll" />
+	  <None Include="bin\Debug\net8.0-windows\NAudio.Midi.dll" />
+	  <None Include="bin\Debug\net8.0-windows\NAudio.Wasapi.dll" />
+	  <None Include="bin\Debug\net8.0-windows\NAudio.WinForms.dll" />
+	  <None Include="bin\Debug\net8.0-windows\NAudio.WinMM.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Newtonsoft.Json.dll" />
+	  <None Include="bin\Debug\net8.0-windows\pl\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\pt-BR\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\QuestPDF.dll" />
+	  <None Include="bin\Debug\net8.0-windows\ReaLTaiizor.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\linux-arm64\native\libqpdf.so" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\linux-arm64\native\libQuestPdfSkia.so" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\linux-musl-x64\native\libqpdf.so" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\linux-musl-x64\native\libQuestPdfSkia.so" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\linux-x64\native\libqpdf.so" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\linux-x64\native\libQuestPdfSkia.so" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\osx-arm64\native\libqpdf.dylib" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\osx-arm64\native\libQuestPdfSkia.dylib" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\osx-x64\native\libqpdf.dylib" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\osx-x64\native\libQuestPdfSkia.dylib" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\unix\lib\net8.0\Microsoft.Data.SqlClient.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\unix\lib\net8.0\System.Data.SqlClient.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-arm64\native\sni.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x64\native\libgcc_s_seh-1.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x64\native\libstdc++-6.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x64\native\libwinpthread-1.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x64\native\qpdf.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x64\native\QuestPdfSkia.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x64\native\sni.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x64\native\zlib1.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x86\native\libgcc_s_dw2-1.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x86\native\libstdc++-6.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x86\native\libwinpthread-1.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x86\native\qpdf.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x86\native\QuestPdfSkia.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x86\native\sni.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win-x86\native\zlib1.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\Microsoft.Data.SqlClient.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Data.SqlClient.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Diagnostics.EventLog.Messages.dll" />
+	  <None Include="bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll" />
+	  <None Include="bin\Debug\net8.0-windows\ru\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Sprache.dll" />
+	  <None Include="bin\Debug\net8.0-windows\Stripe.net.dll" />
+	  <None Include="bin\Debug\net8.0-windows\SunnyUI.Common.dll" />
+	  <None Include="bin\Debug\net8.0-windows\SunnyUI.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.ClientModel.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.Configuration.ConfigurationManager.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.Data.SqlClient.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.Diagnostics.EventLog.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.IdentityModel.Tokens.Jwt.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.Memory.Data.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.Security.Cryptography.Pkcs.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.Security.Cryptography.ProtectedData.dll" />
+	  <None Include="bin\Debug\net8.0-windows\System.Windows.Forms.DataVisualization.dll" />
+	  <None Include="bin\Debug\net8.0-windows\tr\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\UI\assets\6451071039_DamHoangLam.pdf" />
+	  <None Include="bin\Debug\net8.0-windows\UI\assets\c8d76519-b64b-45af-8e6c-b2af746d0215.pdf" />
+	  <None Include="bin\Debug\net8.0-windows\zh-Hans\Microsoft.Data.SqlClient.resources.dll" />
+	  <None Include="bin\Debug\net8.0-windows\zh-Hant\Microsoft.Data.SqlClient.resources.dll" />
 	</ItemGroup>
 
 	<ItemGroup>
