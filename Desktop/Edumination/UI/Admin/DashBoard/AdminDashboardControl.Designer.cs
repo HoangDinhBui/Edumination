@@ -83,6 +83,7 @@
             // 
             // lblActivitiesTitle
             // 
+            lblActivitiesTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblActivitiesTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             lblActivitiesTitle.ForeColor = Color.FromArgb(48, 48, 48);
             lblActivitiesTitle.Location = new Point(20, 15);
@@ -93,6 +94,7 @@
             // 
             // lblEnrollmentsLabel
             // 
+            lblEnrollmentsLabel.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblEnrollmentsLabel.Font = new Font("Segoe UI", 10F);
             lblEnrollmentsLabel.ForeColor = Color.Gray;
             lblEnrollmentsLabel.Location = new Point(20, 15);
@@ -104,10 +106,11 @@
             // flpRecentActivities
             // 
             flpRecentActivities.AutoScroll = true;
+            flpRecentActivities.BackColor = Color.FromArgb(0, 0, 0, 0);
             flpRecentActivities.FlowDirection = FlowDirection.TopDown;
             flpRecentActivities.Location = new Point(10, 50);
             flpRecentActivities.Name = "flpRecentActivities";
-            flpRecentActivities.Size = new Size(380, 420);
+            flpRecentActivities.Size = new Size(520, 685);
             flpRecentActivities.TabIndex = 1;
             flpRecentActivities.WrapContents = false;
             // 
@@ -129,6 +132,7 @@
             // 
             // lblTopTestsTitle
             // 
+            lblTopTestsTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTopTestsTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             lblTopTestsTitle.ForeColor = Color.FromArgb(48, 48, 48);
             lblTopTestsTitle.Location = new Point(20, 15);
@@ -149,7 +153,7 @@
             dgvTopTests.ReadOnly = true;
             dgvTopTests.RowHeadersVisible = false;
             dgvTopTests.RowHeadersWidth = 51;
-            dgvTopTests.Size = new Size(380, 170);
+            dgvTopTests.Size = new Size(511, 301);
             dgvTopTests.TabIndex = 1;
             // 
             // colTestTitle
@@ -191,6 +195,7 @@
             // 
             // lblTopCoursesTitle
             // 
+            lblTopCoursesTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTopCoursesTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             lblTopCoursesTitle.ForeColor = Color.FromArgb(48, 48, 48);
             lblTopCoursesTitle.Location = new Point(20, 15);
@@ -211,7 +216,7 @@
             dgvTopCourses.ReadOnly = true;
             dgvTopCourses.RowHeadersVisible = false;
             dgvTopCourses.RowHeadersWidth = 51;
-            dgvTopCourses.Size = new Size(380, 170);
+            dgvTopCourses.Size = new Size(511, 292);
             dgvTopCourses.TabIndex = 1;
             // 
             // colCourseTitle
@@ -255,6 +260,7 @@
             // 
             // lblStudentChartTitle
             // 
+            lblStudentChartTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblStudentChartTitle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             lblStudentChartTitle.ForeColor = Color.FromArgb(48, 48, 48);
             lblStudentChartTitle.Location = new Point(20, 15);
@@ -269,14 +275,15 @@
             pnlStudentChart.BorderStyle = BorderStyle.FixedSingle;
             pnlStudentChart.Location = new Point(10, 50);
             pnlStudentChart.Name = "pnlStudentChart";
-            pnlStudentChart.Size = new Size(360, 180);
+            pnlStudentChart.Size = new Size(494, 276);
             pnlStudentChart.TabIndex = 1;
             // 
             // lblTestChartTitle
             // 
+            lblTestChartTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTestChartTitle.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             lblTestChartTitle.ForeColor = Color.FromArgb(48, 48, 48);
-            lblTestChartTitle.Location = new Point(20, 250);
+            lblTestChartTitle.Location = new Point(20, 342);
             lblTestChartTitle.Name = "lblTestChartTitle";
             lblTestChartTitle.Size = new Size(300, 25);
             lblTestChartTitle.TabIndex = 2;
@@ -286,13 +293,14 @@
             // 
             pnlTestChart.BackColor = Color.FromArgb(250, 250, 250);
             pnlTestChart.BorderStyle = BorderStyle.FixedSingle;
-            pnlTestChart.Location = new Point(10, 285);
+            pnlTestChart.Location = new Point(10, 377);
             pnlTestChart.Name = "pnlTestChart";
-            pnlTestChart.Size = new Size(360, 180);
+            pnlTestChart.Size = new Size(494, 349);
             pnlTestChart.TabIndex = 3;
             // 
             // lblActiveEnrollments
             // 
+            lblActiveEnrollments.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblActiveEnrollments.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
             lblActiveEnrollments.ForeColor = Color.FromArgb(80, 200, 120);
             lblActiveEnrollments.Location = new Point(20, 45);
@@ -303,6 +311,7 @@
             // 
             // lblEnrollmentGrowth
             // 
+            lblEnrollmentGrowth.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblEnrollmentGrowth.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblEnrollmentGrowth.ForeColor = Color.Green;
             lblEnrollmentGrowth.Location = new Point(20, 113);
@@ -333,7 +342,7 @@
             lblTitle.BackColor = Color.Transparent;
             lblTitle.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
-            lblTitle.Location = new Point(96, 10);
+            lblTitle.Location = new Point(95, 20);
             lblTitle.Name = "lblTitle";
             lblTitle.Size = new Size(400, 50);
             lblTitle.TabIndex = 0;
@@ -352,6 +361,7 @@
             // 
             // btnRefresh
             // 
+            btnRefresh.BackColor = Color.FromArgb(0, 0, 0, 0);
             btnRefresh.Font = new Font("Microsoft Sans Serif", 12F);
             btnRefresh.Location = new Point(1120, 20);
             btnRefresh.MinimumSize = new Size(1, 1);
@@ -383,6 +393,7 @@
             // 
             // lblStudentsLabel
             // 
+            lblStudentsLabel.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblStudentsLabel.Font = new Font("Segoe UI", 10F);
             lblStudentsLabel.ForeColor = Color.Gray;
             lblStudentsLabel.Location = new Point(20, 15);
@@ -393,6 +404,7 @@
             // 
             // lblTotalStudents
             // 
+            lblTotalStudents.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTotalStudents.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
             lblTotalStudents.ForeColor = Color.FromArgb(80, 160, 255);
             lblTotalStudents.Location = new Point(20, 45);
@@ -403,6 +415,7 @@
             // 
             // lblStudentGrowth
             // 
+            lblStudentGrowth.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblStudentGrowth.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblStudentGrowth.ForeColor = Color.Green;
             lblStudentGrowth.Location = new Point(20, 113);
@@ -413,6 +426,7 @@
             // 
             // pnlTestCard
             // 
+            pnlTestCard.BackColor = Color.FromArgb(0, 0, 0, 0);
             pnlTestCard.Controls.Add(lblTestsLabel);
             pnlTestCard.Controls.Add(lblTotalTests);
             pnlTestCard.Controls.Add(lblTestGrowth);
@@ -432,6 +446,7 @@
             // 
             // lblTestsLabel
             // 
+            lblTestsLabel.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTestsLabel.Font = new Font("Segoe UI", 10F);
             lblTestsLabel.ForeColor = Color.Gray;
             lblTestsLabel.Location = new Point(20, 15);
@@ -442,6 +457,7 @@
             // 
             // lblTotalTests
             // 
+            lblTotalTests.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTotalTests.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
             lblTotalTests.ForeColor = Color.FromArgb(255, 140, 80);
             lblTotalTests.Location = new Point(20, 52);
@@ -452,6 +468,7 @@
             // 
             // lblTestGrowth
             // 
+            lblTestGrowth.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTestGrowth.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblTestGrowth.ForeColor = Color.Green;
             lblTestGrowth.Location = new Point(20, 113);
@@ -478,6 +495,7 @@
             // 
             // pnlCourseCard
             // 
+            pnlCourseCard.BackColor = Color.FromArgb(0, 0, 0, 0);
             pnlCourseCard.Controls.Add(lblCoursesLabel);
             pnlCourseCard.Controls.Add(lblTotalCourses);
             pnlCourseCard.Controls.Add(lblCourseGrowth);
@@ -497,6 +515,7 @@
             // 
             // lblCoursesLabel
             // 
+            lblCoursesLabel.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblCoursesLabel.Font = new Font("Segoe UI", 10F);
             lblCoursesLabel.ForeColor = Color.Gray;
             lblCoursesLabel.Location = new Point(20, 15);
@@ -507,6 +526,7 @@
             // 
             // lblTotalCourses
             // 
+            lblTotalCourses.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTotalCourses.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
             lblTotalCourses.ForeColor = Color.FromArgb(160, 80, 255);
             lblTotalCourses.Location = new Point(20, 48);
@@ -517,6 +537,7 @@
             // 
             // lblCourseGrowth
             // 
+            lblCourseGrowth.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblCourseGrowth.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblCourseGrowth.ForeColor = Color.Green;
             lblCourseGrowth.Location = new Point(20, 113);

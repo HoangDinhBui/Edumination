@@ -55,6 +55,7 @@
             Controls.Add(pnlNavBar);
             Name = "AdminMainForm";
             Text = "AdminMainForm";
+            Load += AdminMainForm_Load;
             ResumeLayout(false);
         }
 

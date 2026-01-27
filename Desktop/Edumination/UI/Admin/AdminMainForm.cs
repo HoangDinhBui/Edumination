@@ -30,24 +30,25 @@ namespace Edumination.WinForms.UI.Admin
         {
             InitializeComponent();
 
-            // Lưu lại form login + token
             _fullName = fullName;
             _role = role;
 
-            var navBar = new AdminNavBarPanel() { Dock = DockStyle.Fill };
+            // ===== TẠO NAVBAR DUY NHẤT =====
+            var navBar = new AdminNavBarPanel
+            {
+                Dock = DockStyle.Fill
+            };
 
-            // Bắt sự kiện từ NavBar
             navBar.OnMenuClicked += NavBar_OnMenuClicked;
-
+            pnlNavBar.Controls.Clear();
             pnlNavBar.Controls.Add(navBar);
 
-            this.FormClosed += AdminMainForm_FormClosed;
-            // Load Navbar
-            this.pnlNavBar.Controls.Add(new AdminNavBarPanel() { Dock = DockStyle.Fill });
+            // ===== LOAD DASHBOARD MẶC ĐỊNH =====
+            LoadContent(new AdminDashboardControl());
 
-            // Khi admin form bị tắt → hiện lại login
             this.FormClosed += AdminMainForm_FormClosed;
         }
+
 
         private void AdminMainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -100,9 +101,16 @@ namespace Edumination.WinForms.UI.Admin
                 case "logout":
                     this.Close(); // sẽ kích hoạt FormClosed → hiện lại login
                     break;
+                default:
+                    LoadContent(new AdminDashboardControl());
+                    break;
             }
         }
 
+        private void AdminMainForm_Load(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Maximized;
+        }
     }
 
 }
