@@ -375,6 +375,26 @@ namespace IELTS.BLL
             }
         }
 
-        #endregion
-    }
+		public bool SaveWritingPrompts(long sectionId, Dictionary<int, string> questionTypes, Dictionary<int, string> contents)
+		{
+			var questionDAL = new QuestionDAL(); // Giả định bạn đã có lớp này
+			bool allSuccess = true;
+
+			foreach (var item in contents)
+			{
+				int position = item.Key;
+				string promptText = item.Value;
+				string type = questionTypes.ContainsKey(position) ? questionTypes[position] : "ESSAY";
+
+				// Gọi DAL để lưu từng đề bài
+				bool success = questionDAL.InsertWritingPrompt(sectionId, position, type, promptText);
+
+				if (!success) allSuccess = false;
+			}
+
+			return allSuccess;
+		}
+
+		#endregion
+	}
 }
