@@ -1,4 +1,5 @@
 ﻿using IELTS.DAL;
+using IELTS.DTO;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -52,6 +53,16 @@ namespace IELTS.BLL
                 throw new Exception("Nội dung lựa chọn không được để trống!");
 
             return questionDAL.CreateChoice(questionId, choiceText, isCorrect, position);
+        }
+
+        public class QuestionService
+        {
+            private readonly QuestionDAL _dal = new QuestionDAL();
+
+            public List<QuestionDTO> GetQuestionsByPassage(long passageId)
+            {
+                return _dal.GetQuestionsByPassage(passageId);
+            }
         }
     }
 }

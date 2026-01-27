@@ -41,5 +41,26 @@ namespace IELTS.DTO
         {
             return $"Q{Position}: {QuestionText.Substring(0, Math.Min(50, QuestionText.Length))}...";
         }
+
+        public int StartIndex { get; set; }
+        public int EndIndex { get; set; }
+
+        public List<QuestionOptionDTO> Options { get; set; } = new();
+        public List<QuestionMatchDTO> MatchPairs { get; set; } = new();
+        public List<QuestionChoiceDTO> NewChoices { get; set; } = new();
+
+
+        public class QuestionOptionDTO
+        {
+            public string OptionKey { get; set; }
+            public string OptionText { get; set; }
+        }
+
+        public class QuestionMatchDTO
+        {
+            public string LeftKey { get; set; }
+            public string LeftText { get; set; }
+            public string RightKey { get; set; }
+        }
     }
 }

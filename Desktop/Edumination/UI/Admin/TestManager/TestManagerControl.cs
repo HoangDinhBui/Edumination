@@ -17,6 +17,27 @@ namespace Edumination.WinForms.UI.Admin.TestManager
         //private pnlTestInfo pnlTestInfo;
         private AllSkillsTestControl allSkillsTestControl;
         private CreateTestPaperControl createTestPaperControl;
+        private ShowSectionControl showSectionControl { get ; set; }
+        public ShowSectionControl ShowSectionControl
+        {
+            get => showSectionControl;
+            set => showSectionControl = value;
+        }
+
+        private ShowPassageControl showPassageControl { get; set; }
+        public ShowPassageControl ShowPassageControl
+        {
+            get => showPassageControl;
+            set => showPassageControl = value;
+        }
+
+        private ShowQuestionControl showQuestionControl { get; set; }
+        public ShowQuestionControl ShowQuestionControl
+        {
+            get => showQuestionControl;
+            set => showQuestionControl = value;
+        }
+
         public CreateTestPaperControl GetCreateTestPaperControl()
         {
             return createTestPaperControl;
@@ -44,20 +65,31 @@ namespace Edumination.WinForms.UI.Admin.TestManager
         {
             InitializeComponent();
             //pnlTestInfo = new pnlTestInfo();
-            allSkillsTestControl = new AllSkillsTestControl();
+            showSectionControl = new ShowSectionControl(this);
+            showPassageControl = new ShowPassageControl(this);
+            showQuestionControl = new ShowQuestionControl(this);
+
+            allSkillsTestControl = new AllSkillsTestControl(this);
             createTestPaperControl = new CreateTestPaperControl();
-            addSectionButtonControl= new AddSectionButtonControl();
+            addSectionButtonControl = new AddSectionButtonControl();
+
             // Dock fill để chiếm toàn bộ pnlMain
             //pnlTestInfo.Dock = DockStyle.Fill;
             allSkillsTestControl.Dock = DockStyle.Fill;
             createTestPaperControl.Dock = DockStyle.Fill;
             addSectionButtonControl.Dock = DockStyle.Fill;
+            showSectionControl.Dock = DockStyle.Fill;
+            showPassageControl.Dock = DockStyle.Fill;
+            showQuestionControl.Dock = DockStyle.Fill;
 
             // Add vào pnlMain
             pnlMain.Controls.Add(allSkillsTestControl);
             pnlMain.Controls.Add(createTestPaperControl);
             createTestPaperControl.SetTestPaperControl(this);
             pnlMain.Controls.Add(addSectionButtonControl);
+            pnlMain.Controls.Add(showSectionControl);
+            pnlMain.Controls.Add(showPassageControl);
+            pnlMain.Controls.Add(showQuestionControl);
             //pnlMain.Controls.Add(pnlTestInfo);
 
             // Chỉ hiển thị pnlAllSkillTest lúc đầu
