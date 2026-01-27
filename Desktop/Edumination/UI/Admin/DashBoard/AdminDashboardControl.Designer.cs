@@ -146,6 +146,7 @@
             dgvTopTests.AllowUserToAddRows = false;
             dgvTopTests.AllowUserToDeleteRows = false;
             dgvTopTests.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvTopTests.BackgroundColor = Color.White;
             dgvTopTests.ColumnHeadersHeight = 29;
             dgvTopTests.Columns.AddRange(new DataGridViewColumn[] { colTestTitle, colAttempts, colAvgBand });
             dgvTopTests.Location = new Point(10, 50);
@@ -209,6 +210,7 @@
             dgvTopCourses.AllowUserToAddRows = false;
             dgvTopCourses.AllowUserToDeleteRows = false;
             dgvTopCourses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvTopCourses.BackgroundColor = Color.White;
             dgvTopCourses.ColumnHeadersHeight = 29;
             dgvTopCourses.Columns.AddRange(new DataGridViewColumn[] { colCourseTitle, colEnrollments, colCompletion });
             dgvTopCourses.Location = new Point(10, 50);
@@ -569,6 +571,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.White;
             Controls.Add(pnlTopTests);
             Controls.Add(pnlTopCourses);
             Controls.Add(pnlCharts);

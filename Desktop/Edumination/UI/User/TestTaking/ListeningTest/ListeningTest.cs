@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
+using IELTS.UI.User.Results;
 
 namespace IELTS.UI.User.TestTaking.ListeningTest
 {
@@ -142,49 +143,87 @@ namespace IELTS.UI.User.TestTaking.ListeningTest
             }
         }
 
-        private async void SubmitTestWithAI()
-        {
-            _timer.Stop();
-            if (audioPanel != null) audioPanel.StopAudio();
+		private async void SubmitTestWithAI()
+		{
+			_timer.Stop();
+			if (audioPanel != null) audioPanel.StopAudio();
 
-            // Khóa giao diện để tránh bấm lung tung
-            this.Enabled = false;
-            testNavBar.SetTimeText("AI đang chấm điểm... Vui lòng chờ...");
+			// Khóa giao diện để tránh bấm lung tung
+			this.Enabled = false;
+			testNavBar.SetTimeText("AI đang chấm điểm... Vui lòng chờ...");
 
-            try
-            {
-                // 1. Lấy đáp án người dùng nhập từ UI
-                Dictionary<int, string> userAnswers = answerPanel.CollectAnswers();
+			try
+			{
+				// 1. Lấy đáp án người dùng nhập từ UI
+				Dictionary<int, string> userAnswers = answerPanel.CollectAnswers();
 
-                // 2. Lấy đáp án đúng (Answer Key) từ Database
-                Dictionary<int, string> correctKeys = GetCorrectKeysFromDB(_sectionId);
+				// 2. Lấy đáp án đúng (Answer Key) từ Database
+				Dictionary<int, string> correctKeys = GetCorrectKeysFromDB(_sectionId);
 
-                if (correctKeys.Count == 0)
-                {
-                    throw new Exception("Không tìm thấy đáp án trong CSDL để chấm điểm.");
-                }
+				if (correctKeys.Count == 0)
+				{
+					throw new Exception("Không tìm thấy đáp án trong CSDL để chấm điểm.");
+				}
 
-                // 3. Gọi Groq AI Service
-                ListeningGradeResult result = await _aiService.GradeListeningAsync(userAnswers, correctKeys);
+				// 3. Gọi Groq AI Service để chấm điểm
+				ListeningGradeResult aiResult = await _aiService.GradeListeningAsync(userAnswers, correctKeys);
 
-                // 4. Hiển thị kết quả
-                ShowResultDialog(result);
+				// 4. CHUYỂN ĐỔI SANG ĐỐI TƯỢNG ExamResult ĐỂ HIỂN THỊ TRANG ANSWER
+				string currentName = IELTS.UI.User.SessionManager.FullName;
+				if (string.IsNullOrEmpty(currentName) || currentName == "Student") currentName = "Trần Tú";
 
-                // Sau khi xem kết quả thì đóng form
-                this.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi trong quá trình chấm điểm: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                this.Enabled = true; // Mở lại nếu lỗi để người dùng thử lại
-                _timer.Start(); // Chạy lại giờ nếu muốn
-            }
-        }
+				var finalResult = new ExamResult
+				{
+					Skill = "Listening",
+					UserName = currentName,
+					TimeTakenSeconds = (30 * 60) - _remainingSeconds, // Giả sử limit là 30p, bạn có thể lấy từ biến limit
+					TotalQuestions = aiResult.TotalQuestions,
+					CorrectCount = aiResult.TotalCorrect,
+					Band = aiResult.BandScore,
+					Parts = new List<PartReview>()
+				};
 
-        // --- DATABASE HELPERS ---
+				// Gom nhóm kết quả vào các Part (IELTS Listening thường có 4 Part)
+				for (int p = 1; p <= 4; p++)
+				{
+					var part = new PartReview { PartName = $"Part {p}", Questions = new List<QuestionReview>() };
 
-        // 1. Load thông tin bài thi (Metadata)
-        private bool LoadSectionMetadata()
+					// Lấy các câu hỏi thuộc Part này (ví dụ mỗi Part 10 câu)
+					var partDetails = aiResult.Details
+						.Where(d => d.QuestionNumber > (p - 1) * 10 && d.QuestionNumber <= p * 10)
+						.ToList();
+
+					foreach (var d in partDetails)
+					{
+						part.Questions.Add(new QuestionReview
+						{
+							Number = d.QuestionNumber,
+							UserAnswer = d.UserAnswer,
+							CorrectAnswer = d.CorrectKey,
+							IsCorrect = d.IsCorrect
+							// Bạn có thể gán thêm d.Explanation vào một field Ghi chú nếu QuestionReview có hỗ trợ
+						});
+					}
+					if (part.Questions.Count > 0) finalResult.Parts.Add(part);
+				}
+
+				// 5. HIỂN THỊ FORM KẾT QUẢ GIỐNG READING
+				new AnswerResultForm(finalResult).Show();
+
+				// Đóng form thi
+				this.Close();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Lỗi trong quá trình chấm điểm: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				this.Enabled = true;
+				_timer.Start();
+			}
+		}
+		// --- DATABASE HELPERS ---
+
+		// 1. Load thông tin bài thi (Metadata)
+		private bool LoadSectionMetadata()
         {
             try
             {
@@ -202,8 +241,41 @@ namespace IELTS.UI.User.TestTaking.ListeningTest
                             int limit = r["TimeLimitMinutes"] != DBNull.Value ? Convert.ToInt32(r["TimeLimitMinutes"]) : 30;
                             _remainingSeconds = limit * 60;
 
-                            if (r["AudioFilePath"] != DBNull.Value) _audioPath = r["AudioFilePath"].ToString();
-                            if (r["PdfFilePath"] != DBNull.Value) _pdfPath = r["PdfFilePath"].ToString();
+							if (r["AudioFilePath"] != DBNull.Value)
+							{
+								// 1. Lấy tên file gốc từ DB
+								string fileName = Path.GetFileName(r["AudioFilePath"].ToString());
+
+								// 2. Lùi 2 cấp từ thư mục thực thi (net8.0-windows -> Debug -> bin)
+								// Cách này an toàn hơn dùng chuỗi ".." vì nó lấy đường dẫn vật lý thực tế
+								DirectoryInfo binDir = Directory.GetParent(Application.StartupPath); // Lùi 1 cấp ra khỏi net8.0-windows
+								DirectoryInfo debugDir = binDir?.Parent; // Lùi thêm 1 cấp nữa ra khỏi Debug (vào thư mục bin)
+
+								if (debugDir != null)
+								{
+									// 3. Kết hợp với cấu trúc UI/assets/audios mà bạn đang có
+									_audioPath = Path.Combine(debugDir.FullName, "UI", "assets", "audios", fileName);
+
+									// Kiểm tra xem file có thực sự tồn tại ở đó không
+									if (!File.Exists(_audioPath))
+									{
+										// THỬ NGHIỆM DỰ PHÒNG: Nếu folder UI nằm ngang hàng với bin
+										DirectoryInfo projectRootDir = debugDir.Parent;
+										if (projectRootDir != null)
+										{
+											string fallbackPath = Path.Combine(projectRootDir.FullName, "UI", "assets", "audios", fileName);
+											if (File.Exists(fallbackPath)) _audioPath = fallbackPath;
+										}
+									}
+								}
+
+								// Hiển thị thông báo nếu vẫn không tìm thấy sau khi lùi 2 cấp
+								if (!File.Exists(_audioPath))
+								{
+									MessageBox.Show($"❌ Vẫn không tìm thấy file sau khi lùi 2 cấp tại:\n{_audioPath}", "Lỗi đường dẫn");
+								}
+							}
+							if (r["PdfFilePath"] != DBNull.Value) _pdfPath = r["PdfFilePath"].ToString();
                         }
                     }
                 }

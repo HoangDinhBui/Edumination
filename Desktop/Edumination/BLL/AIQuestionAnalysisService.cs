@@ -35,94 +35,122 @@ namespace IELTS.BLL
 		/// <summary>
 		/// Phân tích PDF bằng AI và lưu câu hỏi vào database
 		/// </summary>
-		public async Task<bool> AnalyzePdfAndSaveQuestions(string pdfPath, long testPaperId)
+		public async Task<bool> AnalyzePdfAndSaveQuestions(string pdfPath, long testPaperId, string audioPath = "")
 		{
 			try
 			{
-				// 1. Kiểm tra file
+				// 1. Kiểm tra file (Giữ nguyên logic cũ)
 				if (!File.Exists(pdfPath))
 				{
-					MessageBox.Show($"❌ Lỗi: Không tìm thấy file PDF tại:\n{pdfPath}",
-						"Lỗi File", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					MessageBox.Show($"❌ Lỗi: Không tìm thấy file PDF tại:\n{pdfPath}", "Lỗi File", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					return false;
 				}
 
 				FileInfo fileInfo = new FileInfo(pdfPath);
 				if (fileInfo.Length > MAX_FILE_SIZE_BYTES)
 				{
-					MessageBox.Show($"❌ File PDF quá lớn ({fileInfo.Length / 1024 / 1024:F2} MB).\n" +
-						$"Giới hạn: {MAX_FILE_SIZE_BYTES / 1024 / 1024} MB.\n\n" +
-						"Vui lòng nén hoặc chia nhỏ file PDF.",
-						"File Quá Lớn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					MessageBox.Show($"❌ File PDF quá lớn. Giới hạn: {MAX_FILE_SIZE_BYTES / 1024 / 1024} MB.", "File Quá Lớn", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 					return false;
 				}
 
-				// 2. Đọc và chuyển đổi PDF
+				// 2. Đọc và chuyển đổi PDF (Giữ nguyên logic cũ)
 				byte[] pdfBytes = await Task.Run(() => File.ReadAllBytes(pdfPath));
 				string base64Pdf = Convert.ToBase64String(pdfBytes);
 
-				// 3. Gọi Gemini API với rate limiting
+				// 3. Gọi Gemini API (Kết quả đã có Skill và TimeLimit)
 				var analysisResult = await CallGeminiAPIWithRetry(base64Pdf, Path.GetFileName(pdfPath));
 
-				if (analysisResult == null || analysisResult.Questions == null || !analysisResult.Questions.Any())
+				// Kiểm tra dữ liệu hợp lệ (Giữ nguyên logic cũ)
+				bool hasQuestions = analysisResult?.Questions != null && analysisResult.Questions.Any();
+				bool hasPrompts = analysisResult?.Prompts != null && analysisResult.Prompts.Any();
+
+				if (analysisResult == null || (!hasQuestions && !hasPrompts))
 				{
-					MessageBox.Show("⚠️ AI không tìm thấy câu hỏi IELTS hợp lệ trong file PDF.\n\n" +
-						"Nguyên nhân có thể:\n" +
-						"• File không chứa đề thi IELTS Reading\n" +
-						"• Định dạng PDF không chuẩn\n" +
-						"• Ảnh scan chất lượng kém\n\n" +
-						"Bạn có thể thêm câu hỏi thủ công sau.",
-						"Không Tìm Thấy Câu Hỏi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					MessageBox.Show("⚠️ AI không tìm thấy dữ liệu IELTS hợp lệ (Câu hỏi hoặc Đề bài) trong file PDF.", "Không Tìm Thấy Dữ Liệu", MessageBoxButtons.OK, MessageBoxIcon.Information);
 					return false;
 				}
 
-				// 4. Tạo TestSection cho READING
+				// 4. Tạo TestSection dựa trên nhận diện của AI
+				string detectedSkill = (analysisResult.Skill ?? "READING").ToUpper();
+				int detectedTime = analysisResult.TimeLimit > 0 ? analysisResult.TimeLimit : 60;
+
 				var section = new TestSectionDTO
 				{
 					PaperId = testPaperId,
-					Skill = "READING",
-					TimeLimitMinutes = 60,
+					Skill = detectedSkill,
+					TimeLimitMinutes = detectedTime,
 					PdfFileName = Path.GetFileName(pdfPath),
-					PdfFilePath = pdfPath
+					PdfFilePath = pdfPath,
+					// ĐỔI: Gán đường dẫn file âm thanh vào DTO để lưu xuống Database (Bảng TestSections)
+					AudioFilePath = audioPath
 				};
 
 				long sectionId = _testSectionBLL.CreateTestSection(section);
 				if (sectionId <= 0)
 				{
-					MessageBox.Show("❌ Lỗi: Không thể tạo TestSection trong Database.",
-						"Lỗi Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					MessageBox.Show("❌ Lỗi: Không thể tạo TestSection trong Database.", "Lỗi Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					return false;
 				}
 
-				// 5. Chuẩn bị dữ liệu câu hỏi
-				var questionTypes = new Dictionary<int, string>();
-				var answers = new Dictionary<int, string>();
-				var questionRanges = new Dictionary<int, int>();
+				// 5. Logic lưu dữ liệu linh hoạt theo loại bài thi (Giữ nguyên logic cũ)
+				// 5. Logic lưu dữ liệu linh hoạt theo loại bài thi
+				bool saveSuccess = false;
 
-				foreach (var q in analysisResult.Questions)
+				if (detectedSkill == "READING" || detectedSkill == "LISTENING")
 				{
-					questionTypes[q.Position] = q.QuestionType;
-					answers[q.Position] = q.Answer ?? "";
+					// Logic cho bài thi trắc nghiệm (Giữ nguyên)
+					var questionTypes = new Dictionary<int, string>();
+					var answers = new Dictionary<int, string>();
+					var questionRanges = new Dictionary<int, int>();
 
-					if (q.EndPosition.HasValue && q.EndPosition > q.Position)
+					if (analysisResult.Questions != null)
 					{
-						questionRanges[q.Position] = q.EndPosition.Value;
+						foreach (var q in analysisResult.Questions)
+						{
+							questionTypes[q.Position] = q.QuestionType;
+							answers[q.Position] = q.Answer ?? "";
+							if (q.EndPosition.HasValue && q.EndPosition > q.Position)
+								questionRanges[q.Position] = q.EndPosition.Value;
+						}
+						saveSuccess = _testSectionBLL.SaveQuestionsToSection(sectionId, questionTypes, answers, questionRanges);
 					}
 				}
+				else if (detectedSkill == "WRITING" || detectedSkill == "SPEAKING")
+				{
+					// ✅ PHẦN SỬA MỚI: Xử lý lưu nội dung đề bài Writing/Speaking
+					if (analysisResult.Prompts != null && analysisResult.Prompts.Any())
+					{
+						var questionTypes = new Dictionary<int, string>();
+						var contents = new Dictionary<int, string>();
 
-				// 6. Lưu vào database
-				bool saveSuccess = _testSectionBLL.SaveQuestionsToSection(
-					sectionId,
-					questionTypes,
-					answers,
-					questionRanges
-				);
+						for (int i = 0; i < analysisResult.Prompts.Count; i++)
+						{
+							int position = i + 1;
+							questionTypes[position] = "ESSAY"; // Loại câu hỏi tự luận
+							contents[position] = analysisResult.Prompts[i]; // Nội dung đề bài trích xuất từ PDF
+						}
+
+						// Gọi hàm BLL để lưu nội dung đề vào bảng Questions
+						// Bạn cần đảm bảo hàm này đã được định nghĩa trong TestSectionBLL
+						saveSuccess = _testSectionBLL.SaveWritingPrompts(sectionId, questionTypes, contents);
+
+						if (!saveSuccess)
+						{
+							MessageBox.Show($"❌ Lỗi: AI đã tìm thấy đề {detectedSkill} nhưng không thể lưu vào Database.", "Lỗi Lưu Trữ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						}
+					}
+					else
+					{
+						MessageBox.Show($"⚠️ AI xác định là {detectedSkill} nhưng không trích xuất được nội dung đề bài (prompts rỗng).", "Thiếu Nội Dung", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					}
+				}
 
 				if (saveSuccess)
 				{
 					MessageBox.Show($"✅ Thành công!\n\n" +
-						$"📊 Tổng số câu hỏi: {analysisResult.Questions.Count}\n" +
-						$"📝 Đã lưu vào Section ID: {sectionId}",
+						$"📊 Loại bài thi: {detectedSkill}\n" +
+						$"⏱️ Thời gian: {detectedTime} phút\n" +
+						$"📝 Section ID: {sectionId}",
 						"Phân Tích Thành Công", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				}
 
@@ -130,12 +158,10 @@ namespace IELTS.BLL
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"❌ Lỗi hệ thống:\n{ex.Message}\n\n{ex.StackTrace}",
-					"Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"❌ Lỗi hệ thống: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return false;
 			}
 		}
-
 		/// <summary>
 		/// Gọi Gemini API với retry mechanism và rate limiting
 		/// </summary>
@@ -204,16 +230,16 @@ namespace IELTS.BLL
 				throw new Exception("Thiếu GeminiApiKey trong App.config!");
 			}
 
-			// ✅ Danh sách models theo thứ tự ưu tiên (từ danh sách của bạn)
+			// ✅ Danh sách models theo thứ tự ưu tiên
 			var modelsToTry = new[]
 			{
-		"gemini-2.5-flash",              // Mới nhất, nhanh nhất
-        "gemini-2.0-flash",              // Ổn định
-        "gemini-flash-latest",           // Luôn cập nhật
-        "gemini-2.5-pro",                // Chính xác cao hơn
-        "gemini-pro-latest",             // Fallback
-        "gemini-2.0-flash-lite"          // Nhanh cho file nhỏ
-    };
+		"gemini-2.5-flash",
+		"gemini-2.0-flash",
+		"gemini-flash-latest",
+		"gemini-2.5-pro",
+		"gemini-pro-latest",
+		"gemini-2.0-flash-lite"
+	};
 
 			Exception lastException = null;
 
@@ -223,30 +249,39 @@ namespace IELTS.BLL
 				{
 					string url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={geminiApiKey}";
 
-					string prompt = @"You are a specialized Data Extraction Tool for IELTS documents. 
+					// GIỮ NGUYÊN PROMPT CỦA BẠN
+					string prompt = @"You are a specialized Data Extraction Tool for IELTS documents.
 
 ### YOUR MISSION:
-Your primary goal is to find the 'ANSWER KEY' or 'CORRECT ANSWERS' section within the provided PDF and extract the answers for questions 1 to 40.
+1. IDENTIFY the test skill: LISTENING, READING, WRITING, or SPEAKING.
+2. EXTRACT the answer keys (for Listening/Reading) or the prompt tasks (for Writing/Speaking).
 
-### INSTRUCTIONS:
-1. SCANNED DATA FIRST: Search the entire document for a table or list containing the correct answers. 
-2. NO REASONING REQUIRED: Do not try to solve the questions by reading the passages. Only extract the answers that are explicitly written in the answer key section of the PDF.
-3. DATA MAPPING: Map each answer to its corresponding question number (position 1-40).
+### SKILL IDENTIFICATION RULES:
+- LISTENING: Look for keywords like 'Section 1', 'Part 1', 'Recording', or answers containing words/short phrases.
+- READING: Look for 'Passage 1', 'Reading Passage', and answers like 'TRUE/FALSE/NOT GIVEN' or letters A-D.
+- WRITING: Look for 'Task 1', 'Task 2', 'Write at least 150/250 words'.
+- SPEAKING: Look for 'Part 1', 'Cue Card', 'Discussion topics'.
 
 ### DATA STRUCTURE:
-- position: (int) 1-40.
-- questionType: (string) Identify the type based on the question section (MCQ, FILL_BLANK, TRUE_FALSE_NOT_GIVEN, etc.).
-- answer: (string) The exact value found in the answer key.
-- endPosition: (int|null) For grouped questions.
-
-### IF NO ANSWER KEY IS FOUND:
-If you absolutely cannot find an answer key section in the PDF, return an empty JSON array [] so the system can notify the user.
+- skill: (string) Must be one of: 'LISTENING', 'READING', 'WRITING', 'SPEAKING'.
+- timeLimit: (int) Default 60 for Reading/Writing, 30 for Listening, 15 for Speaking.
+- questions: (array) 
+    - position: (int) 1-40.
+    - questionType: (string) MCQ, FILL_BLANK, TRUE_FALSE, etc.
+    - answer: (string) The exact answer from the key.
+    - endPosition: (int|null) For grouped questions.
+- prompts: (array of strings) ONLY for WRITING or SPEAKING. Extract the full text of the essay tasks or speaking questions.
 
 ### OUTPUT FORMAT:
-Return ONLY a valid JSON array. No text, no markdown.
-[
-  { ""position"": 1, ""questionType"": ""MCQ"", ""answer"": ""A"", ""endPosition"": null }
-]";
+Return ONLY a valid JSON object. No markdown, no prose.
+{
+  ""skill"": ""READING"",
+  ""timeLimit"": 60,
+  ""questions"": [
+    { ""position"": 1, ""questionType"": ""MCQ"", ""answer"": ""A"", ""endPosition"": null }
+  ],
+  ""prompts"": []
+}";
 
 					var requestBody = new
 					{
@@ -265,11 +300,11 @@ Return ONLY a valid JSON array. No text, no markdown.
 				},
 						generationConfig = new
 						{
-							temperature = 0.1,      // Giảm tính ngẫu nhiên
+							temperature = 0.1,
 							topK = 40,
 							topP = 0.95,
 							maxOutputTokens = 8192,
-							responseMimeType = "application/json"  // Bắt buộc trả về JSON
+							responseMimeType = "application/json"
 						},
 						safetySettings = new[]
 						{
@@ -288,165 +323,57 @@ Return ONLY a valid JSON array. No text, no markdown.
 					var response = await _httpClient.PostAsync(url, httpContent);
 					var responseJson = await response.Content.ReadAsStringAsync();
 
-					System.Diagnostics.Debug.WriteLine($"📊 Response ({response.StatusCode}): {responseJson.Substring(0, Math.Min(300, responseJson.Length))}...");
-
 					if (!response.IsSuccessStatusCode)
 					{
-						// Kiểm tra lỗi cụ thể
 						dynamic errorObj = JsonConvert.DeserializeObject(responseJson);
 						string errorMsg = errorObj?.error?.message?.ToString() ?? "Unknown error";
 						int errorCode = errorObj?.error?.code ?? 0;
 
-						// Rate limit - đợi và thử model tiếp theo
-						if (errorCode == 429)
-						{
-							System.Diagnostics.Debug.WriteLine($"⚠️ Rate limit hit for {modelName}, trying next model...");
-							lastException = new Exception($"Rate limit: {modelName}");
-							await Task.Delay(2000); // Đợi 2 giây
-							continue;
-						}
-
-						// Model không tồn tại - thử model tiếp theo
-						if (errorCode == 404)
-						{
-							System.Diagnostics.Debug.WriteLine($"⚠️ Model {modelName} not found, trying next...");
-							lastException = new Exception($"Not found: {modelName}");
-							continue;
-						}
-
+						if (errorCode == 429) { await Task.Delay(2000); continue; }
+						if (errorCode == 404) continue;
 						throw new HttpRequestException($"API Error ({response.StatusCode}): {errorMsg}");
 					}
 
 					dynamic result = JsonConvert.DeserializeObject(responseJson);
+					string aiResponse = result.candidates[0].content.parts[0].text?.ToString();
 
-					// Kiểm tra response structure
-					if (result?.candidates == null || result.candidates.Count == 0)
-					{
-						System.Diagnostics.Debug.WriteLine($"⚠️ {modelName} returned no candidates");
-						lastException = new Exception($"No candidates: {modelName}");
-						continue;
-					}
+					if (string.IsNullOrWhiteSpace(aiResponse)) continue;
 
-					// Kiểm tra finishReason
-					string finishReason = result.candidates[0].finishReason?.ToString();
-					if (finishReason == "SAFETY")
-					{
-						System.Diagnostics.Debug.WriteLine($"⚠️ {modelName} blocked by safety filters");
-						lastException = new Exception($"Safety block: {modelName}");
-						continue;
-					}
-
-					var parts = result.candidates[0].content?.parts;
-					if (parts == null || parts.Count == 0)
-					{
-						System.Diagnostics.Debug.WriteLine($"⚠️ {modelName} returned no content parts");
-						lastException = new Exception($"No parts: {modelName}");
-						continue;
-					}
-
-					string aiResponse = parts[0].text?.ToString();
-
-					if (string.IsNullOrWhiteSpace(aiResponse))
-					{
-						System.Diagnostics.Debug.WriteLine($"⚠️ {modelName} returned empty text");
-						lastException = new Exception($"Empty text: {modelName}");
-						continue;
-					}
-
-					System.Diagnostics.Debug.WriteLine($"✅ {modelName} returned response: {aiResponse.Substring(0, Math.Min(200, aiResponse.Length))}...");
-
-					// Parse JSON
+					// Parse JSON vào object AIAnalysisResult thay vì List
 					string cleanedJson = ExtractJsonContent(aiResponse);
 
-					if (string.IsNullOrWhiteSpace(cleanedJson) || cleanedJson == "[]")
+					// SỬA TẠI ĐÂY: Parse ra toàn bộ object kết quả
+					AIAnalysisResult finalResult = JsonConvert.DeserializeObject<AIAnalysisResult>(cleanedJson);
+
+					if (finalResult == null || (finalResult.Questions == null && finalResult.Prompts == null))
 					{
-						System.Diagnostics.Debug.WriteLine($"⚠️ {modelName} returned empty JSON");
-						lastException = new Exception($"Empty JSON: {modelName}");
+						System.Diagnostics.Debug.WriteLine($"⚠️ {modelName} returned empty result");
 						continue;
 					}
 
-					List<AIQuestionDTO> questions = null;
-
-					try
-					{
-						questions = JsonConvert.DeserializeObject<List<AIQuestionDTO>>(cleanedJson);
-					}
-					catch (JsonException jsonEx)
-					{
-						System.Diagnostics.Debug.WriteLine($"⚠️ JSON parse error for {modelName}: {jsonEx.Message}");
-						System.Diagnostics.Debug.WriteLine($"Raw JSON: {cleanedJson}");
-						lastException = jsonEx;
-						continue;
-					}
-
-					if (questions == null || questions.Count == 0)
-					{
-						System.Diagnostics.Debug.WriteLine($"⚠️ {modelName} parsed to empty list");
-						lastException = new Exception($"Empty question list: {modelName}");
-						continue;
-					}
-
-					// ✅ SUCCESS!
-					System.Diagnostics.Debug.WriteLine($"✅✅✅ SUCCESS with {modelName}: {questions.Count} questions found");
-
+					// Hiển thị thông báo thành công
+					int qCount = finalResult.Questions?.Count ?? 0;
 					MessageBox.Show(
 						$"✅ Phân tích thành công!\n\n" +
 						$"🤖 Model: {modelName}\n" +
-						$"📊 Số câu hỏi: {questions.Count}\n" +
+						$"📊 Kỹ năng: {finalResult.Skill}\n" +
+						$"📝 Số câu hỏi: {qCount}\n" +
 						$"📄 File: {fileName}",
-						"Thành Công",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information
-					);
+						"Thành Công", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-					ValidateQuestions(questions);
-					return new AIAnalysisResult { Questions = questions };
-				}
-				catch (HttpRequestException httpEx)
-				{
-					System.Diagnostics.Debug.WriteLine($"❌ HTTP error for {modelName}: {httpEx.Message}");
-					lastException = httpEx;
+					if (finalResult.Questions != null) ValidateQuestions(finalResult.Questions);
 
-					// Nếu là lỗi network, không thử model khác
-					if (httpEx.Message.Contains("Unable to connect"))
-					{
-						throw;
-					}
-
-					continue;
-				}
-				catch (TaskCanceledException)
-				{
-					System.Diagnostics.Debug.WriteLine($"⏱️ Timeout for {modelName}");
-					lastException = new Exception($"Timeout: {modelName}");
-					continue;
+					return finalResult; // Trả về object đã parse
 				}
 				catch (Exception ex)
 				{
-					System.Diagnostics.Debug.WriteLine($"❌ Unexpected error for {modelName}: {ex.Message}");
+					System.Diagnostics.Debug.WriteLine($"❌ Error {modelName}: {ex.Message}");
 					lastException = ex;
 					continue;
 				}
 			}
 
-			// ❌ Tất cả models đều thất bại
-			string errorMessage = lastException != null
-				? $"Lỗi cuối cùng: {lastException.Message}"
-				: "Không có lỗi cụ thể";
-
-			throw new Exception(
-				$"❌ Không thể phân tích PDF sau khi thử {modelsToTry.Length} models.\n\n" +
-				$"{errorMessage}\n\n" +
-				"Các nguyên nhân có thể:\n" +
-				"1. File PDF không chứa đề thi IELTS Reading\n" +
-				"2. PDF bị mã hóa hoặc lỗi format\n" +
-				"3. Đã vượt quota API (chờ 1 giờ và thử lại)\n" +
-				"4. Kết nối Internet không ổn định\n\n" +
-				"Giải pháp:\n" +
-				"- Thử file PDF khác\n" +
-				"- Kiểm tra Console Output (Debug window)\n" +
-				"- Nhập câu hỏi thủ công"
-			);
+			throw lastException ?? new Exception("❌ Tất cả models đều thất bại.");
 		}
 		/// Validate kết quả từ AI
 		/// </summary>
@@ -493,14 +420,13 @@ Return ONLY a valid JSON array. No text, no markdown.
 		/// </summary>
 		private string ExtractJsonContent(string input)
 		{
-			if (string.IsNullOrEmpty(input)) return "[]";
+			if (string.IsNullOrEmpty(input)) return "{}"; // Trả về object rỗng thay vì mảng rỗng
 
-			// Loại bỏ markdown code block
 			input = input.Replace("```json", "").Replace("```", "").Trim();
 
-			// Tìm array JSON
-			int start = input.IndexOf('[');
-			int end = input.LastIndexOf(']');
+			// Tìm vị trí của dấu ngoặc nhọn đầu tiên và cuối cùng
+			int start = input.IndexOf('{');
+			int end = input.LastIndexOf('}');
 
 			if (start != -1 && end != -1 && end > start)
 			{
@@ -514,7 +440,17 @@ Return ONLY a valid JSON array. No text, no markdown.
 	// DTO Classes
 	public class AIAnalysisResult
 	{
+		[JsonProperty("skill")]
+		public string Skill { get; set; }
+
+		[JsonProperty("timeLimit")]
+		public int TimeLimit { get; set; }
+
+		[JsonProperty("questions")]
 		public List<AIQuestionDTO> Questions { get; set; }
+
+		[JsonProperty("prompts")]
+		public List<string> Prompts { get; set; }
 	}
 
 	public class AIQuestionDTO

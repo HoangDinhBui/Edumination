@@ -4,22 +4,22 @@
     {
         private System.ComponentModel.IContainer components = null;
 
-        private System.Windows.Forms.Panel pnlTop;
-        private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.TextBox txtSearch;
-        private System.Windows.Forms.Button btnApply;
-        private System.Windows.Forms.Button btnBack;
+        private Sunny.UI.UIPanel pnlTop;
+        private Sunny.UI.UILabel lblTitle;
+        private Sunny.UI.UITextBox txtSearch;
+        private Sunny.UI.UISymbolButton btnApply;
+        private Sunny.UI.UISymbolButton btnBack;
 
-        private System.Windows.Forms.SplitContainer splitMain;
-        private System.Windows.Forms.DataGridView dgvMain;
+        private Sunny.UI.UISplitContainer splitMain;
+        private Sunny.UI.UIDataGridView dgvMain;
 
-        // Detail panel
-        private System.Windows.Forms.Panel pnlDetail;
-        private System.Windows.Forms.Label lblDetailTitle;
-        private System.Windows.Forms.Label lblStudentName;
-        private System.Windows.Forms.Label lblStudentEmail;
-        private System.Windows.Forms.Label lblStudentStatus;
-        private System.Windows.Forms.ProgressBar progressStudy;
+        // Detail
+        private Sunny.UI.UIPanel pnlDetail;
+        private Sunny.UI.UILabel lblDetailTitle;
+        private Sunny.UI.UILabel lblStudentName;
+        private Sunny.UI.UILabel lblStudentEmail;
+        private Sunny.UI.UILabel lblStudentStatus;
+        private Sunny.UI.UIProcessBar progressStudy;
 
         protected override void Dispose(bool disposing)
         {
@@ -28,28 +28,28 @@
             base.Dispose(disposing);
         }
 
-        #region Component Designer generated code
-
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
-            pnlTop = new Panel();
-            lblTitle = new Label();
-            txtSearch = new TextBox();
-            btnApply = new Button();
-            btnBack = new Button();
-            splitMain = new SplitContainer();
-            dgvMain = new DataGridView();
-            pnlDetail = new Panel();
-            lblDetailTitle = new Label();
-            lblStudentName = new Label();
-            lblStudentEmail = new Label();
-            lblStudentStatus = new Label();
-            progressStudy = new ProgressBar();
+            pnlTop = new Sunny.UI.UIPanel();
+            lblTitle = new Sunny.UI.UILabel();
+            txtSearch = new Sunny.UI.UITextBox();
+            btnApply = new Sunny.UI.UISymbolButton();
+            btnBack = new Sunny.UI.UISymbolButton();
+            splitMain = new Sunny.UI.UISplitContainer();
+            dgvMain = new Sunny.UI.UIDataGridView();
+            pnlDetail = new Sunny.UI.UIPanel();
+            lblDetailTitle = new Sunny.UI.UILabel();
+            lblStudentName = new Sunny.UI.UILabel();
+            lblStudentEmail = new Sunny.UI.UILabel();
+            lblStudentStatus = new Sunny.UI.UILabel();
+            progressStudy = new Sunny.UI.UIProcessBar();
             pnlTop.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)splitMain).BeginInit();
+            (splitMain).BeginInit();
             splitMain.Panel1.SuspendLayout();
             splitMain.Panel2.SuspendLayout();
             splitMain.SuspendLayout();
@@ -59,73 +59,87 @@
             // 
             // pnlTop
             // 
-            pnlTop.BackColor = Color.FromArgb(0, 120, 215);
             pnlTop.Controls.Add(lblTitle);
             pnlTop.Controls.Add(txtSearch);
             pnlTop.Controls.Add(btnApply);
             pnlTop.Controls.Add(btnBack);
             pnlTop.Dock = DockStyle.Top;
+            pnlTop.FillColor = Color.White;
+            pnlTop.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
             pnlTop.Location = new Point(0, 0);
+            pnlTop.Margin = new Padding(4, 5, 4, 5);
+            pnlTop.MinimumSize = new Size(1, 1);
             pnlTop.Name = "pnlTop";
-            pnlTop.Padding = new Padding(15);
-            pnlTop.Size = new Size(1300, 90);
+            pnlTop.Padding = new Padding(20);
+            pnlTop.RectColor = Color.FromArgb(229, 231, 235);
+            pnlTop.Size = new Size(1300, 119);
             pnlTop.TabIndex = 1;
+            pnlTop.Text = null;
+            pnlTop.TextAlignment = ContentAlignment.MiddleCenter;
             // 
             // lblTitle
             // 
-            lblTitle.AutoSize = true;
-            lblTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            lblTitle.ForeColor = Color.White;
-            lblTitle.Location = new Point(15, 10);
+            lblTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(17, 24, 39);
+            lblTitle.Location = new Point(20, 15);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(296, 41);
+            lblTitle.Size = new Size(621, 38);
             lblTitle.TabIndex = 0;
             lblTitle.Text = "Danh sách khóa học";
             // 
             // txtSearch
             // 
-            txtSearch.Font = new Font("Segoe UI", 12F);
-            txtSearch.Location = new Point(20, 50);
+            txtSearch.Font = new Font("Segoe UI", 11F);
+            txtSearch.Location = new Point(20, 70);
+            txtSearch.Margin = new Padding(4, 5, 4, 5);
+            txtSearch.MinimumSize = new Size(1, 16);
             txtSearch.Name = "txtSearch";
-            txtSearch.Size = new Size(373, 34);
+            txtSearch.Padding = new Padding(5);
+            txtSearch.Radius = 15;
+            txtSearch.ShowText = false;
+            txtSearch.Size = new Size(280, 41);
             txtSearch.TabIndex = 1;
+            txtSearch.TextAlignment = ContentAlignment.MiddleLeft;
+            txtSearch.Watermark = "Tìm kiếm...";
             // 
             // btnApply
             // 
-            btnApply.BackColor = Color.White;
-            btnApply.FlatAppearance.BorderSize = 0;
-            btnApply.FlatStyle = FlatStyle.Flat;
-            btnApply.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnApply.ForeColor = Color.FromArgb(0, 120, 215);
-            btnApply.Location = new Point(413, 50);
+            btnApply.FillColor = Color.FromArgb(79, 124, 255);
+            btnApply.FillHoverColor = Color.FromArgb(99, 144, 255);
+            btnApply.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnApply.Location = new Point(307, 70);
+            btnApply.MinimumSize = new Size(1, 1);
             btnApply.Name = "btnApply";
-            btnApply.Size = new Size(156, 34);
+            btnApply.Radius = 15;
+            btnApply.Size = new Size(110, 41);
+            btnApply.Symbol = 61442;
             btnApply.TabIndex = 2;
-            btnApply.Text = "🔍 Áp dụng";
-            btnApply.UseVisualStyleBackColor = false;
+            btnApply.Text = "Tìm";
+            btnApply.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
             btnApply.Click += btnApply_Click;
             // 
             // btnBack
             // 
-            btnBack.BackColor = Color.FromArgb(220, 235, 250);
-            btnBack.FlatAppearance.BorderSize = 0;
-            btnBack.FlatStyle = FlatStyle.Flat;
-            btnBack.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnBack.ForeColor = Color.FromArgb(0, 120, 215);
-            btnBack.Location = new Point(590, 50);
+            btnBack.FillColor = Color.FromArgb(243, 244, 246);
+            btnBack.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnBack.ForeColor = Color.FromArgb(55, 65, 81);
+            btnBack.Location = new Point(423, 70);
+            btnBack.MinimumSize = new Size(1, 1);
             btnBack.Name = "btnBack";
-            btnBack.Size = new Size(120, 34);
+            btnBack.Radius = 15;
+            btnBack.Size = new Size(120, 41);
+            btnBack.Symbol = 61536;
             btnBack.TabIndex = 3;
-            btnBack.Text = "← Quay lại";
-            btnBack.UseVisualStyleBackColor = false;
+            btnBack.Text = "Quay lại";
+            btnBack.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
             btnBack.Visible = false;
             btnBack.Click += btnBack_Click;
             // 
             // splitMain
             // 
-            splitMain.BackColor = Color.LightGray;
             splitMain.Dock = DockStyle.Fill;
-            splitMain.Location = new Point(0, 90);
+            splitMain.Location = new Point(0, 119);
+            splitMain.MinimumSize = new Size(20, 20);
             splitMain.Name = "splitMain";
             // 
             // splitMain.Panel1
@@ -135,110 +149,133 @@
             // splitMain.Panel2
             // 
             splitMain.Panel2.Controls.Add(pnlDetail);
-            splitMain.Size = new Size(1300, 660);
-            splitMain.SplitterDistance = 1048;
+            splitMain.Size = new Size(1300, 631);
+            splitMain.SplitterDistance = 987;
+            splitMain.SplitterWidth = 11;
             splitMain.TabIndex = 0;
             // 
             // dgvMain
             // 
             dgvMain.AllowUserToAddRows = false;
-            dgvMain.AllowUserToDeleteRows = false;
-            dataGridViewCellStyle4.BackColor = Color.FromArgb(235, 245, 255);
-            dgvMain.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
-            dgvMain.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvMain.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(249, 250, 251);
+            dgvMain.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             dgvMain.BackgroundColor = Color.White;
-            dgvMain.BorderStyle = BorderStyle.None;
             dgvMain.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = Color.FromArgb(0, 120, 215);
-            dataGridViewCellStyle5.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            dataGridViewCellStyle5.ForeColor = Color.White;
-            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
-            dgvMain.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
-            dgvMain.ColumnHeadersHeight = 45;
-            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = SystemColors.Window;
-            dataGridViewCellStyle6.Font = new Font("Segoe UI", 11F);
-            dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
-            dgvMain.DefaultCellStyle = dataGridViewCellStyle6;
+            dgvMain.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = Color.White;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = Color.FromArgb(55, 65, 81);
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dgvMain.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dgvMain.ColumnHeadersHeight = 48;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = SystemColors.Window;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 10F);
+            dataGridViewCellStyle3.ForeColor = Color.FromArgb(55, 65, 81);
+            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(235, 240, 255);
+            dataGridViewCellStyle3.SelectionForeColor = Color.FromArgb(30, 64, 175);
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            dgvMain.DefaultCellStyle = dataGridViewCellStyle3;
             dgvMain.Dock = DockStyle.Fill;
             dgvMain.EnableHeadersVisualStyles = false;
+            dgvMain.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dgvMain.GridColor = Color.FromArgb(235, 238, 245);
             dgvMain.Location = new Point(0, 0);
-            dgvMain.MultiSelect = false;
             dgvMain.Name = "dgvMain";
             dgvMain.ReadOnly = true;
+            dgvMain.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = Color.FromArgb(235, 243, 255);
+            dataGridViewCellStyle4.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dataGridViewCellStyle4.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(80, 160, 255);
+            dataGridViewCellStyle4.SelectionForeColor = Color.White;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
+            dgvMain.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
             dgvMain.RowHeadersVisible = false;
             dgvMain.RowHeadersWidth = 51;
-            dgvMain.RowTemplate.Height = 40;
+            dataGridViewCellStyle5.BackColor = Color.White;
+            dataGridViewCellStyle5.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dgvMain.RowsDefaultCellStyle = dataGridViewCellStyle5;
+            dgvMain.RowTemplate.Height = 46;
+            dgvMain.SelectedIndex = -1;
             dgvMain.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvMain.Size = new Size(1048, 660);
+            dgvMain.Size = new Size(987, 631);
+            dgvMain.StripeOddColor = Color.FromArgb(249, 250, 251);
             dgvMain.TabIndex = 0;
             dgvMain.CellDoubleClick += dgvMain_CellDoubleClick;
             // 
             // pnlDetail
             // 
-            pnlDetail.BackColor = Color.White;
             pnlDetail.Controls.Add(lblDetailTitle);
             pnlDetail.Controls.Add(lblStudentName);
             pnlDetail.Controls.Add(lblStudentEmail);
             pnlDetail.Controls.Add(lblStudentStatus);
             pnlDetail.Controls.Add(progressStudy);
             pnlDetail.Dock = DockStyle.Fill;
+            pnlDetail.FillColor = Color.White;
+            pnlDetail.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
             pnlDetail.Location = new Point(0, 0);
+            pnlDetail.Margin = new Padding(4, 5, 4, 5);
+            pnlDetail.MinimumSize = new Size(1, 1);
             pnlDetail.Name = "pnlDetail";
-            pnlDetail.Padding = new Padding(25);
-            pnlDetail.Size = new Size(248, 660);
+            pnlDetail.Padding = new Padding(20);
+            pnlDetail.RectColor = Color.FromArgb(229, 231, 235);
+            pnlDetail.Size = new Size(302, 631);
             pnlDetail.TabIndex = 0;
+            pnlDetail.Text = null;
+            pnlDetail.TextAlignment = ContentAlignment.MiddleCenter;
             // 
             // lblDetailTitle
             // 
-            lblDetailTitle.AutoSize = true;
-            lblDetailTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            lblDetailTitle.ForeColor = Color.FromArgb(0, 120, 215);
-            lblDetailTitle.Location = new Point(25, 20);
+            lblDetailTitle.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            lblDetailTitle.ForeColor = Color.FromArgb(79, 124, 255);
+            lblDetailTitle.Location = new Point(20, 20);
             lblDetailTitle.Name = "lblDetailTitle";
-            lblDetailTitle.Size = new Size(228, 32);
+            lblDetailTitle.Size = new Size(100, 29);
             lblDetailTitle.TabIndex = 0;
-            lblDetailTitle.Text = "Thông tin học viên";
+            lblDetailTitle.Text = "Chi tiết học viên";
             // 
             // lblStudentName
             // 
-            lblStudentName.AutoSize = true;
-            lblStudentName.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            lblStudentName.Location = new Point(25, 70);
+            lblStudentName.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblStudentName.ForeColor = Color.FromArgb(48, 48, 48);
+            lblStudentName.Location = new Point(20, 65);
             lblStudentName.Name = "lblStudentName";
-            lblStudentName.Size = new Size(295, 28);
+            lblStudentName.Size = new Size(259, 23);
             lblStudentName.TabIndex = 1;
-            lblStudentName.Text = "Chọn học viên để xem chi tiết";
             // 
             // lblStudentEmail
             // 
-            lblStudentEmail.AutoSize = true;
-            lblStudentEmail.Font = new Font("Segoe UI", 11F);
-            lblStudentEmail.Location = new Point(25, 110);
+            lblStudentEmail.Font = new Font("Segoe UI", 10F);
+            lblStudentEmail.ForeColor = Color.FromArgb(48, 48, 48);
+            lblStudentEmail.Location = new Point(20, 95);
             lblStudentEmail.Name = "lblStudentEmail";
-            lblStudentEmail.Size = new Size(0, 25);
+            lblStudentEmail.Size = new Size(259, 23);
             lblStudentEmail.TabIndex = 2;
             // 
             // lblStudentStatus
             // 
-            lblStudentStatus.AutoSize = true;
-            lblStudentStatus.Font = new Font("Segoe UI", 11F);
-            lblStudentStatus.Location = new Point(25, 145);
+            lblStudentStatus.Font = new Font("Segoe UI", 10F);
+            lblStudentStatus.ForeColor = Color.FromArgb(48, 48, 48);
+            lblStudentStatus.Location = new Point(20, 125);
             lblStudentStatus.Name = "lblStudentStatus";
-            lblStudentStatus.Size = new Size(0, 25);
+            lblStudentStatus.Size = new Size(259, 23);
             lblStudentStatus.TabIndex = 3;
             // 
             // progressStudy
             // 
-            progressStudy.Location = new Point(25, 190);
+            progressStudy.FillColor = Color.FromArgb(235, 243, 255);
+            progressStudy.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            progressStudy.Location = new Point(20, 165);
+            progressStudy.MinimumSize = new Size(3, 3);
             progressStudy.Name = "progressStudy";
-            progressStudy.Size = new Size(300, 24);
+            progressStudy.Radius = 6;
+            progressStudy.Size = new Size(260, 19);
             progressStudy.TabIndex = 4;
             // 
             // CourseStudentViewerPanel
@@ -250,17 +287,13 @@
             Name = "CourseStudentViewerPanel";
             Size = new Size(1300, 750);
             pnlTop.ResumeLayout(false);
-            pnlTop.PerformLayout();
             splitMain.Panel1.ResumeLayout(false);
             splitMain.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)splitMain).EndInit();
+            (splitMain).EndInit();
             splitMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvMain).EndInit();
             pnlDetail.ResumeLayout(false);
-            pnlDetail.PerformLayout();
             ResumeLayout(false);
         }
-
-        #endregion
     }
 }

@@ -272,5 +272,34 @@ namespace IELTS.DAL
             return questions;
         }
 
-    }
+		public bool InsertWritingPrompt(long sectionId, int position, string questionType, string promptText)
+		{
+			try
+			{
+				using (var conn = DatabaseConnection.GetConnection())
+				{
+					conn.Open();
+					// Chèn nội dung đề bài vào cột QuestionText
+					string sql = @"INSERT INTO Questions (SectionId, Position, QuestionType, QuestionText) 
+                           VALUES (@SectionId, @Position, @QuestionType, @QuestionText)";
+
+					using (var cmd = new SqlCommand(sql, conn))
+					{
+						cmd.Parameters.AddWithValue("@SectionId", sectionId);
+						cmd.Parameters.AddWithValue("@Position", position);
+						cmd.Parameters.AddWithValue("@QuestionType", questionType);
+						cmd.Parameters.AddWithValue("@QuestionText", promptText);
+
+						return cmd.ExecuteNonQuery() > 0;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine("Error in InsertWritingPrompt: " + ex.Message);
+				return false;
+			}
+		}
+
+	}
 }

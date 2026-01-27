@@ -14,184 +14,404 @@
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle style1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle style2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle style3 = new System.Windows.Forms.DataGridViewCellStyle();
-
-            this.pnlLeft = new Sunny.UI.UIPanel();
-            this.dgvCourses = new Sunny.UI.UIDataGridView();
-            this.pnlSearch = new Sunny.UI.UIPanel();
-            this.btnSearch = new Sunny.UI.UISymbolButton();
-            this.txtSearch = new Sunny.UI.UITextBox();
-            this.pnlRight = new Sunny.UI.UITitlePanel();
-            this.btnRefresh = new Sunny.UI.UISymbolButton();
-            this.btnDelete = new Sunny.UI.UISymbolButton();
-            this.btnSave = new Sunny.UI.UISymbolButton();
-
-            // Các control nhập liệu
-            this.swPublished = new Sunny.UI.UISwitch();
-            this.lblPublished = new Sunny.UI.UILabel();
-            this.txtPrice = new Sunny.UI.UITextBox(); // Hoặc UIIntegerUpDown
-            this.lblPrice = new Sunny.UI.UILabel();
-            this.cboLevel = new Sunny.UI.UIComboBox();
-            this.lblLevel = new Sunny.UI.UILabel();
-            this.txtDesc = new Sunny.UI.UITextBox();
-            this.lblDesc = new Sunny.UI.UILabel();
-            this.txtTitle = new Sunny.UI.UITextBox();
-            this.lblTitle = new Sunny.UI.UILabel();
-            this.txtId = new Sunny.UI.UITextBox();
-            this.lblId = new Sunny.UI.UILabel();
-
-            this.pnlLeft.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvCourses)).BeginInit();
-            this.pnlSearch.SuspendLayout();
-            this.pnlRight.SuspendLayout();
-            this.SuspendLayout();
-
-            // --- Left Panel ---
-            this.pnlLeft.Controls.Add(this.dgvCourses);
-            this.pnlLeft.Controls.Add(this.pnlSearch);
-            this.pnlLeft.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlLeft.Location = new System.Drawing.Point(0, 0);
-            this.pnlLeft.Name = "pnlLeft";
-            this.pnlLeft.Size = new System.Drawing.Size(1230, 1020);
-            this.pnlLeft.TabIndex = 0;
-            this.pnlLeft.RectColor = System.Drawing.Color.Transparent;
-
-            // --- DataGridView ---
-            style1.BackColor = System.Drawing.Color.FromArgb(235, 243, 255);
-            this.dgvCourses.AlternatingRowsDefaultCellStyle = style1;
-            this.dgvCourses.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvCourses.BackgroundColor = System.Drawing.Color.White;
-            this.dgvCourses.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            style2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            style2.BackColor = System.Drawing.Color.FromArgb(80, 160, 255);
-            style2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            style2.ForeColor = System.Drawing.Color.White;
-            this.dgvCourses.ColumnHeadersDefaultCellStyle = style2;
-            this.dgvCourses.ColumnHeadersHeight = 32;
-            this.dgvCourses.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvCourses.EnableHeadersVisualStyles = false;
-            this.dgvCourses.GridColor = System.Drawing.Color.FromArgb(80, 160, 255);
-            this.dgvCourses.Location = new System.Drawing.Point(0, 60);
-            this.dgvCourses.Name = "dgvCourses";
-            this.dgvCourses.ReadOnly = true;
-            this.dgvCourses.RowHeadersVisible = false;
-            style3.BackColor = System.Drawing.Color.White;
-            style3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.dgvCourses.RowsDefaultCellStyle = style3;
-            this.dgvCourses.RowTemplate.Height = 29;
-            this.dgvCourses.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvCourses.Size = new System.Drawing.Size(1230, 960);
-            this.dgvCourses.TabIndex = 1;
-
-            // --- Search Panel ---
-            this.pnlSearch.Controls.Add(this.btnSearch);
-            this.pnlSearch.Controls.Add(this.txtSearch);
-            this.pnlSearch.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlSearch.Location = new System.Drawing.Point(0, 0);
-            this.pnlSearch.Name = "pnlSearch";
-            this.pnlSearch.Size = new System.Drawing.Size(1230, 60);
-            this.pnlSearch.TabIndex = 0;
-
-            // Search Controls
-            this.txtSearch.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.txtSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.txtSearch.Location = new System.Drawing.Point(13, 15);
-            this.txtSearch.Name = "txtSearch";
-            this.txtSearch.Padding = new System.Windows.Forms.Padding(5);
-            this.txtSearch.Size = new System.Drawing.Size(350, 29);
-            this.txtSearch.Symbol = 61442;
-            this.txtSearch.Watermark = "Tìm khóa học...";
-
-            this.btnSearch.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnSearch.Location = new System.Drawing.Point(375, 12);
-            this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new System.Drawing.Size(120, 35);
-            this.btnSearch.Symbol = 61442;
-            this.btnSearch.Text = "Tìm kiếm";
-
-            // --- Right Panel (Input Form) ---
-            this.pnlRight.Controls.Add(this.btnRefresh);
-            this.pnlRight.Controls.Add(this.btnDelete);
-            this.pnlRight.Controls.Add(this.btnSave);
-            this.pnlRight.Controls.Add(this.swPublished);
-            this.pnlRight.Controls.Add(this.lblPublished);
-            this.pnlRight.Controls.Add(this.txtPrice);
-            this.pnlRight.Controls.Add(this.lblPrice);
-            this.pnlRight.Controls.Add(this.cboLevel);
-            this.pnlRight.Controls.Add(this.lblLevel);
-            this.pnlRight.Controls.Add(this.txtDesc);
-            this.pnlRight.Controls.Add(this.lblDesc);
-            this.pnlRight.Controls.Add(this.txtTitle);
-            this.pnlRight.Controls.Add(this.lblTitle);
-            this.pnlRight.Controls.Add(this.txtId);
-            this.pnlRight.Controls.Add(this.lblId);
-            this.pnlRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.pnlRight.Location = new System.Drawing.Point(1230, 0);
-            this.pnlRight.Name = "pnlRight";
-            this.pnlRight.Padding = new System.Windows.Forms.Padding(10, 35, 10, 10);
-            this.pnlRight.Size = new System.Drawing.Size(500, 1020);
-            this.pnlRight.TabIndex = 1;
-            this.pnlRight.Text = "CHI TIẾT KHÓA HỌC";
-            this.pnlRight.TitleColor = System.Drawing.Color.FromArgb(80, 160, 255);
-
-            // --- Input Controls ---
-            // ID
-            this.lblId.AutoSize = true; this.lblId.Location = new System.Drawing.Point(30, 60); this.lblId.Text = "Mã KH:";
-            this.txtId.Enabled = false; this.txtId.Location = new System.Drawing.Point(30, 85); this.txtId.Size = new System.Drawing.Size(440, 29);
-
-            // Title
-            this.lblTitle.AutoSize = true; this.lblTitle.Location = new System.Drawing.Point(30, 130); this.lblTitle.Text = "Tên khóa học:";
-            this.txtTitle.Location = new System.Drawing.Point(30, 155); this.txtTitle.Size = new System.Drawing.Size(440, 29);
-
-            // Description (Multiline)
-            this.lblDesc.AutoSize = true; this.lblDesc.Location = new System.Drawing.Point(30, 200); this.lblDesc.Text = "Mô tả:";
-            this.txtDesc.Location = new System.Drawing.Point(30, 225); this.txtDesc.Size = new System.Drawing.Size(440, 100);
-            this.txtDesc.Multiline = true; // Cho phép nhập nhiều dòng
-
-            // Level
-            this.lblLevel.AutoSize = true; this.lblLevel.Location = new System.Drawing.Point(30, 340); this.lblLevel.Text = "Trình độ:";
-            this.cboLevel.Items.AddRange(new object[] { "BEGINNER", "INTERMEDIATE", "ADVANCED" });
-            this.cboLevel.Location = new System.Drawing.Point(30, 365); this.cboLevel.Size = new System.Drawing.Size(440, 29);
-
-            // Price
-            this.lblPrice.AutoSize = true; this.lblPrice.Location = new System.Drawing.Point(30, 410); this.lblPrice.Text = "Giá (VNĐ):";
-            this.txtPrice.Location = new System.Drawing.Point(30, 435); this.txtPrice.Size = new System.Drawing.Size(440, 29);
-            this.txtPrice.Type = Sunny.UI.UITextBox.UIEditType.Integer; // Chỉ cho nhập số
-
-            // Published
-            this.lblPublished.AutoSize = true; this.lblPublished.Location = new System.Drawing.Point(30, 480); this.lblPublished.Text = "Xuất bản:";
-            this.swPublished.Active = true; this.swPublished.Location = new System.Drawing.Point(200, 478);
-            this.swPublished.ActiveText = "Có"; this.swPublished.InActiveText = "Không";
-
-            // Buttons
-            this.btnSave.Location = new System.Drawing.Point(30, 540); this.btnSave.Size = new System.Drawing.Size(130, 40);
-            this.btnSave.Symbol = 61639; this.btnSave.Text = "Lưu";
-            this.btnSave.FillColor = System.Drawing.Color.FromArgb(110, 190, 40);
-
-            this.btnDelete.Location = new System.Drawing.Point(170, 540); this.btnDelete.Size = new System.Drawing.Size(100, 40);
-            this.btnDelete.Symbol = 61453; this.btnDelete.Text = "Xóa";
-            this.btnDelete.FillColor = System.Drawing.Color.Red;
-            this.btnDelete.Enabled = false;
-
-            this.btnRefresh.Location = new System.Drawing.Point(280, 540); this.btnRefresh.Size = new System.Drawing.Size(120, 40);
-            this.btnRefresh.Symbol = 61473; this.btnRefresh.Text = "Làm mới";
-            this.btnRefresh.FillColor = System.Drawing.Color.Gray;
-
-            // Main Panel
-            this.Controls.Add(this.pnlLeft);
-            this.Controls.Add(this.pnlRight);
-            this.Name = "CoursesPanel";
-            this.Size = new System.Drawing.Size(1730, 1020);
-            this.pnlLeft.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvCourses)).EndInit();
-            this.pnlSearch.ResumeLayout(false);
-            this.pnlRight.ResumeLayout(false);
-            this.pnlRight.PerformLayout();
-            this.ResumeLayout(false);
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            pnlLeft = new Sunny.UI.UIPanel();
+            dgvCourses = new Sunny.UI.UIDataGridView();
+            pnlSearch = new Sunny.UI.UIPanel();
+            btnSearch = new Sunny.UI.UISymbolButton();
+            txtSearch = new Sunny.UI.UITextBox();
+            pnlRight = new Sunny.UI.UITitlePanel();
+            btnRefresh = new Sunny.UI.UISymbolButton();
+            btnDelete = new Sunny.UI.UISymbolButton();
+            btnSave = new Sunny.UI.UISymbolButton();
+            swPublished = new Sunny.UI.UISwitch();
+            lblPublished = new Sunny.UI.UILabel();
+            txtPrice = new Sunny.UI.UITextBox();
+            lblPrice = new Sunny.UI.UILabel();
+            cboLevel = new Sunny.UI.UIComboBox();
+            lblLevel = new Sunny.UI.UILabel();
+            txtDesc = new Sunny.UI.UITextBox();
+            lblDesc = new Sunny.UI.UILabel();
+            txtTitle = new Sunny.UI.UITextBox();
+            lblTitle = new Sunny.UI.UILabel();
+            txtId = new Sunny.UI.UITextBox();
+            lblId = new Sunny.UI.UILabel();
+            pnlLeft.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvCourses).BeginInit();
+            pnlSearch.SuspendLayout();
+            pnlRight.SuspendLayout();
+            SuspendLayout();
+            // 
+            // pnlLeft
+            // 
+            pnlLeft.Controls.Add(dgvCourses);
+            pnlLeft.Controls.Add(pnlSearch);
+            pnlLeft.Dock = DockStyle.Fill;
+            pnlLeft.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            pnlLeft.Location = new Point(0, 0);
+            pnlLeft.Margin = new Padding(4, 5, 4, 5);
+            pnlLeft.MinimumSize = new Size(1, 1);
+            pnlLeft.Name = "pnlLeft";
+            pnlLeft.RectColor = Color.Transparent;
+            pnlLeft.Size = new Size(1193, 1020);
+            pnlLeft.TabIndex = 0;
+            pnlLeft.Text = null;
+            pnlLeft.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // dgvCourses
+            // 
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(235, 243, 255);
+            dgvCourses.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dgvCourses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvCourses.BackgroundColor = Color.White;
+            dgvCourses.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(80, 160, 255);
+            dataGridViewCellStyle2.Font = new Font("Microsoft Sans Serif", 12F);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dgvCourses.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dgvCourses.ColumnHeadersHeight = 32;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = SystemColors.Window;
+            dataGridViewCellStyle3.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dataGridViewCellStyle3.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            dgvCourses.DefaultCellStyle = dataGridViewCellStyle3;
+            dgvCourses.Dock = DockStyle.Fill;
+            dgvCourses.EnableHeadersVisualStyles = false;
+            dgvCourses.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dgvCourses.GridColor = Color.FromArgb(80, 160, 255);
+            dgvCourses.Location = new Point(0, 60);
+            dgvCourses.Name = "dgvCourses";
+            dgvCourses.ReadOnly = true;
+            dgvCourses.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = Color.FromArgb(235, 243, 255);
+            dataGridViewCellStyle4.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dataGridViewCellStyle4.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(80, 160, 255);
+            dataGridViewCellStyle4.SelectionForeColor = Color.White;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
+            dgvCourses.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            dgvCourses.RowHeadersVisible = false;
+            dgvCourses.RowHeadersWidth = 51;
+            dataGridViewCellStyle5.BackColor = Color.White;
+            dataGridViewCellStyle5.Font = new Font("Microsoft Sans Serif", 12F);
+            dgvCourses.RowsDefaultCellStyle = dataGridViewCellStyle5;
+            dgvCourses.SelectedIndex = -1;
+            dgvCourses.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvCourses.Size = new Size(1193, 960);
+            dgvCourses.StripeOddColor = Color.FromArgb(235, 243, 255);
+            dgvCourses.TabIndex = 1;
+            // 
+            // pnlSearch
+            // 
+            pnlSearch.Controls.Add(btnSearch);
+            pnlSearch.Controls.Add(txtSearch);
+            pnlSearch.Dock = DockStyle.Top;
+            pnlSearch.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            pnlSearch.Location = new Point(0, 0);
+            pnlSearch.Margin = new Padding(4, 5, 4, 5);
+            pnlSearch.MinimumSize = new Size(1, 1);
+            pnlSearch.Name = "pnlSearch";
+            pnlSearch.Size = new Size(1193, 60);
+            pnlSearch.TabIndex = 0;
+            pnlSearch.Text = null;
+            pnlSearch.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // btnSearch
+            // 
+            btnSearch.BackColor = Color.FromArgb(0, 0, 0, 0);
+            btnSearch.Cursor = Cursors.Hand;
+            btnSearch.Font = new Font("Microsoft Sans Serif", 12F);
+            btnSearch.Location = new Point(375, 5);
+            btnSearch.MinimumSize = new Size(1, 1);
+            btnSearch.Name = "btnSearch";
+            btnSearch.Radius = 15;
+            btnSearch.Size = new Size(131, 49);
+            btnSearch.Symbol = 61442;
+            btnSearch.TabIndex = 0;
+            btnSearch.Text = "Tìm kiếm";
+            btnSearch.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            // 
+            // txtSearch
+            // 
+            txtSearch.BackColor = Color.FromArgb(0, 0, 0, 0);
+            txtSearch.Cursor = Cursors.IBeam;
+            txtSearch.Font = new Font("Microsoft Sans Serif", 12F);
+            txtSearch.Location = new Point(13, 5);
+            txtSearch.Margin = new Padding(4, 5, 4, 5);
+            txtSearch.MinimumSize = new Size(1, 16);
+            txtSearch.Name = "txtSearch";
+            txtSearch.Padding = new Padding(5);
+            txtSearch.Radius = 15;
+            txtSearch.ShowText = false;
+            txtSearch.Size = new Size(350, 50);
+            txtSearch.Symbol = 61442;
+            txtSearch.TabIndex = 1;
+            txtSearch.TextAlignment = ContentAlignment.MiddleLeft;
+            txtSearch.Watermark = "Tìm khóa học...";
+            // 
+            // pnlRight
+            // 
+            pnlRight.BackColor = Color.FromArgb(0, 0, 0, 0);
+            pnlRight.Controls.Add(btnRefresh);
+            pnlRight.Controls.Add(btnDelete);
+            pnlRight.Controls.Add(btnSave);
+            pnlRight.Controls.Add(swPublished);
+            pnlRight.Controls.Add(lblPublished);
+            pnlRight.Controls.Add(txtPrice);
+            pnlRight.Controls.Add(lblPrice);
+            pnlRight.Controls.Add(cboLevel);
+            pnlRight.Controls.Add(lblLevel);
+            pnlRight.Controls.Add(txtDesc);
+            pnlRight.Controls.Add(lblDesc);
+            pnlRight.Controls.Add(txtTitle);
+            pnlRight.Controls.Add(lblTitle);
+            pnlRight.Controls.Add(txtId);
+            pnlRight.Controls.Add(lblId);
+            pnlRight.Dock = DockStyle.Right;
+            pnlRight.FillColor = Color.White;
+            pnlRight.FillColor2 = Color.FromArgb(0, 0, 0, 0);
+            pnlRight.Font = new Font("Microsoft Sans Serif", 12F);
+            pnlRight.Location = new Point(1193, 0);
+            pnlRight.Margin = new Padding(4, 5, 4, 5);
+            pnlRight.MinimumSize = new Size(1, 1);
+            pnlRight.Name = "pnlRight";
+            pnlRight.Padding = new Padding(10, 35, 10, 10);
+            pnlRight.ShowText = false;
+            pnlRight.Size = new Size(537, 1020);
+            pnlRight.TabIndex = 1;
+            pnlRight.Text = "CHI TIẾT KHÓA HỌC";
+            pnlRight.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // btnRefresh
+            // 
+            btnRefresh.FillColor = Color.Gray;
+            btnRefresh.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnRefresh.Location = new Point(282, 582);
+            btnRefresh.MinimumSize = new Size(1, 1);
+            btnRefresh.Name = "btnRefresh";
+            btnRefresh.Size = new Size(120, 40);
+            btnRefresh.Symbol = 61473;
+            btnRefresh.TabIndex = 0;
+            btnRefresh.Text = "Làm mới";
+            btnRefresh.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            // 
+            // btnDelete
+            // 
+            btnDelete.Enabled = false;
+            btnDelete.FillColor = Color.Red;
+            btnDelete.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnDelete.Location = new Point(172, 582);
+            btnDelete.MinimumSize = new Size(1, 1);
+            btnDelete.Name = "btnDelete";
+            btnDelete.Size = new Size(100, 40);
+            btnDelete.Symbol = 61453;
+            btnDelete.TabIndex = 1;
+            btnDelete.Text = "Xóa";
+            btnDelete.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            // 
+            // btnSave
+            // 
+            btnSave.FillColor = Color.FromArgb(110, 190, 40);
+            btnSave.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnSave.Location = new Point(32, 582);
+            btnSave.MinimumSize = new Size(1, 1);
+            btnSave.Name = "btnSave";
+            btnSave.Size = new Size(130, 40);
+            btnSave.Symbol = 61639;
+            btnSave.TabIndex = 2;
+            btnSave.Text = "Lưu";
+            btnSave.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            // 
+            // swPublished
+            // 
+            swPublished.Active = true;
+            swPublished.ActiveText = "Có";
+            swPublished.BackColor = Color.FromArgb(0, 0, 0, 0);
+            swPublished.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            swPublished.InActiveText = "Không";
+            swPublished.Location = new Point(202, 529);
+            swPublished.MinimumSize = new Size(1, 1);
+            swPublished.Name = "swPublished";
+            swPublished.Size = new Size(75, 29);
+            swPublished.TabIndex = 3;
+            // 
+            // lblPublished
+            // 
+            lblPublished.AutoSize = true;
+            lblPublished.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblPublished.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblPublished.ForeColor = Color.FromArgb(48, 48, 48);
+            lblPublished.Location = new Point(32, 531);
+            lblPublished.Name = "lblPublished";
+            lblPublished.Size = new Size(97, 25);
+            lblPublished.TabIndex = 4;
+            lblPublished.Text = "Xuất bản:";
+            // 
+            // txtPrice
+            // 
+            txtPrice.BackColor = Color.FromArgb(0, 0, 0, 0);
+            txtPrice.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            txtPrice.Location = new Point(30, 467);
+            txtPrice.Margin = new Padding(4, 5, 4, 5);
+            txtPrice.MinimumSize = new Size(1, 16);
+            txtPrice.Name = "txtPrice";
+            txtPrice.Padding = new Padding(5);
+            txtPrice.ShowText = false;
+            txtPrice.Size = new Size(440, 40);
+            txtPrice.TabIndex = 5;
+            txtPrice.Text = "0";
+            txtPrice.TextAlignment = ContentAlignment.MiddleLeft;
+            txtPrice.Type = Sunny.UI.UITextBox.UIEditType.Integer;
+            txtPrice.Watermark = "";
+            // 
+            // lblPrice
+            // 
+            lblPrice.AutoSize = true;
+            lblPrice.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblPrice.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblPrice.ForeColor = Color.FromArgb(48, 48, 48);
+            lblPrice.Location = new Point(30, 437);
+            lblPrice.Name = "lblPrice";
+            lblPrice.Size = new Size(109, 25);
+            lblPrice.TabIndex = 6;
+            lblPrice.Text = "Giá (VNĐ):";
+            // 
+            // cboLevel
+            // 
+            cboLevel.BackColor = Color.FromArgb(0, 0, 0, 0);
+            cboLevel.DataSource = null;
+            cboLevel.FillColor = Color.White;
+            cboLevel.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            cboLevel.ItemHoverColor = Color.FromArgb(155, 200, 255);
+            cboLevel.Items.AddRange(new object[] { "BEGINNER", "INTERMEDIATE", "ADVANCED" });
+            cboLevel.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
+            cboLevel.Location = new Point(30, 383);
+            cboLevel.Margin = new Padding(4, 5, 4, 5);
+            cboLevel.MinimumSize = new Size(63, 0);
+            cboLevel.Name = "cboLevel";
+            cboLevel.Padding = new Padding(0, 0, 30, 2);
+            cboLevel.Size = new Size(440, 40);
+            cboLevel.SymbolSize = 24;
+            cboLevel.TabIndex = 7;
+            cboLevel.TextAlignment = ContentAlignment.MiddleLeft;
+            cboLevel.Watermark = "";
+            // 
+            // lblLevel
+            // 
+            lblLevel.AutoSize = true;
+            lblLevel.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblLevel.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblLevel.ForeColor = Color.FromArgb(48, 48, 48);
+            lblLevel.Location = new Point(30, 353);
+            lblLevel.Name = "lblLevel";
+            lblLevel.Size = new Size(90, 25);
+            lblLevel.TabIndex = 8;
+            lblLevel.Text = "Trình độ:";
+            // 
+            // txtDesc
+            // 
+            txtDesc.BackColor = Color.FromArgb(0, 0, 0, 0);
+            txtDesc.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            txtDesc.Location = new Point(30, 236);
+            txtDesc.Margin = new Padding(4, 5, 4, 5);
+            txtDesc.MinimumSize = new Size(1, 16);
+            txtDesc.Multiline = true;
+            txtDesc.Name = "txtDesc";
+            txtDesc.Padding = new Padding(5);
+            txtDesc.ShowText = false;
+            txtDesc.Size = new Size(440, 100);
+            txtDesc.TabIndex = 9;
+            txtDesc.TextAlignment = ContentAlignment.MiddleLeft;
+            txtDesc.Watermark = "";
+            // 
+            // lblDesc
+            // 
+            lblDesc.AutoSize = true;
+            lblDesc.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblDesc.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblDesc.ForeColor = Color.FromArgb(48, 48, 48);
+            lblDesc.Location = new Point(30, 211);
+            lblDesc.Name = "lblDesc";
+            lblDesc.Size = new Size(67, 25);
+            lblDesc.TabIndex = 10;
+            lblDesc.Text = "Mô tả:";
+            // 
+            // txtTitle
+            // 
+            txtTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
+            txtTitle.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            txtTitle.Location = new Point(30, 166);
+            txtTitle.Margin = new Padding(4, 5, 4, 5);
+            txtTitle.MinimumSize = new Size(1, 16);
+            txtTitle.Name = "txtTitle";
+            txtTitle.Padding = new Padding(5);
+            txtTitle.ShowText = false;
+            txtTitle.Size = new Size(440, 40);
+            txtTitle.TabIndex = 11;
+            txtTitle.TextAlignment = ContentAlignment.MiddleLeft;
+            txtTitle.Watermark = "";
+            // 
+            // lblTitle
+            // 
+            lblTitle.AutoSize = true;
+            lblTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblTitle.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblTitle.ForeColor = Color.FromArgb(48, 48, 48);
+            lblTitle.Location = new Point(30, 141);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(138, 25);
+            lblTitle.TabIndex = 12;
+            lblTitle.Text = "Tên khóa học:";
+            // 
+            // txtId
+            // 
+            txtId.BackColor = Color.FromArgb(0, 0, 0, 0);
+            txtId.Enabled = false;
+            txtId.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            txtId.Location = new Point(30, 85);
+            txtId.Margin = new Padding(4, 5, 4, 5);
+            txtId.MinimumSize = new Size(1, 16);
+            txtId.Name = "txtId";
+            txtId.Padding = new Padding(5);
+            txtId.ShowText = false;
+            txtId.Size = new Size(440, 38);
+            txtId.TabIndex = 13;
+            txtId.TextAlignment = ContentAlignment.MiddleLeft;
+            txtId.Watermark = "";
+            // 
+            // lblId
+            // 
+            lblId.AutoSize = true;
+            lblId.BackColor = Color.FromArgb(0, 0, 0, 0);
+            lblId.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblId.ForeColor = Color.FromArgb(48, 48, 48);
+            lblId.Location = new Point(30, 60);
+            lblId.Name = "lblId";
+            lblId.Size = new Size(79, 25);
+            lblId.TabIndex = 14;
+            lblId.Text = "Mã KH:";
+            // 
+            // CoursesPanel
+            // 
+            Controls.Add(pnlLeft);
+            Controls.Add(pnlRight);
+            Name = "CoursesPanel";
+            Size = new Size(1730, 1020);
+            pnlLeft.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvCourses).EndInit();
+            pnlSearch.ResumeLayout(false);
+            pnlRight.ResumeLayout(false);
+            pnlRight.PerformLayout();
+            ResumeLayout(false);
         }
 
         #endregion
