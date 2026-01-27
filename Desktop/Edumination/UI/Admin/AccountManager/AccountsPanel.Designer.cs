@@ -18,172 +18,392 @@
 
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-
-            this.pnlLeft = new Sunny.UI.UIPanel();
-            this.dgvAccounts = new Sunny.UI.UIDataGridView();
-            this.pnlSearch = new Sunny.UI.UIPanel();
-            this.btnSearch = new Sunny.UI.UISymbolButton();
-            this.txtSearch = new Sunny.UI.UITextBox();
-            this.pnlRight = new Sunny.UI.UITitlePanel();
-            this.btnRefresh = new Sunny.UI.UISymbolButton();
-            this.btnDelete = new Sunny.UI.UISymbolButton();
-            this.btnSave = new Sunny.UI.UISymbolButton();
-            this.swIsActive = new Sunny.UI.UISwitch();
-            this.lblActive = new Sunny.UI.UILabel();
-            this.cboRole = new Sunny.UI.UIComboBox();
-            this.lblRole = new Sunny.UI.UILabel();
-            this.txtPassword = new Sunny.UI.UITextBox();
-            this.lblPassword = new Sunny.UI.UILabel();
-            this.txtEmail = new Sunny.UI.UITextBox();
-            this.lblEmail = new Sunny.UI.UILabel();
-            this.txtFullName = new Sunny.UI.UITextBox();
-            this.lblFullName = new Sunny.UI.UILabel();
-            this.txtId = new Sunny.UI.UITextBox();
-            this.lblId = new Sunny.UI.UILabel();
-
-            this.pnlLeft.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvAccounts)).BeginInit();
-            this.pnlSearch.SuspendLayout();
-            this.pnlRight.SuspendLayout();
-            this.SuspendLayout();
-
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            pnlLeft = new Sunny.UI.UIPanel();
+            dgvAccounts = new Sunny.UI.UIDataGridView();
+            pnlSearch = new Sunny.UI.UIPanel();
+            btnSearch = new Sunny.UI.UISymbolButton();
+            txtSearch = new Sunny.UI.UITextBox();
+            pnlRight = new Sunny.UI.UITitlePanel();
+            btnRefresh = new Sunny.UI.UISymbolButton();
+            btnDelete = new Sunny.UI.UISymbolButton();
+            btnSave = new Sunny.UI.UISymbolButton();
+            swIsActive = new Sunny.UI.UISwitch();
+            lblActive = new Sunny.UI.UILabel();
+            cboRole = new Sunny.UI.UIComboBox();
+            lblRole = new Sunny.UI.UILabel();
+            txtPassword = new Sunny.UI.UITextBox();
+            lblPassword = new Sunny.UI.UILabel();
+            txtEmail = new Sunny.UI.UITextBox();
+            lblEmail = new Sunny.UI.UILabel();
+            txtFullName = new Sunny.UI.UITextBox();
+            lblFullName = new Sunny.UI.UILabel();
+            txtId = new Sunny.UI.UITextBox();
+            lblId = new Sunny.UI.UILabel();
+            pnlLeft.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvAccounts).BeginInit();
+            pnlSearch.SuspendLayout();
+            pnlRight.SuspendLayout();
+            SuspendLayout();
+            // 
             // pnlLeft
-            this.pnlLeft.Controls.Add(this.dgvAccounts);
-            this.pnlLeft.Controls.Add(this.pnlSearch);
-            this.pnlLeft.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.pnlLeft.Location = new System.Drawing.Point(0, 0);
-            this.pnlLeft.Name = "pnlLeft";
-            this.pnlLeft.RectColor = System.Drawing.Color.Transparent;
-            this.pnlLeft.Size = new System.Drawing.Size(1230, 1020);
-            this.pnlLeft.TabIndex = 0;
-            this.pnlLeft.Text = null;
-
+            // 
+            pnlLeft.Controls.Add(dgvAccounts);
+            pnlLeft.Controls.Add(pnlSearch);
+            pnlLeft.Dock = DockStyle.Fill;
+            pnlLeft.Font = new Font("Microsoft Sans Serif", 12F);
+            pnlLeft.Location = new Point(0, 0);
+            pnlLeft.Margin = new Padding(4, 5, 4, 5);
+            pnlLeft.MinimumSize = new Size(1, 1);
+            pnlLeft.Name = "pnlLeft";
+            pnlLeft.RectColor = Color.Transparent;
+            pnlLeft.Size = new Size(1230, 1020);
+            pnlLeft.TabIndex = 0;
+            pnlLeft.Text = null;
+            pnlLeft.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
             // dgvAccounts
-            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(235)))), ((int)(((byte)(243)))), ((int)(((byte)(255)))));
-            this.dgvAccounts.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            this.dgvAccounts.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvAccounts.BackgroundColor = System.Drawing.Color.White;
-            this.dgvAccounts.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(160)))), ((int)(((byte)(255)))));
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvAccounts.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            this.dgvAccounts.ColumnHeadersHeight = 32;
-            this.dgvAccounts.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            this.dgvAccounts.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvAccounts.EnableHeadersVisualStyles = false;
-            this.dgvAccounts.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(160)))), ((int)(((byte)(255)))));
-            this.dgvAccounts.Location = new System.Drawing.Point(0, 60);
-            this.dgvAccounts.Name = "dgvAccounts";
-            this.dgvAccounts.ReadOnly = true;
-            this.dgvAccounts.RowHeadersVisible = false;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.White;
-            this.dgvAccounts.RowsDefaultCellStyle = dataGridViewCellStyle3;
-            this.dgvAccounts.RowTemplate.Height = 29;
-            this.dgvAccounts.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvAccounts.Size = new System.Drawing.Size(1230, 960);
-            this.dgvAccounts.TabIndex = 1;
-
+            // 
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(235, 243, 255);
+            dgvAccounts.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dgvAccounts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvAccounts.BackgroundColor = Color.White;
+            dgvAccounts.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(80, 160, 255);
+            dataGridViewCellStyle2.Font = new Font("Microsoft Sans Serif", 12F);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dgvAccounts.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dgvAccounts.ColumnHeadersHeight = 32;
+            dgvAccounts.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = SystemColors.Window;
+            dataGridViewCellStyle3.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dataGridViewCellStyle3.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            dgvAccounts.DefaultCellStyle = dataGridViewCellStyle3;
+            dgvAccounts.Dock = DockStyle.Fill;
+            dgvAccounts.EnableHeadersVisualStyles = false;
+            dgvAccounts.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dgvAccounts.GridColor = Color.FromArgb(80, 160, 255);
+            dgvAccounts.Location = new Point(0, 77);
+            dgvAccounts.Name = "dgvAccounts";
+            dgvAccounts.ReadOnly = true;
+            dgvAccounts.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = Color.FromArgb(235, 243, 255);
+            dataGridViewCellStyle4.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            dataGridViewCellStyle4.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(80, 160, 255);
+            dataGridViewCellStyle4.SelectionForeColor = Color.White;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
+            dgvAccounts.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            dgvAccounts.RowHeadersVisible = false;
+            dgvAccounts.RowHeadersWidth = 51;
+            dataGridViewCellStyle5.BackColor = Color.White;
+            dgvAccounts.RowsDefaultCellStyle = dataGridViewCellStyle5;
+            dgvAccounts.SelectedIndex = -1;
+            dgvAccounts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvAccounts.Size = new Size(1230, 943);
+            dgvAccounts.StripeOddColor = Color.FromArgb(235, 243, 255);
+            dgvAccounts.TabIndex = 1;
+            // 
             // pnlSearch
-            this.pnlSearch.Controls.Add(this.btnSearch);
-            this.pnlSearch.Controls.Add(this.txtSearch);
-            this.pnlSearch.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlSearch.Location = new System.Drawing.Point(0, 0);
-            this.pnlSearch.Name = "pnlSearch";
-            this.pnlSearch.Size = new System.Drawing.Size(1230, 60);
-            this.pnlSearch.TabIndex = 0;
-
-            // txtSearch
-            this.txtSearch.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.txtSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.txtSearch.Location = new System.Drawing.Point(13, 15);
-            this.txtSearch.Name = "txtSearch";
-            this.txtSearch.Padding = new System.Windows.Forms.Padding(5);
-            this.txtSearch.Size = new System.Drawing.Size(350, 29);
-            this.txtSearch.Symbol = 61442;
-            this.txtSearch.TabIndex = 0;
-            this.txtSearch.Watermark = "Nhập tên hoặc email...";
-
+            // 
+            pnlSearch.Controls.Add(btnSearch);
+            pnlSearch.Controls.Add(txtSearch);
+            pnlSearch.Dock = DockStyle.Top;
+            pnlSearch.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            pnlSearch.Location = new Point(0, 0);
+            pnlSearch.Margin = new Padding(4, 5, 4, 5);
+            pnlSearch.MinimumSize = new Size(1, 1);
+            pnlSearch.Name = "pnlSearch";
+            pnlSearch.Size = new Size(1230, 77);
+            pnlSearch.TabIndex = 0;
+            pnlSearch.Text = null;
+            pnlSearch.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
             // btnSearch
-            this.btnSearch.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnSearch.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnSearch.Location = new System.Drawing.Point(375, 12);
-            this.btnSearch.Name = "btnSearch";
-            this.btnSearch.Size = new System.Drawing.Size(120, 35);
-            this.btnSearch.Symbol = 61442;
-            this.btnSearch.TabIndex = 1;
-            this.btnSearch.Text = "Tìm kiếm";
-
+            // 
+            btnSearch.BackColor = Color.FromArgb(0, 0, 0, 0);
+            btnSearch.Cursor = Cursors.Hand;
+            btnSearch.Font = new Font("Microsoft Sans Serif", 12F);
+            btnSearch.Location = new Point(375, 15);
+            btnSearch.MinimumSize = new Size(1, 1);
+            btnSearch.Name = "btnSearch";
+            btnSearch.Radius = 15;
+            btnSearch.Size = new Size(120, 47);
+            btnSearch.Symbol = 61442;
+            btnSearch.TabIndex = 1;
+            btnSearch.Text = "Tìm kiếm";
+            btnSearch.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            // 
+            // txtSearch
+            // 
+            txtSearch.BackColor = Color.FromArgb(0, 0, 0, 0);
+            txtSearch.Cursor = Cursors.IBeam;
+            txtSearch.Font = new Font("Microsoft Sans Serif", 12F);
+            txtSearch.Location = new Point(13, 15);
+            txtSearch.Margin = new Padding(4, 5, 4, 5);
+            txtSearch.MinimumSize = new Size(1, 16);
+            txtSearch.Name = "txtSearch";
+            txtSearch.Padding = new Padding(5);
+            txtSearch.Radius = 15;
+            txtSearch.ShowText = false;
+            txtSearch.Size = new Size(350, 47);
+            txtSearch.Symbol = 61442;
+            txtSearch.TabIndex = 0;
+            txtSearch.TextAlignment = ContentAlignment.MiddleLeft;
+            txtSearch.Watermark = "Nhập tên hoặc email...";
+            // 
             // pnlRight
-            this.pnlRight.Controls.Add(this.btnRefresh);
-            this.pnlRight.Controls.Add(this.btnDelete);
-            this.pnlRight.Controls.Add(this.btnSave);
-            this.pnlRight.Controls.Add(this.swIsActive);
-            this.pnlRight.Controls.Add(this.lblActive);
-            this.pnlRight.Controls.Add(this.cboRole);
-            this.pnlRight.Controls.Add(this.lblRole);
-            this.pnlRight.Controls.Add(this.txtPassword);
-            this.pnlRight.Controls.Add(this.lblPassword);
-            this.pnlRight.Controls.Add(this.txtEmail);
-            this.pnlRight.Controls.Add(this.lblEmail);
-            this.pnlRight.Controls.Add(this.txtFullName);
-            this.pnlRight.Controls.Add(this.lblFullName);
-            this.pnlRight.Controls.Add(this.txtId);
-            this.pnlRight.Controls.Add(this.lblId);
-            this.pnlRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.pnlRight.Location = new System.Drawing.Point(1230, 0);
-            this.pnlRight.Name = "pnlRight";
-            this.pnlRight.Padding = new System.Windows.Forms.Padding(10, 35, 10, 10);
-            this.pnlRight.Size = new System.Drawing.Size(500, 1020);
-            this.pnlRight.TabIndex = 1;
-            this.pnlRight.Text = "THÔNG TIN CHI TIẾT";
-            this.pnlRight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-
-            // Labels & Textboxes
-            this.lblId.AutoSize = true; this.lblId.Location = new System.Drawing.Point(30, 60); this.lblId.Text = "ID:";
-            this.txtId.Enabled = false; this.txtId.Location = new System.Drawing.Point(30, 85); this.txtId.Size = new System.Drawing.Size(440, 29);
-
-            this.lblFullName.AutoSize = true; this.lblFullName.Location = new System.Drawing.Point(30, 130); this.lblFullName.Text = "Họ và tên:";
-            this.txtFullName.Location = new System.Drawing.Point(30, 155); this.txtFullName.Size = new System.Drawing.Size(440, 29);
-
-            this.lblEmail.AutoSize = true; this.lblEmail.Location = new System.Drawing.Point(30, 200); this.lblEmail.Text = "Email:";
-            this.txtEmail.Location = new System.Drawing.Point(30, 225); this.txtEmail.Size = new System.Drawing.Size(440, 29);
-
-            this.lblPassword.AutoSize = true; this.lblPassword.Location = new System.Drawing.Point(30, 270); this.lblPassword.Text = "Mật khẩu:";
-            this.txtPassword.Location = new System.Drawing.Point(30, 295); this.txtPassword.PasswordChar = '*'; this.txtPassword.Size = new System.Drawing.Size(440, 29);
-
-            this.lblRole.AutoSize = true; this.lblRole.Location = new System.Drawing.Point(30, 340); this.lblRole.Text = "Vai trò:";
-            this.cboRole.Items.AddRange(new object[] { "Student", "Teacher", "Admin" });
-            this.cboRole.Location = new System.Drawing.Point(30, 365); this.cboRole.Size = new System.Drawing.Size(440, 29);
-
-            this.lblActive.AutoSize = true; this.lblActive.Location = new System.Drawing.Point(30, 420); this.lblActive.Text = "Trạng thái:";
-            this.swIsActive.Active = true; this.swIsActive.Location = new System.Drawing.Point(200, 418); this.swIsActive.ActiveText = "Bật"; this.swIsActive.InActiveText = "Tắt";
-
-            // Buttons
-            this.btnSave.Location = new System.Drawing.Point(30, 480); this.btnSave.Size = new System.Drawing.Size(130, 40); this.btnSave.Symbol = 61639; this.btnSave.Text = "Lưu";
-            this.btnDelete.Location = new System.Drawing.Point(170, 480); this.btnDelete.Size = new System.Drawing.Size(100, 40); this.btnDelete.Symbol = 61453; this.btnDelete.Text = "Xóa"; this.btnDelete.FillColor = System.Drawing.Color.Red;
-            this.btnRefresh.Location = new System.Drawing.Point(280, 480); this.btnRefresh.Size = new System.Drawing.Size(120, 40); this.btnRefresh.Symbol = 61473; this.btnRefresh.Text = "Làm mới"; this.btnRefresh.FillColor = System.Drawing.Color.Gray;
-
+            // 
+            pnlRight.BackColor = Color.White;
+            pnlRight.Controls.Add(btnRefresh);
+            pnlRight.Controls.Add(btnDelete);
+            pnlRight.Controls.Add(btnSave);
+            pnlRight.Controls.Add(swIsActive);
+            pnlRight.Controls.Add(lblActive);
+            pnlRight.Controls.Add(cboRole);
+            pnlRight.Controls.Add(lblRole);
+            pnlRight.Controls.Add(txtPassword);
+            pnlRight.Controls.Add(lblPassword);
+            pnlRight.Controls.Add(txtEmail);
+            pnlRight.Controls.Add(lblEmail);
+            pnlRight.Controls.Add(txtFullName);
+            pnlRight.Controls.Add(lblFullName);
+            pnlRight.Controls.Add(txtId);
+            pnlRight.Controls.Add(lblId);
+            pnlRight.Dock = DockStyle.Right;
+            pnlRight.FillColor = Color.White;
+            pnlRight.FillColor2 = Color.White;
+            pnlRight.FillDisableColor = Color.White;
+            pnlRight.Font = new Font("Microsoft Sans Serif", 12F);
+            pnlRight.Location = new Point(1230, 0);
+            pnlRight.Margin = new Padding(4, 5, 4, 5);
+            pnlRight.MinimumSize = new Size(1, 1);
+            pnlRight.Name = "pnlRight";
+            pnlRight.Padding = new Padding(10, 35, 10, 10);
+            pnlRight.ShowText = false;
+            pnlRight.Size = new Size(500, 1020);
+            pnlRight.TabIndex = 1;
+            pnlRight.Text = "THÔNG TIN CHI TIẾT";
+            pnlRight.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // btnRefresh
+            // 
+            btnRefresh.FillColor = Color.Gray;
+            btnRefresh.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnRefresh.Location = new Point(280, 567);
+            btnRefresh.MinimumSize = new Size(1, 1);
+            btnRefresh.Name = "btnRefresh";
+            btnRefresh.Size = new Size(120, 40);
+            btnRefresh.Symbol = 61473;
+            btnRefresh.TabIndex = 0;
+            btnRefresh.Text = "Làm mới";
+            btnRefresh.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            // 
+            // btnDelete
+            // 
+            btnDelete.FillColor = Color.Red;
+            btnDelete.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnDelete.Location = new Point(170, 567);
+            btnDelete.MinimumSize = new Size(1, 1);
+            btnDelete.Name = "btnDelete";
+            btnDelete.Size = new Size(100, 40);
+            btnDelete.Symbol = 61453;
+            btnDelete.TabIndex = 1;
+            btnDelete.Text = "Xóa";
+            btnDelete.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            // 
+            // btnSave
+            // 
+            btnSave.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            btnSave.Location = new Point(30, 567);
+            btnSave.MinimumSize = new Size(1, 1);
+            btnSave.Name = "btnSave";
+            btnSave.Size = new Size(130, 40);
+            btnSave.Symbol = 61639;
+            btnSave.TabIndex = 2;
+            btnSave.Text = "Lưu";
+            btnSave.TipsFont = new Font("Microsoft Sans Serif", 9F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            // 
+            // swIsActive
+            // 
+            swIsActive.Active = true;
+            swIsActive.ActiveText = "Bật";
+            swIsActive.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            swIsActive.InActiveText = "Tắt";
+            swIsActive.Location = new Point(200, 505);
+            swIsActive.MinimumSize = new Size(1, 1);
+            swIsActive.Name = "swIsActive";
+            swIsActive.Size = new Size(75, 29);
+            swIsActive.TabIndex = 3;
+            // 
+            // lblActive
+            // 
+            lblActive.AutoSize = true;
+            lblActive.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblActive.ForeColor = Color.FromArgb(48, 48, 48);
+            lblActive.Location = new Point(30, 507);
+            lblActive.Name = "lblActive";
+            lblActive.Size = new Size(106, 25);
+            lblActive.TabIndex = 4;
+            lblActive.Text = "Trạng thái:";
+            // 
+            // cboRole
+            // 
+            cboRole.DataSource = null;
+            cboRole.FillColor = Color.White;
+            cboRole.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            cboRole.ItemHoverColor = Color.FromArgb(155, 200, 255);
+            cboRole.Items.AddRange(new object[] { "Student", "Teacher", "Admin" });
+            cboRole.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
+            cboRole.Location = new Point(30, 439);
+            cboRole.Margin = new Padding(4, 5, 4, 5);
+            cboRole.MinimumSize = new Size(63, 0);
+            cboRole.Name = "cboRole";
+            cboRole.Padding = new Padding(0, 0, 30, 2);
+            cboRole.Size = new Size(440, 45);
+            cboRole.SymbolSize = 24;
+            cboRole.TabIndex = 5;
+            cboRole.TextAlignment = ContentAlignment.MiddleLeft;
+            cboRole.Watermark = "";
+            // 
+            // lblRole
+            // 
+            lblRole.AutoSize = true;
+            lblRole.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblRole.ForeColor = Color.FromArgb(48, 48, 48);
+            lblRole.Location = new Point(30, 414);
+            lblRole.Name = "lblRole";
+            lblRole.Size = new Size(74, 25);
+            lblRole.TabIndex = 6;
+            lblRole.Text = "Vai trò:";
+            // 
+            // txtPassword
+            // 
+            txtPassword.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            txtPassword.Location = new Point(30, 354);
+            txtPassword.Margin = new Padding(4, 5, 4, 5);
+            txtPassword.MinimumSize = new Size(1, 16);
+            txtPassword.Name = "txtPassword";
+            txtPassword.Padding = new Padding(5);
+            txtPassword.PasswordChar = '*';
+            txtPassword.ShowText = false;
+            txtPassword.Size = new Size(440, 40);
+            txtPassword.TabIndex = 7;
+            txtPassword.TextAlignment = ContentAlignment.MiddleLeft;
+            txtPassword.Watermark = "";
+            // 
+            // lblPassword
+            // 
+            lblPassword.AutoSize = true;
+            lblPassword.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblPassword.ForeColor = Color.FromArgb(48, 48, 48);
+            lblPassword.Location = new Point(30, 329);
+            lblPassword.Name = "lblPassword";
+            lblPassword.Size = new Size(99, 25);
+            lblPassword.TabIndex = 8;
+            lblPassword.Text = "Mật khẩu:";
+            // 
+            // txtEmail
+            // 
+            txtEmail.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            txtEmail.Location = new Point(30, 265);
+            txtEmail.Margin = new Padding(4, 5, 4, 5);
+            txtEmail.MinimumSize = new Size(1, 16);
+            txtEmail.Name = "txtEmail";
+            txtEmail.Padding = new Padding(5);
+            txtEmail.ShowText = false;
+            txtEmail.Size = new Size(440, 40);
+            txtEmail.TabIndex = 9;
+            txtEmail.TextAlignment = ContentAlignment.MiddleLeft;
+            txtEmail.Watermark = "";
+            // 
+            // lblEmail
+            // 
+            lblEmail.AutoSize = true;
+            lblEmail.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblEmail.ForeColor = Color.FromArgb(48, 48, 48);
+            lblEmail.Location = new Point(30, 240);
+            lblEmail.Name = "lblEmail";
+            lblEmail.Size = new Size(66, 25);
+            lblEmail.TabIndex = 10;
+            lblEmail.Text = "Email:";
+            // 
+            // txtFullName
+            // 
+            txtFullName.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            txtFullName.Location = new Point(30, 178);
+            txtFullName.Margin = new Padding(4, 5, 4, 5);
+            txtFullName.MinimumSize = new Size(1, 16);
+            txtFullName.Name = "txtFullName";
+            txtFullName.Padding = new Padding(5);
+            txtFullName.ShowText = false;
+            txtFullName.Size = new Size(440, 40);
+            txtFullName.TabIndex = 11;
+            txtFullName.TextAlignment = ContentAlignment.MiddleLeft;
+            txtFullName.Watermark = "";
+            // 
+            // lblFullName
+            // 
+            lblFullName.AutoSize = true;
+            lblFullName.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblFullName.ForeColor = Color.FromArgb(48, 48, 48);
+            lblFullName.Location = new Point(30, 153);
+            lblFullName.Name = "lblFullName";
+            lblFullName.Size = new Size(101, 25);
+            lblFullName.TabIndex = 12;
+            lblFullName.Text = "Họ và tên:";
+            // 
+            // txtId
+            // 
+            txtId.Enabled = false;
+            txtId.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            txtId.Location = new Point(30, 90);
+            txtId.Margin = new Padding(4, 5, 4, 5);
+            txtId.MinimumSize = new Size(1, 16);
+            txtId.Name = "txtId";
+            txtId.Padding = new Padding(5);
+            txtId.ShowText = false;
+            txtId.Size = new Size(440, 43);
+            txtId.TabIndex = 13;
+            txtId.TextAlignment = ContentAlignment.MiddleLeft;
+            txtId.Watermark = "";
+            // 
+            // lblId
+            // 
+            lblId.AutoSize = true;
+            lblId.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
+            lblId.ForeColor = Color.FromArgb(48, 48, 48);
+            lblId.Location = new Point(30, 60);
+            lblId.Name = "lblId";
+            lblId.Size = new Size(37, 25);
+            lblId.TabIndex = 14;
+            lblId.Text = "ID:";
+            // 
             // AccountsPanel
-            this.Controls.Add(this.pnlLeft);
-            this.Controls.Add(this.pnlRight);
-            this.Name = "AccountsPanel"; // 👉 Đã sửa lại tên cho khớp
-            this.Size = new System.Drawing.Size(1730, 1020);
-            this.pnlLeft.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvAccounts)).EndInit();
-            this.pnlSearch.ResumeLayout(false);
-            this.pnlRight.ResumeLayout(false);
-            this.pnlRight.PerformLayout();
-            this.ResumeLayout(false);
+            // 
+            Controls.Add(pnlLeft);
+            Controls.Add(pnlRight);
+            Name = "AccountsPanel";
+            Size = new Size(1730, 1020);
+            pnlLeft.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvAccounts).EndInit();
+            pnlSearch.ResumeLayout(false);
+            pnlRight.ResumeLayout(false);
+            pnlRight.PerformLayout();
+            ResumeLayout(false);
         }
 
         #endregion

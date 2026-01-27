@@ -64,7 +64,6 @@
             pnlTop.Controls.Add(btnApply);
             pnlTop.Controls.Add(btnBack);
             pnlTop.Dock = DockStyle.Top;
-            pnlTop.FillColor = Color.White;
             pnlTop.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
             pnlTop.Location = new Point(0, 0);
             pnlTop.Margin = new Padding(4, 5, 4, 5);
@@ -79,6 +78,7 @@
             // 
             // lblTitle
             // 
+            lblTitle.BackColor = Color.FromArgb(0, 0, 0, 0);
             lblTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             lblTitle.ForeColor = Color.FromArgb(17, 24, 39);
             lblTitle.Location = new Point(20, 15);

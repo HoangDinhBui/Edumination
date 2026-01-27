@@ -46,24 +46,24 @@ namespace IELTS.UI.Admin.AccountManager
                 dgvAccounts.DataSource = null;
                 dgvAccounts.DataSource = userList;
 
-                // Ẩn cột không cần thiết
                 string[] hideCols = { "PasswordHash", "CreatedAt", "UpdatedAt", "DateOfBirth", "Phone" };
                 foreach (var col in hideCols)
-                {
-                    if (dgvAccounts.Columns[col] != null) dgvAccounts.Columns[col].Visible = false;
-                }
+                    if (dgvAccounts.Columns[col] != null)
+                        dgvAccounts.Columns[col].Visible = false;
 
-                // Đổi tên header tiếng Việt
-                if (dgvAccounts.Columns["Id"] != null) dgvAccounts.Columns["Id"].HeaderText = "ID";
-                if (dgvAccounts.Columns["FullName"] != null) dgvAccounts.Columns["FullName"].HeaderText = "Họ tên";
-                if (dgvAccounts.Columns["Email"] != null) dgvAccounts.Columns["Email"].HeaderText = "Email";
-                if (dgvAccounts.Columns["Role"] != null) dgvAccounts.Columns["Role"].HeaderText = "Vai trò";
+                dgvAccounts.Columns["Id"].HeaderText = "ID";
+                dgvAccounts.Columns["FullName"].HeaderText = "Họ tên";
+                dgvAccounts.Columns["Email"].HeaderText = "Email";
+                dgvAccounts.Columns["Role"].HeaderText = "Vai trò";
+
+                StyleAccountsGrid(); // ✅ QUAN TRỌNG
             }
             catch (Exception ex)
             {
-                UIMessageBox.ShowError("Lỗi: " + ex.Message);
+                UIMessageBox.ShowError(ex.Message);
             }
         }
+
 
         private void DgvAccounts_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -176,5 +176,78 @@ namespace IELTS.UI.Admin.AccountManager
             btnSave.FillColor = System.Drawing.Color.FromArgb(110, 190, 40);
             btnDelete.Enabled = false;
         }
+
+        private int _hoverRow = -1;
+
+        private void StyleAccountsGrid()
+        {
+            dgvAccounts.BorderStyle = BorderStyle.None;
+            dgvAccounts.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgvAccounts.GridColor = Color.FromArgb(235, 238, 245);
+
+            dgvAccounts.BackgroundColor = Color.White;
+            dgvAccounts.RowHeadersVisible = false;
+            dgvAccounts.AllowUserToResizeRows = false;
+            dgvAccounts.MultiSelect = false;
+
+            dgvAccounts.RowTemplate.Height = 46;
+
+            // ===== HEADER (GIỐNG COURSE PANEL) =====
+            dgvAccounts.ColumnHeadersHeight = 48;
+            dgvAccounts.ColumnHeadersDefaultCellStyle.BackColor = Color.White;
+            dgvAccounts.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(55, 65, 81);
+            dgvAccounts.ColumnHeadersDefaultCellStyle.Font =
+                new Font("Segoe UI", 10.5f, FontStyle.Bold);
+            dgvAccounts.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleLeft;
+
+            dgvAccounts.EnableHeadersVisualStyles = false;
+
+            // ===== CELL =====
+            dgvAccounts.DefaultCellStyle.Font =
+                new Font("Segoe UI", 10f);
+            dgvAccounts.DefaultCellStyle.ForeColor =
+                Color.FromArgb(55, 65, 81);
+            dgvAccounts.DefaultCellStyle.SelectionBackColor =
+                Color.FromArgb(235, 240, 255);
+            dgvAccounts.DefaultCellStyle.SelectionForeColor =
+                Color.FromArgb(30, 64, 175);
+
+            dgvAccounts.AlternatingRowsDefaultCellStyle.BackColor =
+                Color.FromArgb(249, 250, 251);
+
+            // ===== HOVER ROW (MƯỢT – KHÔNG DÍNH MÀU) =====
+            dgvAccounts.CellMouseEnter += (s, e) =>
+            {
+                if (e.RowIndex >= 0)
+                {
+                    _hoverRow = e.RowIndex;
+                    dgvAccounts.InvalidateRow(e.RowIndex);
+                }
+            };
+
+            dgvAccounts.CellMouseLeave += (s, e) =>
+            {
+                if (_hoverRow >= 0)
+                {
+                    dgvAccounts.Rows[_hoverRow].DefaultCellStyle.BackColor =
+                        (_hoverRow % 2 == 0)
+                            ? Color.White
+                            : Color.FromArgb(249, 250, 251);
+
+                    _hoverRow = -1;
+                }
+            };
+
+            dgvAccounts.RowPrePaint += (s, e) =>
+            {
+                if (e.RowIndex == _hoverRow)
+                {
+                    dgvAccounts.Rows[e.RowIndex].DefaultCellStyle.BackColor =
+                        Color.FromArgb(243, 244, 246);
+                }
+            };
+        }
+
     }
 }
