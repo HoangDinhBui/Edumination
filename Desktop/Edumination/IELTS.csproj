@@ -75,6 +75,7 @@
     <Folder Include="Application\" />
     <Folder Include="NewFolder\" />
     <Folder Include="src\DB\" />
+    <Folder Include="UI\Admin\TestManager\TestManagerForm\" />
     <Folder Include="UI\Forms\" />
   </ItemGroup>
 

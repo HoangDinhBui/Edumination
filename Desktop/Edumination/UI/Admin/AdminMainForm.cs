@@ -1,9 +1,10 @@
 ﻿using Edumination.WinForms.UI.Admin.TestManager;
+using IELTS.DTO;
 using IELTS.UI.Admin.AccountManager;
 using IELTS.UI.Admin.CoursesManager;
+using IELTS.UI.Admin.CourseStudents;
 using IELTS.UI.Admin.DashBoard;
 using IELTS.UI.Admin.ReportManager;
-using IELTS.UI.Admin.CourseStudents;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,10 +23,58 @@ namespace Edumination.WinForms.UI.Admin
     public partial class AdminMainForm : Form
     {
         //private readonly LoginForm _loginForm;
-        //private readonly string _token;
+        //private readonly string _token;\
+        private AdminDashboardControl adminDashboardControl;
+        public AdminDashboardControl AdminDashboardControl
+        {
+            get => adminDashboardControl;
+            set => adminDashboardControl = value;
+        }
+
+        private TestManagerControl testManagerControl;
+        public TestManagerControl TestManagerControl
+        {
+            get => testManagerControl;
+            set => testManagerControl = value;
+        }
+
         private readonly string _fullName;
         private readonly string _role;
+        private int id;
+        private UserDTO user;
         // 👉 Constructor đúng: nhận loginForm + token
+        public AdminMainForm(int id)
+        {
+            InitializeComponent();
+            this.id = id;
+        }
+        public AdminMainForm(UserDTO user)
+        {
+            InitializeComponent();
+            this.user = user;
+            _fullName = user.FullName;
+            _role = user.Role;
+
+            testManagerControl = new TestManagerControl();
+            testManagerControl.UserId= user.Id;
+            
+            // ===== TẠO NAVBAR DUY NHẤT =====
+            var navBar = new AdminNavBarPanel
+            {
+                Dock = DockStyle.Fill
+            };
+
+            navBar.OnMenuClicked += NavBar_OnMenuClicked;
+            pnlNavBar.Controls.Clear();
+            pnlNavBar.Controls.Add(navBar);
+
+            // ===== LOAD DASHBOARD MẶC ĐỊNH =====
+            LoadContent(new AdminDashboardControl());
+
+            this.FormClosed += AdminMainForm_FormClosed;
+        }
+
+
         public AdminMainForm(string fullName, string role)
         {
             InitializeComponent();
@@ -75,7 +124,7 @@ namespace Edumination.WinForms.UI.Admin
                     break;
 
                 case "tests":
-                    LoadContent(new TestManagerControl());
+                    LoadContent(testManagerControl);
                     break;
 
                 case "students":

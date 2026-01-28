@@ -41,5 +41,21 @@ namespace IELTS.DAL
 
             return list;
         }
+
+        public int GetPassagePositionByPassageId(long passageId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            using var cmd = new SqlCommand(
+                "SELECT Position FROM Passages WHERE Id = @PassageId", conn);
+
+            cmd.Parameters.AddWithValue("@PassageId", passageId);
+
+            conn.Open();
+            var result = cmd.ExecuteScalar();
+
+            return result == null ? 0 : Convert.ToInt32(result);
+        }
+
+
     }
 }

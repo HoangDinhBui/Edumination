@@ -86,43 +86,63 @@ namespace Edumination.WinForms.UI.Admin.TestManager
         private void DisplayMockTests(List<MockTestDTO> mocks)
         {
             flowPanelMockTests.Controls.Clear();
+            flowPanelMockTests.BackColor = Color.FromArgb(245, 247, 250); // Màu nền xám nhạt kiểu Web
 
             foreach (var mock in mocks)
             {
-                // === Panel của MOCK TEST ===
-                var mockPanel = new Panel
+                // === CARD PANEL (MOCK TEST CONTAINER) ===
+                var mockCard = new Panel
                 {
-                    Width = 650,
+                    Width = 700,
                     AutoSize = true,
-                    BorderStyle = BorderStyle.FixedSingle,
-                    Padding = new Padding(10),
-                    Margin = new Padding(0, 0, 0, 15)
+                    BackColor = Color.White,
+                    Padding = new Padding(20),
+                    Margin = new Padding(0, 0, 0, 20),
+                    Cursor = Cursors.Default
+                };
+                // Tạo viền mảnh màu xám thay vì BorderStyle mặc định
+                mockCard.Paint += (s, e) => {
+                    ControlPaint.DrawBorder(e.Graphics, mockCard.ClientRectangle, Color.FromArgb(230, 230, 230), ButtonBorderStyle.Solid);
+                };
+
+                // === HEADER: TITLE & YEAR ===
+                var lblYear = new Label
+                {
+                    Text = $"COLLECTION {mock.Year}",
+                    Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(0, 120, 215), // Màu xanh thương hiệu
+                    AutoSize = true,
+                    Location = new Point(20, 15)
                 };
 
                 var lblTitle = new Label
                 {
-                    Text = $"Mock {mock.Year}: {mock.Title}",
-                    Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                    AutoSize = true
+                    Text = mock.Title.ToUpper(),
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(45, 55, 72),
+                    AutoSize = true,
+                    Location = new Point(18, 35)
                 };
 
-                mockPanel.Controls.Add(lblTitle);
-
-                // === Flow chứa TEST PAPERS ===
+                // === CONTAINER CHỨA CÁC BÀI TEST (PAPERS) ===
                 var flpPapers = new FlowLayoutPanel
                 {
                     FlowDirection = FlowDirection.TopDown,
                     WrapContents = false,
                     AutoSize = true,
-                    Margin = new Padding(0, 10, 0, 0)
+                    Width = 660,
+                    Location = new Point(20, 75),
+                    Margin = new Padding(0, 15, 0, 0),
+                    BackColor = Color.Transparent
                 };
 
                 if (mock.Papers.Count == 0)
                 {
                     flpPapers.Controls.Add(new Label
                     {
-                        Text = "⚠ Chưa có bài test",
-                        ForeColor = Color.Gray,
+                        Text = "   No test papers available yet.",
+                        ForeColor = Color.DarkGray,
+                        Font = new Font("Segoe UI", 9, FontStyle.Italic),
                         AutoSize = true
                     });
                 }
@@ -130,29 +150,50 @@ namespace Edumination.WinForms.UI.Admin.TestManager
                 {
                     foreach (var p in mock.Papers)
                     {
-                        var btn = new Button
+                        // === ITEM BUTTON (KIỂU LIST ITEM TRÊN WEB) ===
+                        var btnPaper = new Button
                         {
-                            Width = 600,
-                            Height = 60,
-                            Text = $"• {p.Title} ({p.TestMonth})",
-                            Tag = p.Id
+                            Width = 640,
+                            Height = 50,
+                            Text = $"   📝  {p.Title} — {p.TestMonth}",
+                            TextAlign = ContentAlignment.MiddleLeft,
+                            Font = new Font("Segoe UI", 10),
+                            ForeColor = Color.FromArgb(74, 85, 104),
+                            BackColor = Color.FromArgb(250, 251, 252),
+                            FlatStyle = FlatStyle.Flat,
+                            Margin = new Padding(0, 5, 0, 5),
+                            Tag = p.Id,
+                            Cursor = Cursors.Hand
+                        };
+                        btnPaper.FlatAppearance.BorderSize = 1;
+                        btnPaper.FlatAppearance.BorderColor = Color.FromArgb(226, 232, 240);
+
+                        // Hiệu ứng Hover kiểu Web
+                        btnPaper.MouseEnter += (s, e) => {
+                            btnPaper.BackColor = Color.FromArgb(237, 242, 247);
+                            btnPaper.ForeColor = Color.FromArgb(0, 120, 215);
+                        };
+                        btnPaper.MouseLeave += (s, e) => {
+                            btnPaper.BackColor = Color.FromArgb(250, 251, 252);
+                            btnPaper.ForeColor = Color.FromArgb(74, 85, 104);
                         };
 
-                        btn.Click += (s, e) =>
+                        btnPaper.Click += (s, e) =>
                         {
                             long testPaperId = (long)((Button)s).Tag;
-                            MessageBox.Show($"Clicked on Test Paper ID: {testPaperId}");
                             _testManagerControl.ShowSectionControl.PaperId = testPaperId;
                             _testManagerControl.ShowPanel(_testManagerControl.ShowSectionControl);
-                            //new UpdateReadingTestSectionForm(testPaperId).ShowDialog();
                         };
 
-                        flpPapers.Controls.Add(btn);
+                        flpPapers.Controls.Add(btnPaper);
                     }
                 }
 
-                mockPanel.Controls.Add(flpPapers);
-                flowPanelMockTests.Controls.Add(mockPanel);
+                mockCard.Controls.Add(lblYear);
+                mockCard.Controls.Add(lblTitle);
+                mockCard.Controls.Add(flpPapers);
+
+                flowPanelMockTests.Controls.Add(mockCard);
             }
         }
 

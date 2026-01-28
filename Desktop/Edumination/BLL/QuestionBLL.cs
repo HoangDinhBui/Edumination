@@ -64,5 +64,132 @@ namespace IELTS.BLL
                 return _dal.GetQuestionsByPassage(passageId);
             }
         }
+
+        public int GetTotalQuestionsByPassagePosition(int passagePosition)
+        {
+            return passagePosition == 3 ? 14 : 13;
+        }
+
+        public QuestionDTO GetQuestion(long passageId, int position)
+        {
+            return questionDAL.GetQuestionByPosition(passageId, position);
+        }
+
+        public List<QuestionChoiceDTO> GetChoices(long questionId)
+        {
+            return questionDAL.NewGetChoicesByQuestionId(questionId);
+        }
+
+        public string GetAnswerKey(long questionId)
+        {
+            return questionDAL.GetAnswerKey(questionId);
+        }
+
+        public void ReplaceQuestion(
+    long oldQuestionId,
+    long passageId,
+    int position,
+    EditQuestionDTO dto)
+        {
+            // 1. Xóa cũ
+            questionDAL.NewDeleteQuestion(oldQuestionId);
+
+            // 2. Insert mới
+            long newQuestionId = questionDAL.InsertQuestion(
+                passageId,
+                position,
+                dto.QuestionType,
+                dto.QuestionText);
+
+            // 3. Insert data theo type
+            if (dto.QuestionType == "MCQ" || dto.QuestionType == "MULTI_CHOICES")
+            {
+                int pos = 1;
+                foreach (var c in dto.Choices)
+                {
+                    questionDAL.InsertChoice(newQuestionId, c.ChoiceText, c.IsCorrect, pos++);
+                }
+            }
+            else if (dto.QuestionType == "FILL_BLANK")
+            {
+                questionDAL.InsertAnswerKey(newQuestionId, dto.AnswerKey);
+            }
+        }
+
+        public (int start, int end) GetQuestionRangeByPassagePosition(int passagePosition)
+        {
+            return passagePosition switch
+            {
+                1 => (1, 13),
+                2 => (14, 26),
+                3 => (27, 40),
+                _ => throw new ArgumentException("Invalid passage position")
+            };
+        }
+
+        public List<QuestionStatusDTO> GetQuestionStatuses(long passageId, int passagePosition)
+        {
+            var (start, end) = GetQuestionRangeByPassagePosition(passagePosition);
+
+            // lấy các câu hỏi đã tồn tại trong passage
+            var existingPositions = questionDAL
+                .GetQuestionPositionsByPassageId(passageId)
+                .ToHashSet();
+
+            var result = new List<QuestionStatusDTO>();
+
+            for (int pos = start; pos <= end; pos++)
+            {
+                result.Add(new QuestionStatusDTO
+                {
+                    Position = pos,
+                    HasData = existingPositions.Contains(pos)
+                });
+            }
+
+            return result;
+        }
+
+        public long GetSectionIdByQuestionId(long questionId)
+        {
+            return questionDAL.GetSectionIdByQuestionId(questionId);
+        }
+
+        public void DeleteQuestion(long questionId)
+        {
+            questionDAL.DeleteQuestion(questionId);
+        }
+
+        public void DeleteChoicesByQuestionId(long questionId)
+        {
+            questionDAL.DeleteChoicesByQuestionId(questionId);
+        }
+
+        public void InsertChoice(long questionId, string text, bool isCorrect, int position)
+        {
+            questionDAL.InsertChoice(questionId, text, isCorrect, position);
+        }
+
+        public void SaveAnswerKey(long questionId, string answer)
+        {
+            questionDAL.SaveAnswerKey(questionId, answer);
+        }
+        public long GetSectionIdByPassageId(long passageId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            using var cmd = conn.CreateCommand();
+
+            cmd.CommandText = @"
+        SELECT SectionId
+        FROM Passages
+        WHERE Id = @PassageId";
+
+            cmd.Parameters.AddWithValue("@PassageId", passageId);
+
+            conn.Open();
+            return (long)cmd.ExecuteScalar();
+        }
+
+
     }
 }
