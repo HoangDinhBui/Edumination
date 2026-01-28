@@ -92,7 +92,7 @@ namespace IELTS.UI.User.TestTaking.ListeningTest
             // 
             splitLeft.Panel2.Controls.Add(pdfViewer);
             splitLeft.Size = new Size(960, 850);
-            splitLeft.SplitterDistance = 603;
+            splitLeft.SplitterDistance = 130;
             splitLeft.TabIndex = 0;
             // 
             // audioPanel
