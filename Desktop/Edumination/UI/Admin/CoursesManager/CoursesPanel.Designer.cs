@@ -75,7 +75,7 @@
             pnlLeft.MinimumSize = new Size(1, 1);
             pnlLeft.Name = "pnlLeft";
             pnlLeft.Padding = new Padding(12);
-            pnlLeft.Size = new Size(1032, 900);
+            pnlLeft.Size = new Size(943, 900);
             pnlLeft.TabIndex = 0;
             pnlLeft.Text = null;
             pnlLeft.TextAlignment = ContentAlignment.MiddleCenter;
@@ -126,7 +126,7 @@
             dgvCourses.RowsDefaultCellStyle = dataGridViewCellStyle5;
             dgvCourses.SelectedIndex = -1;
             dgvCourses.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvCourses.Size = new Size(1008, 753);
+            dgvCourses.Size = new Size(919, 753);
             dgvCourses.StripeOddColor = Color.FromArgb(235, 243, 255);
             dgvCourses.TabIndex = 0;
             // 
@@ -141,7 +141,7 @@
             pnlSearch.Margin = new Padding(4, 5, 4, 5);
             pnlSearch.MinimumSize = new Size(1, 1);
             pnlSearch.Name = "pnlSearch";
-            pnlSearch.Size = new Size(1008, 123);
+            pnlSearch.Size = new Size(919, 123);
             pnlSearch.TabIndex = 1;
             pnlSearch.Text = null;
             pnlSearch.TextAlignment = ContentAlignment.MiddleCenter;
@@ -188,13 +188,13 @@
             pnlRight.Controls.Add(tabControlDetail);
             pnlRight.Dock = DockStyle.Right;
             pnlRight.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
-            pnlRight.Location = new Point(1032, 0);
+            pnlRight.Location = new Point(943, 0);
             pnlRight.Margin = new Padding(4, 5, 4, 5);
             pnlRight.MinimumSize = new Size(1, 1);
             pnlRight.Name = "pnlRight";
             pnlRight.Padding = new Padding(10, 40, 10, 10);
             pnlRight.ShowText = false;
-            pnlRight.Size = new Size(668, 900);
+            pnlRight.Size = new Size(757, 900);
             pnlRight.TabIndex = 1;
             pnlRight.Text = "CHI TIẾT KHÓA HỌC";
             pnlRight.TextAlignment = ContentAlignment.MiddleCenter;
@@ -211,7 +211,7 @@
             tabControlDetail.MainPage = "";
             tabControlDetail.Name = "tabControlDetail";
             tabControlDetail.SelectedIndex = 0;
-            tabControlDetail.Size = new Size(648, 850);
+            tabControlDetail.Size = new Size(737, 850);
             tabControlDetail.SizeMode = TabSizeMode.Fixed;
             tabControlDetail.TabIndex = 0;
             tabControlDetail.TabUnSelectedForeColor = Color.FromArgb(240, 240, 240);
@@ -221,7 +221,7 @@
             // 
             tpCourseInfo.Location = new Point(0, 40);
             tpCourseInfo.Name = "tpCourseInfo";
-            tpCourseInfo.Size = new Size(648, 810);
+            tpCourseInfo.Size = new Size(737, 810);
             tpCourseInfo.TabIndex = 0;
             tpCourseInfo.Text = "1. Thông tin khóa học";
             // 
@@ -231,7 +231,7 @@
             tpLessons.Controls.Add(pnlLessonTool);
             tpLessons.Location = new Point(0, 40);
             tpLessons.Name = "tpLessons";
-            tpLessons.Size = new Size(648, 810);
+            tpLessons.Size = new Size(200, 60);
             tpLessons.TabIndex = 1;
             tpLessons.Text = "2. Bài học";
             // 
@@ -280,7 +280,7 @@
             dataGridViewCellStyle10.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point, 163);
             dgvLessons.RowsDefaultCellStyle = dataGridViewCellStyle10;
             dgvLessons.SelectedIndex = -1;
-            dgvLessons.Size = new Size(648, 740);
+            dgvLessons.Size = new Size(200, 0);
             dgvLessons.StripeOddColor = Color.FromArgb(235, 243, 255);
             dgvLessons.TabIndex = 0;
             // 
@@ -294,7 +294,7 @@
             pnlLessonTool.Margin = new Padding(4, 5, 4, 5);
             pnlLessonTool.MinimumSize = new Size(1, 1);
             pnlLessonTool.Name = "pnlLessonTool";
-            pnlLessonTool.Size = new Size(648, 70);
+            pnlLessonTool.Size = new Size(200, 70);
             pnlLessonTool.TabIndex = 1;
             pnlLessonTool.Text = null;
             pnlLessonTool.TextAlignment = ContentAlignment.MiddleCenter;
