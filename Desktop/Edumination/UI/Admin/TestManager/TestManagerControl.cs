@@ -15,7 +15,26 @@ namespace Edumination.WinForms.UI.Admin.TestManager
     {
         public Panel MainPanel => pnlMain; // pnlMain làm container chuẩn
         //private pnlTestInfo pnlTestInfo;
-        private AllSkillsTestControl allSkillsTestControl;
+        public AdminMainForm _adminMainForm;
+        public AdminMainForm AdminMainForm
+        {
+            get => _adminMainForm;
+            set => _adminMainForm = value;
+        }
+        private long userId;
+        public long UserId
+        {
+            get => userId;
+            set => userId = value;
+        }
+
+        private AllSkillsTestControl allSkillsTestControl { get ; set; }
+        public AllSkillsTestControl AllSkillsTestControl
+        {
+            get => allSkillsTestControl;
+            set => allSkillsTestControl = value;
+        }
+        
         private CreateTestPaperControl createTestPaperControl;
         private ShowSectionControl showSectionControl { get ; set; }
         public ShowSectionControl ShowSectionControl
@@ -71,6 +90,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
 
             allSkillsTestControl = new AllSkillsTestControl(this);
             createTestPaperControl = new CreateTestPaperControl();
+            createTestPaperControl.TestManagerControl = this;            
             addSectionButtonControl = new AddSectionButtonControl();
 
             // Dock fill để chiếm toàn bộ pnlMain
@@ -120,7 +140,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             if (btnAllSkills.BackColor == SystemColors.Control)
 
             {
-                MessageBox.Show("ok");
+                //MessageBox.Show("ok");
                 btnAllSkills.BackColor = Color.FromArgb(80, 160, 255);
             }
 

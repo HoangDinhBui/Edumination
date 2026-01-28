@@ -28,14 +28,26 @@
     <Compile Update="UI\Admin\DashBoard\AdminDashboardForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="UI\Admin\TestManager\AddReadingSectionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\Admin\TestManager\AddSectionButtonControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="UI\Admin\TestManager\AllSkillsTestControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\Admin\TestManager\CreateQuestionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="UI\Admin\TestManager\CreateTestPaperControl.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\EditQuestionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\Admin\TestManager\MainForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Update="UI\Admin\TestManager\ShowPassageControl.cs">
       <SubType>UserControl</SubType>

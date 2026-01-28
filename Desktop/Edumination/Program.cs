@@ -10,6 +10,8 @@ using System;
 using System.Windows.Forms;
 using System.IO;
 using Edumination.WinForms.UI.Admin;
+using IELTS.UI.Admin.TestManager;
+using IELTS.UI.Admin;
 
 namespace Edumination.WinForms;
 
@@ -47,7 +49,11 @@ static class Program
         ApplicationConfiguration.Initialize();
         string fullPath = Path.Combine(Application.StartupPath, "UI", "assets", pdfName);
         //Application.Run(new frmHienThiPdf(fullPath));
+        //Application.Run(new AdminMainForm("Admin Lam", "ADMIN"));
         Application.Run(new SignIn());
+        //Application.Run(new CreateQuestionForm(1));
+
+        //Application.Run(new MainForm());
         // Stop server when app exits
         apiServer?.Stop();
     }

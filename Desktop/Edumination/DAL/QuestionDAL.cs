@@ -272,34 +272,276 @@ namespace IELTS.DAL
             return questions;
         }
 
-		public bool InsertWritingPrompt(long sectionId, int position, string questionType, string promptText)
-		{
-			try
-			{
-				using (var conn = DatabaseConnection.GetConnection())
-				{
-					conn.Open();
-					// Chèn nội dung đề bài vào cột QuestionText
-					string sql = @"INSERT INTO Questions (SectionId, Position, QuestionType, QuestionText) 
+        public bool InsertWritingPrompt(long sectionId, int position, string questionType, string promptText)
+        {
+            try
+            {
+                using (var conn = DatabaseConnection.GetConnection())
+                {
+                    conn.Open();
+                    // Chèn nội dung đề bài vào cột QuestionText
+                    string sql = @"INSERT INTO Questions (SectionId, Position, QuestionType, QuestionText) 
                            VALUES (@SectionId, @Position, @QuestionType, @QuestionText)";
 
-					using (var cmd = new SqlCommand(sql, conn))
-					{
-						cmd.Parameters.AddWithValue("@SectionId", sectionId);
-						cmd.Parameters.AddWithValue("@Position", position);
-						cmd.Parameters.AddWithValue("@QuestionType", questionType);
-						cmd.Parameters.AddWithValue("@QuestionText", promptText);
+                    using (var cmd = new SqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SectionId", sectionId);
+                        cmd.Parameters.AddWithValue("@Position", position);
+                        cmd.Parameters.AddWithValue("@QuestionType", questionType);
+                        cmd.Parameters.AddWithValue("@QuestionText", promptText);
 
-						return cmd.ExecuteNonQuery() > 0;
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine("Error in InsertWritingPrompt: " + ex.Message);
-				return false;
-			}
-		}
+                        return cmd.ExecuteNonQuery() > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error in InsertWritingPrompt: " + ex.Message);
+                return false;
+            }
+        }
 
-	}
+        public List<int> GetExistingQuestionPositions(long passageId)
+        {
+            List<int> list = new();
+
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = @"
+            SELECT DISTINCT Position
+            FROM Questions
+            WHERE PassageId = @PassageId";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@PassageId", passageId);
+
+            using SqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                list.Add(reader.GetInt32(0));
+            }
+
+            return list;
+        }
+
+        // Lấy chi tiết 1 câu hỏi theo position
+        public QuestionDTO GetQuestionByPosition(long passageId, int position)
+        {
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = @"
+            SELECT Id, Position, QuestionType, QuestionText, EndIndex
+            FROM Questions
+            WHERE PassageId = @PassageId AND Position = @Position";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@PassageId", passageId);
+            cmd.Parameters.AddWithValue("@Position", position);
+
+            using SqlDataReader r = cmd.ExecuteReader();
+            if (!r.Read()) return null;
+
+            return new QuestionDTO
+            {
+                Id = r.GetInt64(0),
+                Position = r.GetInt32(1),
+                QuestionType = r.GetString(2),
+                QuestionText = r.GetString(3),
+                EndIndex = r.GetInt32(1)
+            };
+        }
+
+        public List<QuestionChoiceDTO> NewGetChoicesByQuestionId(long questionId)
+        {
+            List<QuestionChoiceDTO> list = new();
+
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = @"
+        SELECT Id, ChoiceText, IsCorrect, Position
+        FROM QuestionChoices
+        WHERE QuestionId = @QuestionId
+        ORDER BY Position";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@QuestionId", questionId);
+
+            using SqlDataReader r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                list.Add(new QuestionChoiceDTO
+                {
+                    Id = r.GetInt64(0),
+                    ChoiceText = r.GetString(1),
+                    IsCorrect = r.GetBoolean(2),
+                    Position = r.GetInt32(3)
+                });
+            }
+
+            return list;
+        }
+
+        public string GetAnswerKey(long questionId)
+        {
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = @"
+        SELECT AnswerData
+        FROM QuestionAnswerKeys
+        WHERE QuestionId = @QuestionId";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@QuestionId", questionId);
+
+            return cmd.ExecuteScalar() as string;
+        }
+
+        public void NewDeleteQuestion(long questionId)
+        {
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = @"DELETE FROM Questions WHERE Id = @Id";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", questionId);
+            cmd.ExecuteNonQuery();
+        }
+
+        public long InsertQuestion(
+    long passageId,
+    int position,
+    string type,
+    string text)
+        {
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = @"
+        INSERT INTO Questions (PassageId, Position, QuestionType, QuestionText)
+        OUTPUT INSERTED.Id
+        VALUES (@PassageId, @Position, @Type, @Text)";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@PassageId", passageId);
+            cmd.Parameters.AddWithValue("@Position", position);
+            cmd.Parameters.AddWithValue("@Type", type);
+            cmd.Parameters.AddWithValue("@Text", text);
+
+            return (long)cmd.ExecuteScalar();
+        }
+
+    public void InsertAnswerKey(long questionId, string answer)
+        {
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = @"
+        INSERT INTO QuestionAnswerKeys (QuestionId, AnswerData)
+        VALUES (@QId, @Answer)";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@QId", questionId);
+            cmd.Parameters.AddWithValue("@Answer", answer);
+
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<int> GetQuestionPositionsByPassageId(long passageId)
+        {
+            var list = new List<int>();
+
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = @"
+        SELECT Position
+        FROM Questions
+        WHERE PassageId = @PassageId";
+
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@PassageId", passageId);
+
+            using var rd = cmd.ExecuteReader();
+            while (rd.Read())
+            {
+                list.Add((int)rd["Position"]);
+            }
+
+            return list;
+        }
+
+        public long GetSectionIdByQuestionId(long questionId)
+        {
+            using SqlConnection conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            string sql = "SELECT SectionId FROM Questions WHERE Id = @Id";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", questionId);
+
+            return (long)cmd.ExecuteScalar();
+        }
+
+        public void DeleteChoicesByQuestionId(long questionId)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            using var cmd = new SqlCommand(
+                "DELETE FROM QuestionChoices WHERE QuestionId = @QuestionId", conn);
+
+            cmd.Parameters.AddWithValue("@QuestionId", questionId);
+            cmd.ExecuteNonQuery();
+        }
+
+
+        public void InsertChoice(long questionId, string text, bool isCorrect, int position)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            using var cmd = new SqlCommand(@"
+        INSERT INTO QuestionChoices (QuestionId, ChoiceText, IsCorrect, Position)
+        VALUES (@QuestionId, @Text, @IsCorrect, @Position)", conn);
+
+            cmd.Parameters.AddWithValue("@QuestionId", questionId);
+            cmd.Parameters.AddWithValue("@Text", text);
+            cmd.Parameters.AddWithValue("@IsCorrect", isCorrect);
+            cmd.Parameters.AddWithValue("@Position", position);
+
+            cmd.ExecuteNonQuery();
+        }
+
+
+        public void SaveAnswerKey(long questionId, string answer)
+        {
+            using var conn = DatabaseConnection.GetConnection();
+            conn.Open();
+
+            using var cmd = new SqlCommand(@"
+        IF EXISTS (SELECT 1 FROM QuestionAnswerKeys WHERE QuestionId = @QuestionId)
+            UPDATE QuestionAnswerKeys 
+            SET AnswerData = @Answer 
+            WHERE QuestionId = @QuestionId
+        ELSE
+            INSERT INTO QuestionAnswerKeys (QuestionId, AnswerData)
+            VALUES (@QuestionId, @Answer)
+    ", conn);
+
+            cmd.Parameters.AddWithValue("@QuestionId", questionId);
+            cmd.Parameters.AddWithValue("@Answer", answer);
+
+            cmd.ExecuteNonQuery();
+        }
+
+
+
+    }
+
 }

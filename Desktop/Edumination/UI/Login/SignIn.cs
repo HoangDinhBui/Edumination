@@ -32,6 +32,10 @@ namespace IELTS.UI.Login
 
             pictureBoxSlide.Image = slides[0];
             timerSlide.Start();
+
+            txtEmail.Text= "adminLam@edumination.com";
+            txtPassword.Text = "Admin@123";
+
         }
 
         /// <summary>
@@ -148,7 +152,8 @@ namespace IELTS.UI.Login
             switch (user.Role.ToUpper())
             {
                 case "ADMIN":
-                    nextForm = new AdminMainForm(user.FullName, user.Role);
+                    //nextForm = new AdminMainForm(user.FullName, user.Role);
+                    nextForm = new AdminMainForm(user);
                     nextForm.ShowDialog();
                     break;
 

@@ -16,5 +16,11 @@ namespace IELTS.BLL
         {
             return _dal.GetBySectionId(sectionId);
         }
+
+        public int GetPassagePosition(long passageId)
+        {
+            return _dal.GetPassagePositionByPassageId(passageId);
+        }
+
     }
 }

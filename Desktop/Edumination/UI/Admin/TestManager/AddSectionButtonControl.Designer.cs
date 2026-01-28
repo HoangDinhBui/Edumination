@@ -33,6 +33,10 @@
             btnAddWritingSection = new Sunny.UI.UIButton();
             btnAddReadingSection = new Sunny.UI.UIButton();
             btnAddListeningSection = new Sunny.UI.UIButton();
+            label5 = new Label();
+            cboMockTest = new ComboBox();
+            label1 = new Label();
+            cmbTestMonth = new ComboBox();
             SuspendLayout();
             // 
             // uiLabelTitle
@@ -129,10 +133,48 @@
             btnAddListeningSection.TipsFont = new Font("Microsoft Sans Serif", 9F);
             btnAddListeningSection.TipsForeColor = Color.Azure;
             // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(18, 76);
+            label5.Name = "label5";
+            label5.Size = new Size(78, 20);
+            label5.TabIndex = 112;
+            label5.Text = "Mock Test:";
+            // 
+            // cboMockTest
+            // 
+            cboMockTest.FormattingEnabled = true;
+            cboMockTest.Location = new Point(153, 73);
+            cboMockTest.Name = "cboMockTest";
+            cboMockTest.Size = new Size(275, 28);
+            cboMockTest.TabIndex = 111;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(989, 79);
+            label1.Name = "label1";
+            label1.Size = new Size(85, 20);
+            label1.TabIndex = 114;
+            label1.Text = "Test Month:";
+            // 
+            // cmbTestMonth
+            // 
+            cmbTestMonth.FormattingEnabled = true;
+            cmbTestMonth.Location = new Point(1124, 76);
+            cmbTestMonth.Name = "cmbTestMonth";
+            cmbTestMonth.Size = new Size(275, 28);
+            cmbTestMonth.TabIndex = 113;
+            // 
             // AddSectionButtonControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(label1);
+            Controls.Add(cmbTestMonth);
+            Controls.Add(label5);
+            Controls.Add(cboMockTest);
             Controls.Add(btnAddSpeakingSection);
             Controls.Add(btnAddWritingSection);
             Controls.Add(btnAddReadingSection);
@@ -141,6 +183,7 @@
             Name = "AddSectionButtonControl";
             Size = new Size(1430, 710);
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -150,5 +193,9 @@
         private Sunny.UI.UIButton btnAddWritingSection;
         private Sunny.UI.UIButton btnAddReadingSection;
         private Sunny.UI.UIButton btnAddListeningSection;
+        private Label label5;
+        private ComboBox cboMockTest;
+        private Label label1;
+        private ComboBox cmbTestMonth;
     }
 }

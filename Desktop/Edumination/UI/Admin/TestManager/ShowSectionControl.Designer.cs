@@ -29,20 +29,32 @@
         private void InitializeComponent()
         {
             flpSections = new FlowLayoutPanel();
+            btnCreateTestPaper = new Sunny.UI.UIButton();
             SuspendLayout();
             // 
             // flpSections
             // 
-            flpSections.Dock = DockStyle.Fill;
-            flpSections.Location = new Point(0, 0);
+            flpSections.Location = new Point(0, 59);
             flpSections.Name = "flpSections";
-            flpSections.Size = new Size(1430, 710);
+            flpSections.Size = new Size(1430, 651);
             flpSections.TabIndex = 0;
+            // 
+            // btnCreateTestPaper
+            // 
+            btnCreateTestPaper.Font = new Font("Microsoft Sans Serif", 12F);
+            btnCreateTestPaper.Location = new Point(1198, 18);
+            btnCreateTestPaper.MinimumSize = new Size(1, 1);
+            btnCreateTestPaper.Name = "btnCreateTestPaper";
+            btnCreateTestPaper.Size = new Size(229, 35);
+            btnCreateTestPaper.TabIndex = 11;
+            btnCreateTestPaper.Text = "Create New Section";
+            btnCreateTestPaper.TipsFont = new Font("Microsoft Sans Serif", 9F);
             // 
             // ShowSectionControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(btnCreateTestPaper);
             Controls.Add(flpSections);
             Name = "ShowSectionControl";
             Size = new Size(1430, 710);
@@ -52,5 +64,6 @@
         #endregion
 
         private FlowLayoutPanel flpSections;
+        private Sunny.UI.UIButton btnCreateTestPaper;
     }
 }
