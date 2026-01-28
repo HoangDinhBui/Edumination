@@ -15,7 +15,6 @@ namespace Edumination.WinForms.UI.Admin
         private UIButton btnCourses;
         private UIButton btnTests;
         private UIButton btnStudents;
-        private UIButton btnTeachers;
         private UIButton btnAccounts;
         private UIButton btnReports;
         private UIButton btnSettings;

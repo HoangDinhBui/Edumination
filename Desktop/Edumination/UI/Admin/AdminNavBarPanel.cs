@@ -22,7 +22,6 @@ namespace Edumination.WinForms.UI.Admin
             AddMenu("📚  Khóa học", "courses");
             AddMenu("📝  Bài test", "tests");
             AddMenu("👨‍🎓  Học viên", "students");
-            AddMenu("👨‍🏫  Giảng viên", "teachers");
             AddMenu("👤  Tài khoản", "accounts");
             AddMenu("📈  Báo cáo", "reports");
             AddMenu("⚙️  Cài đặt", "settings");
