@@ -3,164 +3,206 @@ using IELTS.DTO;
 using Sunny.UI;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace IELTS.UI.Admin.CoursesManager
 {
-    public partial class CoursesPanel : UserControl
-    {
-        private readonly CourseBLL _bll;
-        private long _currentId = 0;
-        public CoursesPanel()
-        {
-            InitializeComponent();
-            _bll = new CourseBLL();
+	public partial class CoursesPanel : UserControl
+	{
+		private readonly CourseBLL _courseBll;
+		private readonly LessonBLL _lessonBll; // BLL xử lý bảng Lessons
+		private long _currentCourseId = 0;
 
-            this.Load += (s, e) => { LoadData(); cboLevel.SelectedIndex = 0; };
-            this.dgvCourses.CellClick += DgvCourses_CellClick;
-            this.btnSave.Click += BtnSave_Click;
-            this.btnDelete.Click += BtnDelete_Click;
-            this.btnRefresh.Click += (s, e) => { ResetForm(); LoadData(); };
-            this.btnSearch.Click += (s, e) => LoadData(txtSearch.Text.Trim());
-            this.txtSearch.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) LoadData(txtSearch.Text.Trim()); };
-        }
-        private void LoadData(string keyword = "")
-        {
-            try
-            {
-                var list = _bll.GetAll(keyword);
-                dgvCourses.DataSource = null;
-                dgvCourses.DataSource = list;
+		public CoursesPanel()
+		{
+			InitializeComponent();
+			_courseBll = new CourseBLL();
+			_lessonBll = new LessonBLL(); // Khởi tạo BLL bài học
 
-                // Ẩn cột thừa
-                string[] hideCols = { "Description", "Lessons", "CreatedAt", "CreatedBy" };
-                foreach (var col in hideCols)
-                    if (dgvCourses.Columns[col] != null) dgvCourses.Columns[col].Visible = false;
+			// Đăng ký các sự kiện hệ thống
+			this.Load += (s, e) => { LoadCourses(); cboLevel.SelectedIndex = 0; };
 
-                // Đổi tên cột
-                if (dgvCourses.Columns["Id"] != null) dgvCourses.Columns["Id"].HeaderText = "ID";
-                if (dgvCourses.Columns["Title"] != null) dgvCourses.Columns["Title"].HeaderText = "Tên khóa học";
-                if (dgvCourses.Columns["PriceVND"] != null) dgvCourses.Columns["PriceVND"].HeaderText = "Giá (VNĐ)";
-                if (dgvCourses.Columns["IsPublished"] != null) dgvCourses.Columns["IsPublished"].HeaderText = "Công khai";
-                if (dgvCourses.Columns["Level"] != null) dgvCourses.Columns["Level"].HeaderText = "Trình độ";
-                if (dgvCourses.Columns["CreatedByName"] != null) dgvCourses.Columns["CreatedByName"].HeaderText = "Người tạo";
-            }
-            catch (Exception ex)
-            {
-                UIMessageBox.ShowError("Lỗi: " + ex.Message);
-            }
-        }
+			// Sự kiện Grid Khóa học (Bên trái)
+			this.dgvCourses.CellClick += DgvCourses_CellClick;
+			this.btnSearch.Click += (s, e) => LoadCourses(txtSearch.Text.Trim());
+			this.txtSearch.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) LoadCourses(txtSearch.Text.Trim()); };
 
-        private void DgvCourses_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex < 0) return;
-            var row = dgvCourses.Rows[e.RowIndex];
+			// Sự kiện Form Khóa học (Tab 1)
+			this.btnSave.Click += BtnSaveCourse_Click;
+			this.btnDelete.Click += BtnDeleteCourse_Click;
+			this.btnRefresh.Click += (s, e) => { ResetCourseForm(); LoadCourses(); };
 
-            if (row.Cells["Id"].Value != null)
-                _currentId = Convert.ToInt64(row.Cells["Id"].Value);
+			// Sự kiện Quản lý bài học (Tab 2)
+			this.btnAddLesson.Click += BtnAddLesson_Click;
+			this.dgvLessons.CellDoubleClick += DgvLessons_CellDoubleClick;
+		}
 
-            // Binding dữ liệu lên Form
-            txtId.Text = _currentId.ToString();
-            txtTitle.Text = row.Cells["Title"].Value?.ToString();
-            txtDesc.Text = row.Cells["Description"].Value?.ToString();
-            txtPrice.Text = row.Cells["PriceVND"].Value?.ToString();
-            cboLevel.Text = row.Cells["Level"].Value?.ToString();
+		#region XỬ LÝ KHÓA HỌC (COURSE)
 
-            var pubVal = row.Cells["IsPublished"].Value;
-            swPublished.Active = pubVal != null && (bool)pubVal;
+		private void LoadCourses(string keyword = "")
+		{
+			try
+			{
+				var list = _courseBll.GetAll(keyword);
+				dgvCourses.DataSource = null;
+				dgvCourses.DataSource = list;
 
-            // Cập nhật trạng thái nút
-            btnSave.Text = "Cập nhật";
-            btnSave.FillColor = System.Drawing.Color.Orange;
-            btnDelete.Enabled = true;
-        }
+				// Định dạng hiển thị Grid Khóa học
+				string[] hideCols = { "Description", "Lessons", "CreatedAt", "CreatedBy" };
+				foreach (var col in hideCols)
+					if (dgvCourses.Columns[col] != null) dgvCourses.Columns[col].Visible = false;
 
-        private void BtnSave_Click(object sender, EventArgs e)
-        {
-            // Validate
-            if (string.IsNullOrWhiteSpace(txtTitle.Text))
-            {
-                UIMessageTip.ShowWarning("Vui lòng nhập tên khóa học!");
-                return;
-            }
+				if (dgvCourses.Columns["Id"] != null) dgvCourses.Columns["Id"].HeaderText = "ID";
+				if (dgvCourses.Columns["Title"] != null) dgvCourses.Columns["Title"].HeaderText = "Tên khóa học";
+				if (dgvCourses.Columns["PriceVND"] != null) dgvCourses.Columns["PriceVND"].HeaderText = "Giá (VNĐ)";
+				if (dgvCourses.Columns["IsPublished"] != null) dgvCourses.Columns["IsPublished"].HeaderText = "Công khai";
+			}
+			catch (Exception ex)
+			{
+				UIMessageBox.ShowError("Lỗi tải danh sách khóa học: " + ex.Message);
+			}
+		}
 
-            int price = 0;
-            int.TryParse(txtPrice.Text, out price);
+		private void DgvCourses_CellClick(object sender, DataGridViewCellEventArgs e)
+		{
+			if (e.RowIndex < 0) return;
+			var row = dgvCourses.Rows[e.RowIndex];
 
-            var course = new CourseDTO
-            {
-                Id = _currentId,
-                Title = txtTitle.Text.Trim(),
-                Description = txtDesc.Text.Trim(),
-                Level = cboLevel.Text,
-                PriceVND = price,
-                IsPublished = swPublished.Active,
-                // CreatedBy sẽ được xử lý ở BLL hoặc lấy từ Session nếu có
-            };
+			if (row.Cells["Id"].Value != null)
+				_currentCourseId = Convert.ToInt64(row.Cells["Id"].Value);
 
-            string error = "";
-            if (_currentId == 0) // Thêm
-                error = _bll.AddCourse(course);
-            else // Sửa
-                error = _bll.UpdateCourse(course);
+			// Binding dữ liệu lên Tab 1
+			txtId.Text = _currentCourseId.ToString();
+			txtTitle.Text = row.Cells["Title"].Value?.ToString();
+			txtDesc.Text = row.Cells["Description"].Value?.ToString();
+			txtPrice.Text = row.Cells["PriceVND"].Value?.ToString();
+			cboLevel.Text = row.Cells["Level"].Value?.ToString();
+			swPublished.Active = (bool)(row.Cells["IsPublished"].Value ?? false);
 
-            if (string.IsNullOrEmpty(error))
-            {
-                UIMessageTip.ShowOk("Thao tác thành công!");
-                ResetForm();
-                LoadData();
-            }
-            else
-            {
-                UIMessageBox.ShowError(error);
-            }
-        }
+			// Cập nhật trạng thái UI
+			btnSave.Text = "Cập nhật khóa học";
+			btnSave.FillColor = Color.Orange;
+			btnDelete.Enabled = true;
 
-        private void BtnDelete_Click(object sender, EventArgs e)
-        {
-            if (_currentId == 0) return;
+			// NGHIỆP VỤ: Tự động load danh sách bài học thuộc khóa học này sang Tab 2
+			LoadLessonsByCourse(_currentCourseId);
+		}
 
-            // Hỏi xác nhận trước khi xóa
-            if (UIMessageBox.Show("Bạn chắc chắn muốn xóa khóa học này?", "Xác nhận", UIStyle.Red, UIMessageBoxButtons.OKCancel, true))
-            {
-                try
-                {
-                    // Gọi lệnh xóa (Nếu lỗi SQL xảy ra, nó sẽ nhảy xuống catch ngay lập tức)
-                    if (_bll.DeleteCourse(_currentId))
-                    {
-                        UIMessageTip.ShowOk("Đã xóa thành công!");
-                        ResetForm();
-                        LoadData();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // 👉 XUẤT RA MÀN HÌNH LỖI VỪA BẮT ĐƯỢC
-                    UIMessageBox.ShowError(ex.Message);
-                }
-            }
-        }
+		private void BtnSaveCourse_Click(object sender, EventArgs e)
+		{
+			if (string.IsNullOrWhiteSpace(txtTitle.Text))
+			{
+				UIMessageTip.ShowWarning("Vui lòng nhập tên khóa học!");
+				return;
+			}
 
-        private void ResetForm()
-        {
-            _currentId = 0;
-            txtId.Text = "";
-            txtTitle.Text = "";
-            txtDesc.Text = "";
-            txtPrice.Text = "0";
-            cboLevel.SelectedIndex = 0;
-            swPublished.Active = true;
+			int.TryParse(txtPrice.Text, out int price);
+			var course = new CourseDTO
+			{
+				Id = _currentCourseId,
+				Title = txtTitle.Text.Trim(),
+				Description = txtDesc.Text.Trim(),
+				Level = cboLevel.Text,
+				PriceVND = price,
+				IsPublished = swPublished.Active
+			};
 
-            btnSave.Text = "Thêm mới";
-            btnSave.FillColor = System.Drawing.Color.FromArgb(110, 190, 40);
-            btnDelete.Enabled = false;
-        }
+			string error = _currentCourseId == 0 ? _courseBll.AddCourse(course) : _courseBll.UpdateCourse(course);
 
-    }
+			if (string.IsNullOrEmpty(error))
+			{
+				UIMessageTip.ShowOk("Thành công!");
+				ResetCourseForm();
+				LoadCourses();
+			}
+			else UIMessageBox.ShowError(error);
+		}
+
+		private void BtnDeleteCourse_Click(object sender, EventArgs e)
+		{
+			if (_currentCourseId == 0) return;
+			if (UIMessageBox.Show("Xóa khóa học sẽ xóa toàn bộ bài học bên trong. Bạn chắc chắn chứ?", "Xác nhận", UIStyle.Red, UIMessageBoxButtons.OKCancel, true))
+			{
+				if (_courseBll.DeleteCourse(_currentCourseId))
+				{
+					UIMessageTip.ShowOk("Đã xóa!");
+					ResetCourseForm();
+					LoadCourses();
+				}
+			}
+		}
+
+		private void ResetCourseForm()
+		{
+			_currentCourseId = 0;
+			txtId.Text = ""; txtTitle.Text = ""; txtDesc.Text = ""; txtPrice.Text = "0";
+			cboLevel.SelectedIndex = 0; swPublished.Active = true;
+			dgvLessons.DataSource = null; // Xóa danh sách bài học khi reset
+			btnSave.Text = "Thêm khóa học";
+			btnSave.FillColor = Color.FromArgb(110, 190, 40);
+			btnDelete.Enabled = false;
+		}
+
+		#endregion
+
+		#region XỬ LÝ BÀI HỌC (LESSON)
+
+		private void LoadLessonsByCourse(long courseId)
+		{
+			try
+			{
+				// Giả định BLL của bạn có hàm GetByCourseId
+				var lessons = _lessonBll.GetByCourseId(courseId);
+				dgvLessons.DataSource = null;
+				dgvLessons.DataSource = lessons;
+
+				// Định dạng hiển thị Grid Bài học
+				if (dgvLessons.Columns["Id"] != null) dgvLessons.Columns["Id"].Visible = false;
+				if (dgvLessons.Columns["CourseId"] != null) dgvLessons.Columns["CourseId"].Visible = false;
+				if (dgvLessons.Columns["Position"] != null) dgvLessons.Columns["Position"].HeaderText = "Thứ tự";
+				if (dgvLessons.Columns["Title"] != null) dgvLessons.Columns["Title"].HeaderText = "Tên buổi học";
+				if (dgvLessons.Columns["VideoFilePath"] != null) dgvLessons.Columns["VideoFilePath"].HeaderText = "Video";
+			}
+			catch (Exception ex)
+			{
+				UIMessageTip.ShowError("Lỗi tải bài học: " + ex.Message);
+			}
+		}
+
+		private void BtnAddLesson_Click(object sender, EventArgs e)
+		{
+			if (_currentCourseId == 0)
+			{
+				UIMessageTip.ShowWarning("Vui lòng chọn 1 khóa học trước khi thêm buổi học!");
+				return;
+			}
+
+			// Mở form nhỏ để thêm buổi học mới
+			using (var frm = new frmLessonEditor(_currentCourseId))
+			{
+				if (frm.ShowDialog() == DialogResult.OK)
+				{
+					LoadLessonsByCourse(_currentCourseId);
+				}
+			}
+		}
+
+		private void DgvLessons_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+		{
+			if (e.RowIndex < 0) return;
+			long lessonId = Convert.ToInt64(dgvLessons.Rows[e.RowIndex].Cells["Id"].Value);
+
+			// Mở form chỉnh sửa chi tiết (CRUD Video/Quiz)
+			using (var frm = new frmLessonEditor(lessonId, isEdit: true))
+			{
+				if (frm.ShowDialog() == DialogResult.OK)
+				{
+					LoadLessonsByCourse(_currentCourseId);
+				}
+			}
+		}
+
+		#endregion
+	}
 }
