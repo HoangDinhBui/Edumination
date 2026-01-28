@@ -162,20 +162,20 @@ namespace IELTS.UI.Admin.CourseStudents
                 }
             };
 
-            dgvMain.CellMouseLeave += (s, e) =>
-            {
-                if (_hoverRow >= 0)
-                {
-                    dgvMain.Rows[_hoverRow].DefaultCellStyle.BackColor =
-                        (_hoverRow % 2 == 0)
-                            ? Color.White
-                            : Color.FromArgb(249, 250, 251);
+			dgvMain.CellMouseLeave += (s, e) =>
+			{
+				if (_hoverRow >= 0 && _hoverRow < dgvMain.Rows.Count)
+				{
+					dgvMain.Rows[_hoverRow].DefaultCellStyle.BackColor =
+						(_hoverRow % 2 == 0)
+							? Color.White
+							: Color.FromArgb(249, 250, 251);
+				}
 
-                    _hoverRow = -1;
-                }
-            };
+				_hoverRow = -1;
+			};
 
-            dgvMain.RowPrePaint += (s, e) =>
+			dgvMain.RowPrePaint += (s, e) =>
             {
                 if (e.RowIndex == _hoverRow)
                 {
