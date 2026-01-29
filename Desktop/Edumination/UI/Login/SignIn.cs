@@ -33,8 +33,8 @@ namespace IELTS.UI.Login
             pictureBoxSlide.Image = slides[0];
             timerSlide.Start();
 
-            txtEmail.Text= "adminLam@edumination.com";
-            txtPassword.Text = "Admin@123";
+            txtEmail.Text= "admin3@edumination.com";
+            txtPassword.Text = "admin123";
 
         }
 
@@ -96,8 +96,7 @@ namespace IELTS.UI.Login
                     // Mở form theo role
                     OpenFormByRole(response.User);
 
-                    // Sau khi đóng form tiếp theo thì đóng form login
-                    this.Close();
+                    
                 }
                 else
                 {
@@ -147,34 +146,41 @@ namespace IELTS.UI.Login
         /// </summary>
         private void OpenFormByRole(UserDTO user)
         {
-            Form nextForm;
+			this.Hide(); // 1. Ẩn form Login hiện tại đi
 
-            switch (user.Role.ToUpper())
-            {
-                case "ADMIN":
-                    //nextForm = new AdminMainForm(user.FullName, user.Role);
-                    nextForm = new AdminMainForm(user);
-                    nextForm.ShowDialog();
-                    break;
+			Form nextForm = null;
 
-                case "STUDENT":
-                    // MessageBox.Show($"Đã đăng nhập với tư cách STUDENT\nEmail: {user.Email}\nID: {user.Id}");
-                    nextForm = new IELTS.UI.User.Home.Home();
-                    nextForm.ShowDialog();
-                    break;
+			// 2. Khởi tạo form tương ứng dựa trên Role
+			switch (user.Role.ToUpper())
+			{
+				case "ADMIN":
+					nextForm = new AdminMainForm(user);
+					break;
 
-                case "TEACHER":
-                    // MessageBox.Show($"Đã đăng nhập với tư cách TEACHER\nEmail: {user.Email}\nID: {user.Id}");
-                    nextForm = new IELTS.UI.User.Home.Home();
-                    nextForm.ShowDialog();
-                    break;
+				case "STUDENT":
+				case "TEACHER":
+					nextForm = new IELTS.UI.User.Home.Home();
+					break;
 
-                default:
-                    UIMessageBox.ShowError("Không xác định được quyền người dùng!");
-                    this.Show();
-                    return;
-            }
-        }
+				default:
+					UIMessageBox.ShowError("Không xác định được quyền người dùng!");
+					this.Show(); // Hiện lại login nếu lỗi role
+					return;
+			}
+
+			if (nextForm != null)
+			{
+				// 3. Mở form mới bằng ShowDialog
+				// Code sẽ "đứng" tại dòng này cho đến khi form 'nextForm' bị đóng (Logout)
+				nextForm.ShowDialog();
+
+				// 4. SAU KHI LOGOUT (Form chính đóng lại)
+				// Code chạy tiếp xuống đây:
+				this.Show();            // Hiện lại form Login
+				txtPassword.Clear();    // Xóa mật khẩu cũ cho bảo mật
+				txtPassword.Focus();    // Đưa con trỏ vào ô mật khẩu
+			}
+		}
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
