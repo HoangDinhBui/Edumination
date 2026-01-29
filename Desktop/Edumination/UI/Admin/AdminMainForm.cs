@@ -5,6 +5,7 @@ using IELTS.UI.Admin.CoursesManager;
 using IELTS.UI.Admin.CourseStudents;
 using IELTS.UI.Admin.DashBoard;
 using IELTS.UI.Admin.ReportManager;
+using Sunny.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -148,15 +149,18 @@ namespace Edumination.WinForms.UI.Admin
                     break;
 
                 case "logout":
-                    this.Close(); // sẽ kích hoạt FormClosed → hiện lại login
-                    break;
+					this.Close(); // sẽ kích hoạt FormClosed → hiện lại login
+
+					break;
                 default:
                     LoadContent(new AdminDashboardControl());
                     break;
             }
         }
 
-        private void AdminMainForm_Load(object sender, EventArgs e)
+		
+
+		private void AdminMainForm_Load(object sender, EventArgs e)
         {
             this.WindowState = FormWindowState.Maximized;
         }

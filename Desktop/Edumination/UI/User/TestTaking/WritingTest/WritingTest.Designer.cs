@@ -55,7 +55,7 @@ namespace IELTS.UI.User.TestTaking.WritingTest
             // 
             splitMain.Panel2.Controls.Add(writingAnswerPanel);
             splitMain.Size = new Size(1920, 850);
-            splitMain.SplitterDistance = 1548;
+            splitMain.SplitterDistance = 850;
             splitMain.TabIndex = 1;
             // 
             // promptPanel

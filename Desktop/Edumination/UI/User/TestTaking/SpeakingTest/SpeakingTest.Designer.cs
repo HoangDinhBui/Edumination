@@ -75,7 +75,7 @@
             lblQuestion.ForeColor = Color.FromArgb(60, 60, 60);
             lblQuestion.Location = new Point(200, 260);
             lblQuestion.Name = "lblQuestion";
-            lblQuestion.Size = new Size(1520, 90);
+            lblQuestion.Size = new Size(1520, 205);
             lblQuestion.TabIndex = 3;
             lblQuestion.Text = "Question text goes here...";
             lblQuestion.TextAlign = ContentAlignment.MiddleCenter;
@@ -83,9 +83,9 @@
             // audioPanel
             // 
             audioPanel.BackColor = Color.White;
-            audioPanel.Location = new Point(865, 402);
+            audioPanel.Location = new Point(878, 468);
             audioPanel.Name = "audioPanel";
-            audioPanel.Size = new Size(164, 200);
+            audioPanel.Size = new Size(164, 189);
             audioPanel.TabIndex = 4;
             // 
             // SpeakingTest
