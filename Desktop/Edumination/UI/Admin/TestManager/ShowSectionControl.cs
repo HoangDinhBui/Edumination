@@ -55,7 +55,7 @@ namespace IELTS.UI.Admin.TestManager
         }
 
         // ===== LOAD DATA =====
-        private void LoadSections()
+        public void LoadSections()
         {
             flpSections.Controls.Clear();
             flpSections.BackColor = Color.FromArgb(248, 250, 252); // Nền xám rất nhạt kiểu chuyên nghiệp
@@ -110,7 +110,8 @@ namespace IELTS.UI.Admin.TestManager
             };
 
             // Vẽ viền và dải màu bên trái kiểu Card Web
-            pnl.Paint += (s, e) => {
+            pnl.Paint += (s, e) =>
+            {
                 // Viền nhạt xung quanh
                 ControlPaint.DrawBorder(e.Graphics, pnl.ClientRectangle, Color.FromArgb(230, 230, 230), ButtonBorderStyle.Solid);
                 // Dải màu nhận diện kỹ năng ở lề trái (rộng 6px)
@@ -164,7 +165,7 @@ namespace IELTS.UI.Admin.TestManager
             long sectionId = (long)pnl.Tag;
 
             //MessageBox.Show($"Open SectionId = {sectionId}");
-            _testManagerControl.ShowPassageControl.SectionId= sectionId;
+            _testManagerControl.ShowPassageControl.SectionId = sectionId;
             _testManagerControl.ShowPanel(_testManagerControl.ShowPassageControl);
         }
 
@@ -175,6 +176,12 @@ namespace IELTS.UI.Admin.TestManager
 
             if (Visible && _paperId > 0)
                 LoadSections();
+        }
+
+        private void btnCreateSection_Click(object sender, EventArgs e)
+        {
+            AddSectionForm addSectionForm = new AddSectionForm(this,_paperId);
+            addSectionForm.ShowDialog();
         }
     }
 }

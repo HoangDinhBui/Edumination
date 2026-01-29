@@ -57,6 +57,12 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             set => showQuestionControl = value;
         }
 
+        private NewShowQuestionCotrol newShowQuestionCotrol { get; set; }
+        public NewShowQuestionCotrol NewShowQuestionCotrol
+        {
+            get => newShowQuestionCotrol;
+            set => newShowQuestionCotrol = value;
+        }
         public CreateTestPaperControl GetCreateTestPaperControl()
         {
             return createTestPaperControl;
@@ -87,7 +93,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             showSectionControl = new ShowSectionControl(this);
             showPassageControl = new ShowPassageControl(this);
             showQuestionControl = new ShowQuestionControl(this);
-
+            newShowQuestionCotrol = new NewShowQuestionCotrol();
             allSkillsTestControl = new AllSkillsTestControl(this);
             createTestPaperControl = new CreateTestPaperControl();
             createTestPaperControl.TestManagerControl = this;            
@@ -101,6 +107,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             showSectionControl.Dock = DockStyle.Fill;
             showPassageControl.Dock = DockStyle.Fill;
             showQuestionControl.Dock = DockStyle.Fill;
+            newShowQuestionCotrol.Dock = DockStyle.Fill;
 
             // Add vào pnlMain
             pnlMain.Controls.Add(allSkillsTestControl);
@@ -110,6 +117,7 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             pnlMain.Controls.Add(showSectionControl);
             pnlMain.Controls.Add(showPassageControl);
             pnlMain.Controls.Add(showQuestionControl);
+            pnlMain.Controls.Add(newShowQuestionCotrol);
             //pnlMain.Controls.Add(pnlTestInfo);
 
             // Chỉ hiển thị pnlAllSkillTest lúc đầu
@@ -166,5 +174,20 @@ namespace Edumination.WinForms.UI.Admin.TestManager
             createTestPaperControl.ResetForm();
             ShowPanel(createTestPaperControl);
         }
+
+        public void LoadNewShowQuestionControl(long sectionId, long passageId)
+        {
+            pnlMain.Controls.Clear();
+
+            var uc = new NewShowQuestionCotrol
+            {
+                SectionId = sectionId,
+                PassageId = passageId,
+                Dock = DockStyle.Fill
+            };
+
+            pnlMain.Controls.Add(uc);
+        }
+
     }
 }

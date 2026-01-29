@@ -52,7 +52,7 @@ namespace IELTS.UI.Admin.TestManager
         }
 
         // ===== LOAD DATA =====
-        private void LoadPassages()
+        public void LoadPassages()
         {
             if (flpPassages == null) return;
 
@@ -97,7 +97,8 @@ namespace IELTS.UI.Admin.TestManager
             };
 
             // Vẽ viền và hiệu ứng Hover
-            pnl.Paint += (s, e) => {
+            pnl.Paint += (s, e) =>
+            {
                 ControlPaint.DrawBorder(e.Graphics, pnl.ClientRectangle, Color.FromArgb(230, 234, 238), ButtonBorderStyle.Solid);
             };
 
@@ -114,7 +115,8 @@ namespace IELTS.UI.Admin.TestManager
                 Cursor = Cursors.Hand
             };
             // Làm cho badge hình tròn (giả lập)
-            lblBadge.Paint += (s, e) => {
+            lblBadge.Paint += (s, e) =>
+            {
                 // Bạn có thể dùng Region để bo tròn thật, hoặc cứ để hình vuông bo nhẹ cũng rất đẹp
             };
 
@@ -167,6 +169,12 @@ namespace IELTS.UI.Admin.TestManager
             //MessageBox.Show($"Open PassageId = {passageId}");
             _testManagerCotrol.ShowQuestionControl.PassageId = passageId;
             _testManagerCotrol.ShowPanel(_testManagerCotrol.ShowQuestionControl);
+        }
+
+        private void btnCreatePassage_Click(object sender, EventArgs e)
+        {
+            AddPassageForm addPassageForm = new AddPassageForm(_sectionId, this);
+            addPassageForm.ShowDialog();
         }
     }
 }

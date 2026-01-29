@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             flpSections = new FlowLayoutPanel();
-            btnCreateTestPaper = new Sunny.UI.UIButton();
+            btnCreateSection = new Sunny.UI.UIButton();
             SuspendLayout();
             // 
             // flpSections
@@ -39,22 +39,23 @@
             flpSections.Size = new Size(1430, 651);
             flpSections.TabIndex = 0;
             // 
-            // btnCreateTestPaper
+            // btnCreateSection
             // 
-            btnCreateTestPaper.Font = new Font("Microsoft Sans Serif", 12F);
-            btnCreateTestPaper.Location = new Point(1198, 18);
-            btnCreateTestPaper.MinimumSize = new Size(1, 1);
-            btnCreateTestPaper.Name = "btnCreateTestPaper";
-            btnCreateTestPaper.Size = new Size(229, 35);
-            btnCreateTestPaper.TabIndex = 11;
-            btnCreateTestPaper.Text = "Create New Section";
-            btnCreateTestPaper.TipsFont = new Font("Microsoft Sans Serif", 9F);
+            btnCreateSection.Font = new Font("Microsoft Sans Serif", 12F);
+            btnCreateSection.Location = new Point(1198, 18);
+            btnCreateSection.MinimumSize = new Size(1, 1);
+            btnCreateSection.Name = "btnCreateSection";
+            btnCreateSection.Size = new Size(229, 35);
+            btnCreateSection.TabIndex = 11;
+            btnCreateSection.Text = "Create New Section";
+            btnCreateSection.TipsFont = new Font("Microsoft Sans Serif", 9F);
+            btnCreateSection.Click += btnCreateSection_Click;
             // 
             // ShowSectionControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(btnCreateTestPaper);
+            Controls.Add(btnCreateSection);
             Controls.Add(flpSections);
             Name = "ShowSectionControl";
             Size = new Size(1430, 710);
@@ -64,6 +65,6 @@
         #endregion
 
         private FlowLayoutPanel flpSections;
-        private Sunny.UI.UIButton btnCreateTestPaper;
+        private Sunny.UI.UIButton btnCreateSection;
     }
 }
