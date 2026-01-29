@@ -416,6 +416,7 @@ namespace IELTS.UI.Admin.TestManager
                 txtQuestion.Text.Trim(),
                 1.0m,
                 Position
+
             );
 
             // 3️⃣ Insert đáp án

@@ -29,20 +29,33 @@
         private void InitializeComponent()
         {
             flpPassages = new FlowLayoutPanel();
+            btnCreatePassage = new Sunny.UI.UIButton();
             SuspendLayout();
             // 
             // flpPassages
             // 
-            flpPassages.Dock = DockStyle.Fill;
-            flpPassages.Location = new Point(0, 0);
+            flpPassages.Location = new Point(0, 68);
             flpPassages.Name = "flpPassages";
-            flpPassages.Size = new Size(1430, 710);
+            flpPassages.Size = new Size(1430, 642);
             flpPassages.TabIndex = 0;
+            // 
+            // btnCreatePassage
+            // 
+            btnCreatePassage.Font = new Font("Microsoft Sans Serif", 12F);
+            btnCreatePassage.Location = new Point(1198, 14);
+            btnCreatePassage.MinimumSize = new Size(1, 1);
+            btnCreatePassage.Name = "btnCreatePassage";
+            btnCreatePassage.Size = new Size(229, 35);
+            btnCreatePassage.TabIndex = 12;
+            btnCreatePassage.Text = "Create New Passage";
+            btnCreatePassage.TipsFont = new Font("Microsoft Sans Serif", 9F);
+            btnCreatePassage.Click += btnCreatePassage_Click;
             // 
             // ShowPassageControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(btnCreatePassage);
             Controls.Add(flpPassages);
             Name = "ShowPassageControl";
             Size = new Size(1430, 710);
@@ -52,5 +65,6 @@
         #endregion
 
         private FlowLayoutPanel flpPassages;
+        private Sunny.UI.UIButton btnCreatePassage;
     }
 }
